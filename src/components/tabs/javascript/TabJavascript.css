@@ -1,0 +1,17 @@
+.esfiddle-js-tab-container {
+    color: white;
+    display: flex;
+    flex-direction: row;
+    width: fit-content;
+}
+.esfiddle-js-tab-container__file-explorer{
+    position: relative;
+    left: 16px;
+    margin-right: 32px;
+    display: flex;
+}
+.esfiddle-js-tab-container__file-explorer-toggle{
+    cursor: pointer;
+    padding-top: 0;
+    padding: 8px;
+}
