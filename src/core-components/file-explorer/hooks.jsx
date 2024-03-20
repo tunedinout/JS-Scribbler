@@ -95,11 +95,25 @@ function useOutsideClick({ handler, ref }) {
             }
         }
 
+        const onKeyDown = (e) => {
+            if(e.keyCode === 13){
+                console.log(e.key)
+                e.preventDefault()
+                ref.current.blur();
+                handler(e)
+            }
+        }
+        if(ref.current){
+            ref.current.addEventListener('keydown', onKeyDown);
+        }
+
         console.log(`running outside click effect.....`)
 
         document.addEventListener('click', handleOutsideClick)
 
-        return () => document.removeEventListener('click', handleOutsideClick)
+        return () => {
+            ref?.current?.removeEventListener('keydown', onKeyDown)
+            document.removeEventListener('click', handleOutsideClick)}
     }, [handler, ref])
 }
 export { useCustomListItemWrapper, useCustomCursorSelection, useOutsideClick }

@@ -9,7 +9,8 @@ export default function CustomListItemWrapper({
     file,
     renameHandler,
     deleteHandler,
-    createFileHandler,
+    selectFileHandler,
+    isSelected,
 }) {
     const {
         isHover,
@@ -23,37 +24,46 @@ export default function CustomListItemWrapper({
         onFileInputClick,
     } = useCustomListItemWrapper({ file, renameHandler })
 
-    useEffect(() => {
-        console.log(`checking is rename in comp`, isInputMode)
-    }, [isInputMode])
     return (
         <CustomListItem
-            disableRipple
-            key={file.id}
-            button
-            onMouseMove={() => setIsHover(true)}
-            onMouseLeave={() => setIsHover(false)}
+            {...{
+                disableRipple: true,
+                key: file.id,
+                button: true,
+                onClick: (e) => selectFileHandler(file, e),
+                onMouseMove: () => setIsHover(true),
+                onMouseLeave: () => setIsHover(false),
+                // for css
+                isSelected,
+            }}
         >
             <CustomListItemIcon>
                 <RiJavascriptFill size={20} fill="yellow" />
             </CustomListItemIcon>
+
             <ContentEditableFileName
-                ref={fileRef}
-                contentEditable={isInputMode}
-                onClick={() => {
-                    setIsInputMode(true)
+                {...{
+                    ref: fileRef,
+                    contentEditable: isInputMode,
+                    onClick: (e) => {
+                        e.stopPropagation()
+                        setIsInputMode(true)
+                    },
+                    onInput: onInputHandler,
                 }}
-                onInput={onInputHandler}
             >
                 {newFileName}
             </ContentEditableFileName>
 
             {isHover && (
-                <DeleteButtonContainer onClick={() => deleteHandler(file)}>
+                <DeleteButtonContainer
+                    {...{ onClick: (e) => deleteHandler(file) }}
+                >
                     <MdDelete
-                        size={12}
-                        title="Delete file"
-                        
+                        {...{
+                            size: 12,
+                            title: 'Delete file',
+                        }}
                     />
                 </DeleteButtonContainer>
             )}
@@ -66,7 +76,7 @@ export const CustomListItemIcon = styled('div')({
     display: 'flex',
 })
 
-export const CustomListItem = styled(ListItem)({
+export const CustomListItem = styled(ListItem)(({ isSelected }) => ({
     fontFamily: 'Noto Sans',
     fontSize: '12px',
     minWidth: '200px',
@@ -78,7 +88,11 @@ export const CustomListItem = styled(ListItem)({
     boxShadow: '0 3px 6px rgba(0, 0, 0, 0.1)',
     marginBottom: '8px',
     borderRadius: '4px',
+    backgroundColor: isSelected ? '#3c3c3c' : 'transparent',
     '&:hover': {
         backgroundColor: '#3c3c3c',
     },
-})
+    '&:active': {
+        backgroundColor: 'none',
+    },
+}))

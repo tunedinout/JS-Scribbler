@@ -36,6 +36,7 @@ export default function TabJavascript({ onCodeChange, code }) {
     const [existingFiles, setExistingFiles] = useState([])
     const [currentFile, setCurrentFile] = useState(null)
     const initRef = useRef(null)
+    const [focusInEditor, setFocusInEditor] = useState(false)
 
     const loadFiles = () =>
         getAllFiles().then((files) => {
@@ -45,9 +46,10 @@ export default function TabJavascript({ onCodeChange, code }) {
                 // LOAD LAST USED FILE
                 const lastUsedFile = getLastUsedFile(files)
                 // SET CURRENT FILE
+                // data uRL
                 setCurrentFile(lastUsedFile)
                 setExistingFiles(files)
-                onCodeChange(dataURLToString(lastUsedFile.data), false)
+                onCodeChange(lastUsedFile.data, false)
             } else {
                 // NEW FILE OBJ
                 const newFile = {
@@ -64,7 +66,7 @@ export default function TabJavascript({ onCodeChange, code }) {
                         setCurrentFile(file)
                         // SET EXISTING FILES
                         setExistingFiles([file])
-                        onCodeChange(dataURLToString(file.data), false)
+                        onCodeChange(file.data, false)
                     }
                 })
             }
@@ -79,12 +81,17 @@ export default function TabJavascript({ onCodeChange, code }) {
         }
     }, [initRef])
 
+    // useEffect(() => {
+    //     console.log('currentFile', currentFile.data)
+    // },[currentFile])
+
     useEffect(() => {
+        // console.log(currentFile)
         // save to current file
 
         const saveCurrentFile = async () => {
             console.log(`Current file saved`)
-            await storeFile(
+            const obj = await storeFile(
                 createJSFileObject({
                     name: currentFile?.name,
                     data: code,
@@ -92,8 +99,20 @@ export default function TabJavascript({ onCodeChange, code }) {
                     timestamp: new Date().getTime(),
                 })
             )
+            if (obj) setCurrentFile(obj)
         }
-        if (currentFile) saveCurrentFile()
+        if (currentFile) {
+            saveCurrentFile()
+            // replace in existing files
+            const newExistingFiles = existingFiles.map((file) => {
+                if (file.id === currentFile.id) {
+                    file.data = code
+                }
+
+                return file
+            })
+            setExistingFiles([...newExistingFiles])
+        }
     }, [code])
 
     // wehn renaming do not update timestamp
@@ -114,7 +133,7 @@ export default function TabJavascript({ onCodeChange, code }) {
                         id,
                         name: newFileName,
                         // latest code ### can memoize it but Is that over optimsation ?
-                        data: code,
+                        data,
                         timestamp,
                     })
                 )
@@ -124,52 +143,97 @@ export default function TabJavascript({ onCodeChange, code }) {
         // update indb
         asynFn()
         // initite load file flow
-        loadFiles()
-    }
-    // update current file
-    // passed to file explorer
-    const onFileSelect = ({ id, name, data }) => {
-        setCurrentFile({ id, name, data })
+        // loadFiles()
+        // find the file in existing 
+        const newExistingFiles = existingFiles.map((file) => {
+            if(file.name === oldFileName){
+                    file.name = newFileName;
+            }
+            return file;
+        })
+        setExistingFiles([...newExistingFiles])
     }
     const deleteFileHandler = async ({ id, name }) => {
         console.log(`file ${name} to be deleted with id = ${id}`)
-
-        await removeFile(id);
-        await loadFiles();
-
+        if (await removeFile(id)) {
+            const toBeDeletedIndex = existingFiles.findIndex(
+                ({ id: fileId }) => fileId !== id
+            )
+            const filteredFiles = existingFiles.filter(
+                ({ id: fileId }) => fileId !== id
+            )
+            setExistingFiles(filteredFiles)
+            // currentFile ?
+            if (currentFile.id === id) {
+                if (filteredFiles.length) {
+                    setCurrentFile(existingFiles[0]);
+                    onCodeChange(existingFiles[0].data, false)
+                } else {
+                    const countFiles = existingFiles.length;
+                    const newCurrentFile = existingFiles[(toBeDeletedIndex + 1) % countFiles];
+                    setCurrentFile(newCurrentFile);
+                    onCodeChange(newCurrentFile.data, false)
+                }
+            }
+        }
     }
 
     const createFileHandler = async ({ name }, cb) => {
         // NOTE: Executed cb only after all async processes finish
         const newName = name.includes('.js') ? name : `${name}.js`
         console.log(`file to be created ${newName}`)
-        await storeFile(createJSFileObject({name: newName , data: '', id: generateUUID()}));
-        await loadFiles();
+        const returnedFile = await storeFile(
+            createJSFileObject({ name: newName, data: '', id: generateUUID() })
+        )
+        // add this to existing files
+        setExistingFiles([...existingFiles, returnedFile])
+        // newly create file becomes the current file
+        setCurrentFile(returnedFile);
+        onCodeChange(returnedFile.data, false);
+        // await loadFiles()
         cb();
+        // focus in the editor
+        setFocusInEditor(true);
     }
+
+    const selectFileHandler = (file, event) => {
+        event.preventDefault()
+        if (file.id === currentFile.id) return
+        console.log('selectFileHandler', file)
+        const { data } = file
+        setCurrentFile(file)
+        onCodeChange(data, false)
+    }
+
+    const onChangeHandler = (newStringData, _) => {
+        onCodeChange(newStringData, false)
+    } 
 
     return (
         <div className="esfiddle-js-tab-container">
             <div className="esfiddle-js-tab-container__file-explorer">
-                {/* 
-            TODO: To have onFileSelect method which will use the currentFile - state variable
-            also takes the currentFile
-        */}
                 <FileExplorer
                     {...{
+                        currentFile,
                         createFileHandler,
                         deleteHandler: deleteFileHandler,
                         renameHandler,
+                        selectFileHandler,
                         label: 'Files',
-                        files: existingFiles.map(({ id, name, data }) => ({
-                            id,
-                            name,
-                            data,
-                        })),
+                        files: existingFiles,
                     }}
                 />
             </div>
-            <Editor {...{ onChange: onCodeChange, code }} />
+            {currentFile && (
+                <Editor
+                    {...{
+                        focus: focusInEditor,
+                        doUnfocus: () => setFocusInEditor(false),
+                        onChange: onChangeHandler,
+                        code: code,
+                    }}
+                />
+            )}
         </div>
     )
 }

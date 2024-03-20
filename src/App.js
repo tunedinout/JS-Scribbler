@@ -37,17 +37,19 @@ function App() {
         }
     }
     function onCodeChange(__code, isError) {
-        setCode(__code);
+        setCode(__code)
         setIsCompilationError(isError)
     }
     return (
         <div className="App">
             <ButtonBar
-                onRunButton={handleRunClick}
-                disableRun={isCompilationError}
+                {...{
+                    disableRun: isCompilationError,
+                    onRunButton: handleRunClick,
+                }}
             />
 
-            <TabJavascript {...{onCodeChange, code}}/>
+            <TabJavascript {...{ onCodeChange, code }} />
         </div>
     )
 }
