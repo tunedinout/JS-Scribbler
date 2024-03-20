@@ -17,6 +17,8 @@ export default function FileExplorer({
     renameHandler,
     deleteHandler,
     createFileHandler,
+    selectFileHandler,
+    currentFile,
 }) {
     const [isCollapsed, setIsCollapsed] = useState(false)
     const [isCreateMode, setIsCreateMode] = useState(false)
@@ -44,16 +46,18 @@ export default function FileExplorer({
 
             {!isCollapsed && (
                 <FilesListWrapper>
-                    {files.map(({ name, id }, index) => {
+                    {files.map((file, index) => {
+
                         return (
                             <CustomListItemWrapper
                                 {...{
-                                    file: { name, id },
+                                    file,
                                     renameHandler,
-                                    createFileHandler,
                                     deleteHandler,
+                                    selectFileHandler,
                                     index,
-                                    key: id,
+                                    key: file.id,
+                                    isSelected: currentFile.id === file.id,
                                 }}
                             />
                         )
