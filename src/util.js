@@ -99,7 +99,7 @@ export async function storeFile(file) {
                     // timestamp changed
                     existingFile.timestamp = existingFile.timestamp || new Date().getTime();
                     await filesObjectStore.put(existingFile)
-                    resolve({...existingFile, data: dataURLToString(blob)})
+                    resolve(existingFile)
                 } else {
                     // add time stamp
                     const newFileObj = {
@@ -109,7 +109,7 @@ export async function storeFile(file) {
                         timestamp: file.timestamp || new Date().getTime(),
                     }
                     await filesObjectStore.add(newFileObj)
-                    resolve({...newFileObj, data: dataURLToString(blob)})
+                    resolve(newFileObj)
                 }
             }
             request.onerror = (event) => {
@@ -158,8 +158,7 @@ export async function getAllFiles() {
         return new Promise((resolve, reject) => {
             request.onsuccess = () => {
                 // console.log("getAllFiles - success", request.result);
-                const files = request.result;
-                resolve(transformFiles(files));
+                resolve(request.result)
             }
             request.onerror = (error) => reject(error)
         })
@@ -170,7 +169,7 @@ export async function getAllFiles() {
 }
 /**
  *
- * @returns {File} - with file.data as string
+ * @returns string contents of the last used file
  */
 export async function loadLastUsedFile() {
     try {
@@ -198,7 +197,11 @@ export async function loadLastUsedFile() {
                     const lastFile = cursor.value
                     // console.log("lastFile", lastFile);
                     // since we are storing name in the id
-                    resolve(transformFiles([lastFile][0]));
+                    resolve({
+                        data: dataURLToString(lastFile.data),
+                        id: lastFile.id,
+                        name: lastFile.name,
+                    })
                 } else {
                     // no files were found
                     resolve(null)
@@ -242,15 +245,13 @@ export async function removeFile(id) {
             }
         })
     } catch (error) {
-        console.error(`Error while deleting file id =  ${id}`, error)
+        console.error(`Error while deleting file: ${id}`)
         return null
     }
 }
 
 // helper function for util fn
 export const dataURLToString = (fileDataAsDataURL) => {
-    if(!fileDataAsDataURL)
-    return '';
     const [, base64Data] = fileDataAsDataURL.split(',')
     return atob(base64Data)
 }
@@ -281,17 +282,3 @@ files.reduce((lastFile, currentFile) => {
         ? lastFile
         : currentFile
 })
-
-/**
- * 
- * @param {File[]} files - An array of file objects
- *                          with data as base64
- */
-function transformFiles(files = []){
-    return files.map((file) => {
-        // when fetched from db it should be an object containing 
-        // the data property for all files
-        file.data = dataURLToString(file.data);
-        return file;
-    } )
-}

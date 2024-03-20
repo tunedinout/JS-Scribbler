@@ -11,7 +11,7 @@ const FilesContainer = styled.div`
     align-items: flex-start;
     margin-right: 16px;
     height: 600px;
-    width: 250px;
+    width: 200px;
     position: relative;
 `
 
