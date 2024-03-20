@@ -39,9 +39,16 @@ const CustomTextfield = styled(TextField)(({}) => ({
  * @param {String} code -  code in the editor
  * @param {Boolean} focus -  triggers focus in editor
  * @param {Function} doUnfocus - call back to setting parent focus state
+ * @param {Error} runtimeError - any error that is thrown when code is executed
  * @returns {JSX.Element}
  */
-function Editor({ onChange, code: codeString, focus: isFocus, doUnfocus }) {
+function Editor({
+    onChange,
+    code: codeString,
+    focus: isFocus,
+    doUnfocus,
+    runtimeError,
+}) {
     const [code, setCode] = useState('')
     // applied settings state
     const [tabWidth, setTabWidth] = useState(2)
@@ -59,8 +66,8 @@ function Editor({ onChange, code: codeString, focus: isFocus, doUnfocus }) {
     useEffect(() => {
         if (isFocus && editorRef?.current) {
             console.log(editorRef.current)
-            editorRef?.current?.editor?.focus();
-            doUnfocus();
+            editorRef?.current?.editor?.focus()
+            doUnfocus()
         }
     }, [isFocus, editorRef])
 
@@ -97,10 +104,17 @@ function Editor({ onChange, code: codeString, focus: isFocus, doUnfocus }) {
         setCode(codeString)
     }, [codeString])
 
+    useEffect(
+        () => console.log(`annotations = ${annotations.length}`),
+        [annotations]
+    )
+
     // compiles user code
     useEffect(() => {
+        console.log('code is changing', code)
         if (code) {
             const err = compileJavaScript(code)
+            console.log(`error after compilation - ${err}`)
             if (err) {
                 if (err?.loc) {
                     const { line, column } = err.loc
@@ -132,6 +146,25 @@ function Editor({ onChange, code: codeString, focus: isFocus, doUnfocus }) {
             }
         }
     }, [code])
+
+    // captures run time error
+    useEffect(() => {
+        console.log('runtimeError', runtimeError)
+        if (runtimeError) {
+            console.log(`in here`)
+            setAnnotations([
+                ...annotations,
+                {
+                    row: 0,
+                    column: 0,
+                    text:
+                        runtimeError?.message ||
+                        `Error occurred at (${1}:${1})`,
+                    type: 'error',
+                },
+            ])
+        }
+    }, [runtimeError])
 
     useEffect(() => {
         if (editorRef?.current) console.log(editorRef?.current)

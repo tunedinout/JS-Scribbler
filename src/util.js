@@ -23,7 +23,7 @@ export function compileJavaScript(code) {
         return null
     } catch (error) {
         // Handle compilation errors
-
+        console.log(error)
         return error
     }
 }
@@ -76,7 +76,12 @@ export function openIndexedDB() {
 export async function storeFile(file) {
     console.log(`storing file with id`, file.id)
     try {
-        const { id: fileId, name: fileName, data: fileStringdata, timestamp} = file;
+        const {
+            id: fileId,
+            name: fileName,
+            data: fileStringdata,
+            timestamp,
+        } = file
         const db = await openIndexedDB()
         const blob = await fileToDataURL(file)
 
@@ -95,11 +100,12 @@ export async function storeFile(file) {
                     // data changed
                     existingFile.data = blob
                     // name changed
-                    existingFile.name = fileName;
+                    existingFile.name = fileName
                     // timestamp changed
-                    existingFile.timestamp = existingFile.timestamp || new Date().getTime();
+                    existingFile.timestamp =
+                        existingFile.timestamp || new Date().getTime()
                     await filesObjectStore.put(existingFile)
-                    resolve({...existingFile, data: dataURLToString(blob)})
+                    resolve({ ...existingFile, data: dataURLToString(blob) })
                 } else {
                     // add time stamp
                     const newFileObj = {
@@ -109,16 +115,14 @@ export async function storeFile(file) {
                         timestamp: file.timestamp || new Date().getTime(),
                     }
                     await filesObjectStore.add(newFileObj)
-                    resolve({...newFileObj, data: dataURLToString(blob)})
+                    resolve({ ...newFileObj, data: dataURLToString(blob) })
                 }
             }
             request.onerror = (event) => {
                 console.error('Error retrieving file:', event.target.error)
-                reject(null);
+                reject(null)
             }
         })
-
-     
     } catch (error) {
         console.error(`Error storing file: `, error)
     }
@@ -158,8 +162,8 @@ export async function getAllFiles() {
         return new Promise((resolve, reject) => {
             request.onsuccess = () => {
                 // console.log("getAllFiles - success", request.result);
-                const files = request.result;
-                resolve(transformFiles(files));
+                const files = request.result
+                resolve(transformFiles(files))
             }
             request.onerror = (error) => reject(error)
         })
@@ -198,7 +202,7 @@ export async function loadLastUsedFile() {
                     const lastFile = cursor.value
                     // console.log("lastFile", lastFile);
                     // since we are storing name in the id
-                    resolve(transformFiles([lastFile][0]));
+                    resolve(transformFiles([lastFile][0]))
                 } else {
                     // no files were found
                     resolve(null)
@@ -249,8 +253,7 @@ export async function removeFile(id) {
 
 // helper function for util fn
 export const dataURLToString = (fileDataAsDataURL) => {
-    if(!fileDataAsDataURL)
-    return '';
+    if (!fileDataAsDataURL) return ''
     const [, base64Data] = fileDataAsDataURL.split(',')
     return atob(base64Data)
 }
@@ -270,28 +273,26 @@ export function generateUUID() {
 }
 
 /**
- * 
- * @param {File} files : list of file objects {id,name,data,timestamp} 
+ *
+ * @param {File} files : list of file objects {id,name,data,timestamp}
  */
 export const getLastUsedFile = (files) =>
-files.reduce((lastFile, currentFile) => {
-    const lastFileTimestamp = lastFile.timestamp
-    const currentFileTimestamp = lastFile.timestamp
-    return lastFileTimestamp > currentFileTimestamp
-        ? lastFile
-        : currentFile
-})
+    files.reduce((lastFile, currentFile) => {
+        const lastFileTimestamp = lastFile.timestamp
+        const currentFileTimestamp = lastFile.timestamp
+        return lastFileTimestamp > currentFileTimestamp ? lastFile : currentFile
+    })
 
 /**
- * 
+ *
  * @param {File[]} files - An array of file objects
  *                          with data as base64
  */
-function transformFiles(files = []){
+function transformFiles(files = []) {
     return files.map((file) => {
-        // when fetched from db it should be an object containing 
+        // when fetched from db it should be an object containing
         // the data property for all files
-        file.data = dataURLToString(file.data);
-        return file;
-    } )
+        file.data = dataURLToString(file.data)
+        return file
+    })
 }
