@@ -22,12 +22,19 @@ once indexdb is being used for most file storage needs
 function App() {
     const [code, setCode] = useState('')
     const [isCompilationError, setIsCompilationError] = useState(false)
+    const [runtimeError, setRuntimeError] = useState(null)
     const [isRun, SetIsRun] = useState(false)
 
     useEffect(() => {
         if (isRun) {
-            runCode(code)
-            SetIsRun(false)
+            try {
+                runCode(code)
+            } catch (error) {
+                setRuntimeError(error)
+                console.error(`error occured after running code`, error)
+            } finally {
+                SetIsRun(false)
+            }
         }
     }, [code, isRun])
 
@@ -49,7 +56,7 @@ function App() {
                 }}
             />
 
-            <TabJavascript {...{ onCodeChange, code }} />
+            <TabJavascript {...{ onCodeChange, code, runtimeError }} />
         </div>
     )
 }

@@ -30,9 +30,12 @@ import { defaultJSFileName } from '../../../constants'
  *      2. selected file change handler
  *
  * @param {object} props - component props
+ * @param {Function} props.onCodeChange
+ * @param {String} props.code
+ * @param {Error} Props.runtimeError
  * @returns {JSX.Element}
  */
-export default function TabJavascript({ onCodeChange, code }) {
+export default function TabJavascript({ onCodeChange, code, runtimeError }) {
     const [existingFiles, setExistingFiles] = useState([])
     const [currentFile, setCurrentFile] = useState(null)
     const initRef = useRef(null)
@@ -144,12 +147,12 @@ export default function TabJavascript({ onCodeChange, code }) {
         asynFn()
         // initite load file flow
         // loadFiles()
-        // find the file in existing 
+        // find the file in existing
         const newExistingFiles = existingFiles.map((file) => {
-            if(file.name === oldFileName){
-                    file.name = newFileName;
+            if (file.name === oldFileName) {
+                file.name = newFileName
             }
-            return file;
+            return file
         })
         setExistingFiles([...newExistingFiles])
     }
@@ -166,12 +169,13 @@ export default function TabJavascript({ onCodeChange, code }) {
             // currentFile ?
             if (currentFile.id === id) {
                 if (filteredFiles.length) {
-                    setCurrentFile(existingFiles[0]);
+                    setCurrentFile(existingFiles[0])
                     onCodeChange(existingFiles[0].data, false)
                 } else {
-                    const countFiles = existingFiles.length;
-                    const newCurrentFile = existingFiles[(toBeDeletedIndex + 1) % countFiles];
-                    setCurrentFile(newCurrentFile);
+                    const countFiles = existingFiles.length
+                    const newCurrentFile =
+                        existingFiles[(toBeDeletedIndex + 1) % countFiles]
+                    setCurrentFile(newCurrentFile)
                     onCodeChange(newCurrentFile.data, false)
                 }
             }
@@ -188,12 +192,12 @@ export default function TabJavascript({ onCodeChange, code }) {
         // add this to existing files
         setExistingFiles([...existingFiles, returnedFile])
         // newly create file becomes the current file
-        setCurrentFile(returnedFile);
-        onCodeChange(returnedFile.data, false);
+        setCurrentFile(returnedFile)
+        onCodeChange(returnedFile.data, false)
         // await loadFiles()
-        cb();
+        cb()
         // focus in the editor
-        setFocusInEditor(true);
+        setFocusInEditor(true)
     }
 
     const selectFileHandler = (file, event) => {
@@ -207,7 +211,7 @@ export default function TabJavascript({ onCodeChange, code }) {
 
     const onChangeHandler = (newStringData, _) => {
         onCodeChange(newStringData, false)
-    } 
+    }
 
     return (
         <div className="esfiddle-js-tab-container">
@@ -231,6 +235,7 @@ export default function TabJavascript({ onCodeChange, code }) {
                         doUnfocus: () => setFocusInEditor(false),
                         onChange: onChangeHandler,
                         code: code,
+                        runtimeError,
                     }}
                 />
             )}
