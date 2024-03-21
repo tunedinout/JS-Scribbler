@@ -161,8 +161,14 @@ function Editor({
                         runtimeError?.message ||
                         `Error occurred at (${1}:${1})`,
                     type: 'error',
+                    isRuntime: true,
                 },
             ])
+        }else {
+            // remove all marked run time 
+            // errors
+            const newAnnotations = annotations.filter(({isRuntime}) => !Boolean(isRuntime));
+            setAnnotations([...newAnnotations]);
         }
     }, [runtimeError])
 

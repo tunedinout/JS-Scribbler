@@ -31,11 +31,12 @@ import { defaultJSFileName } from '../../../constants'
  *
  * @param {object} props - component props
  * @param {Function} props.onCodeChange
+ * @param {Function} props.onFileChange
  * @param {String} props.code
  * @param {Error} Props.runtimeError
  * @returns {JSX.Element}
  */
-export default function TabJavascript({ onCodeChange, code, runtimeError }) {
+export default function TabJavascript({ onCodeChange, onFileChange, code, runtimeError }) {
     const [existingFiles, setExistingFiles] = useState([])
     const [currentFile, setCurrentFile] = useState(null)
     const initRef = useRef(null)
@@ -206,7 +207,8 @@ export default function TabJavascript({ onCodeChange, code, runtimeError }) {
         console.log('selectFileHandler', file)
         const { data } = file
         setCurrentFile(file)
-        onCodeChange(data, false)
+        onCodeChange(data, false);
+        onFileChange();
     }
 
     const onChangeHandler = (newStringData, _) => {

@@ -47,6 +47,9 @@ function App() {
         setCode(__code)
         setIsCompilationError(isError)
     }
+    function onFileChange() {
+        setRuntimeError(null);
+    }
     return (
         <div className="App">
             <ButtonBar
@@ -56,7 +59,7 @@ function App() {
                 }}
             />
 
-            <TabJavascript {...{ onCodeChange, code, runtimeError }} />
+            <TabJavascript {...{ onCodeChange, onFileChange, code, runtimeError }} />
         </div>
     )
 }
