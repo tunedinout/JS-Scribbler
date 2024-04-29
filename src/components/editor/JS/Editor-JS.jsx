@@ -2,10 +2,12 @@ import React, { useEffect, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
 import './Editor-JS.css'
 import AceEditor from 'react-ace'
-import { compileJavaScript } from '../../../util'
+import { compileJavaScript } from '../../../indexedDB.util'
 import { TextField } from '@mui/material'
 import { styled } from '@mui/material/styles'
+import { useEditor } from './hooks'
 
+// REMOVE This
 const CustomTextfield = styled(TextField)(({}) => ({
     '& .MuiOutlinedInput-root': {
         '& fieldset': {
@@ -44,138 +46,25 @@ const CustomTextfield = styled(TextField)(({}) => ({
  */
 function Editor({
     onChange,
-    code: codeString,
-    focus: isFocus,
+    // APP.js maintains code for execution and other things
+    code,
+    focus,
     doUnfocus,
     runtimeError,
 }) {
-    const [code, setCode] = useState('')
-    // applied settings state
-    const [tabWidth, setTabWidth] = useState(2)
-    const [highlightActiveLine, setHighlightActiveLine] = useState(false)
-    const [showLineNumbers, setShowLineNumbers] = useState(true)
-    const [showGutter, setShowGutter] = useState(true)
-    const [fontSize, setFontSize] = useState(12)
-
-    // annotations for errors
-    const [annotations, setAnnotations] = useState([])
-
-    // editor ref
-    const editorRef = useRef(null)
-
-    useEffect(() => {
-        if (isFocus && editorRef?.current) {
-            console.log(editorRef.current)
-            editorRef?.current?.editor?.focus()
-            doUnfocus()
-        }
-    }, [isFocus, editorRef])
-
-    // fetch settings.json`
-    useEffect(() => {
-        fetch('settings.json')
-            .then((response) => response.json())
-            .then(
-                ({
-                    tabWidth,
-                    showLineNumbers,
-                    showGutter,
-                    fontSize,
-                    highlightActiveLine,
-                }) => {
-                    setTabWidth(tabWidth)
-                    setShowLineNumbers(showLineNumbers)
-                    setShowGutter(showGutter)
-                    setFontSize(fontSize)
-                    setHighlightActiveLine(highlightActiveLine)
-                }
-            )
-            .catch((err) => {
-                console.error('Error fetching tab setting...', err)
-                setTabWidth(2)
-                setShowLineNumbers(true)
-                setShowGutter(true)
-                setFontSize(12)
-                setHighlightActiveLine(false)
-            })
-    }, [])
-
-    useEffect(() => {
-        setCode(codeString)
-    }, [codeString])
-
-    useEffect(
-        () => console.log(`annotations = ${annotations.length}`),
-        [annotations]
-    )
-
-    // compiles user code
-    useEffect(() => {
-        console.log('code is changing', code)
-        if (code) {
-            const err = compileJavaScript(code)
-            console.log(`error after compilation - ${err}`)
-            if (err) {
-                if (err?.loc) {
-                    const { line, column } = err.loc
-                    // check if it already exists or not
-                    if (
-                        !annotations.find(
-                            ({ row, column: col, text, type }) =>
-                                row == line - 1 &&
-                                col == column &&
-                                (text === err?.message ||
-                                    (`Error occurred at (${line}:${column})` &&
-                                        type == 'error'))
-                        )
-                    )
-                        setAnnotations([
-                            ...annotations,
-                            {
-                                row: line - 1,
-                                column,
-                                text:
-                                    err?.message ||
-                                    `Error occurred at (${line}:${column})`,
-                                type: 'error',
-                            },
-                        ])
-                }
-            } else {
-                setAnnotations([])
-            }
-        }
-    }, [code])
-
-    // captures run time error
-    useEffect(() => {
-        console.log('runtimeError', runtimeError)
-        if (runtimeError) {
-            console.log(`in here`)
-            setAnnotations([
-                ...annotations,
-                {
-                    row: 0,
-                    column: 0,
-                    text:
-                        runtimeError?.message ||
-                        `Error occurred at (${1}:${1})`,
-                    type: 'error',
-                },
-            ])
-        }
-    }, [runtimeError])
-
-    useEffect(() => {
-        if (editorRef?.current) console.log(editorRef?.current)
-    }, [editorRef])
-
-    // lift state for this
-    const handleChange = (newCode) => {
-        // const newCode = e.target.value;
-        onChange(newCode, Boolean(annotations.length))
-        setCode(newCode)
-    }
+    const {
+        editorRef,
+        annotations,
+        handleChange,
+        fontSize,
+        highlightActiveLine,
+    } = useEditor({
+        code,
+        focus,
+        doUnfocus,
+        runtimeError,
+        onChange,
+    })
 
     // handler that updates renamed file in db
 
@@ -183,6 +72,7 @@ function Editor({
         <div className="esfiddle-js-editor-container">
             <AceEditor
                 ref={editorRef}
+                // error annotations
                 annotations={annotations}
                 value={code}
                 mode={'javascript'}
