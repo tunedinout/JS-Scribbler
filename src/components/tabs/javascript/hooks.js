@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useCallback } from 'react'
 import {
     createJSFileObject,
     generateUUID,
@@ -6,19 +6,44 @@ import {
     getLastUsedFile,
     storeFile,
     removeFile,
-} from '../../../util'
-
+    getExistingSesionObjects,
+} from '../../../indexedDB.util'
 import { defaultJSFileName } from '../../../constants'
-export function useTabJS({ onCodeChange, onFileChange, code }) {
+import { debounce, getLogger } from '../../../util'
+
+export function useTabJS({ onCodeChange, onFileChange, code, driveFolderId }) {
+    const logger = getLogger(`hooks.js | useTabJS`)
+    const log = logger(`userTabJS`)
     const [existingFiles, setExistingFiles] = useState([])
     const [currentFile, setCurrentFile] = useState(null)
     const initRef = useRef(null)
-    const [focusInEditor, setFocusInEditor] = useState(false)
+    const [focusInEditor, setFocusInEditor] = useState(false);
+    const [isUploading, setIsUploading] = useState(false)
+
+    // unused function
+    async function loadFilesFromDrive(folderId) {
+        const log = logger(`loadFiles`);
+        log(`folderId`, folderId)
+        const result = await getExistingSesionObjects();
+        const { accessToken } = result[0];
+        const response = await fetch(`http://localhost:3000/drive/load-files`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                accessToken,
+                folderId
+            })
+        });
+        const filesData = await response.json();
+        log(`filesdata`, filesData);
+
+    }
 
     const loadFiles = () =>
         getAllFiles().then((files) => {
             console.log(`the data has been loaded`, files)
-
             if (files.length) {
                 // LOAD LAST USED FILE
                 const lastUsedFile = getLastUsedFile(files)
@@ -62,24 +87,59 @@ export function useTabJS({ onCodeChange, onFileChange, code }) {
     //     console.log('currentFile', currentFile.data)
     // },[currentFile])
 
+    const saveCurrentFile = debounce(useCallback(async () => {
+        if (isUploading) return;
+        const log = logger(`saveCurrentFile`)
+        console.log(`Current file saved`)
+        const fileObj = createJSFileObject({
+            name: currentFile?.name,
+            data: code,
+            id: currentFile?.id,
+            timestamp: new Date().getTime(),
+        })
+        log('fileObj', fileObj)
+        const obj = await storeFile(fileObj)
+        const formData = new FormData()
+        formData.append('file', fileObj)
+        // formData.append('value', 'dfdfdfd')
+        log(`formData`, formData.get('file'))
+        formData.append('folderId', driveFolderId)
+        const result = await getExistingSesionObjects()
+        const accessToken = result[0]?.accessToken || ''
+        // if its not uploading upload 
+        // which means an infinite loop
+        if (accessToken && driveFolderId) {
+            formData.append('accessToken', accessToken)
+            try {
+                // check if already one promise of this is not pending 
+                setIsUploading(true)
+                await fetch(`http://localhost:3000/drive/file/upload`, {
+                    method: 'POST',
+                    body: formData,
+                })
+
+            } catch (error) {
+                log(error);
+            }
+            finally {
+                setIsUploading(false);
+            }
+        }
+
+        // check if the user is logged in
+
+        if (obj) setCurrentFile(obj)
+    }, [isUploading, code, currentFile, storeFile, getExistingSesionObjects]), 500)
+
     useEffect(() => {
         // console.log(currentFile)
         // save to current file
 
-        const saveCurrentFile = async () => {
-            console.log(`Current file saved`)
-            const obj = await storeFile(
-                createJSFileObject({
-                    name: currentFile?.name,
-                    data: code,
-                    id: currentFile?.id,
-                    timestamp: new Date().getTime(),
-                })
-            )
-            if (obj) setCurrentFile(obj)
-        }
+
         if (currentFile) {
-            saveCurrentFile()
+            logger(`[code, currentFile] =>`);
+            log(`inside current file`)
+            saveCurrentFile();
             // replace in existing files
             const newExistingFiles = existingFiles.map((file) => {
                 if (file.id === currentFile.id) {
@@ -89,8 +149,25 @@ export function useTabJS({ onCodeChange, onFileChange, code }) {
                 return file
             })
             setExistingFiles([...newExistingFiles])
+            // save current file to drive
+        }
+        return () => {
+            saveCurrentFile.cleanUp()
         }
     }, [code])
+
+    useEffect(() => {
+        // if drives files are diffrent 
+        const loadFilesFromDrive = async () => {
+            const log = logger(`loadFilesFromDrive`)
+            if (driveFolderId && existingFiles.length) {
+                const response = await loadFilesFromDrive(driveFolderId);
+                const jsonResponse = await response.json();
+                log(`jsonResponse`, jsonResponse);
+            }
+        }
+
+    }, [driveFolderId, existingFiles])
 
     // wehn renaming do not update timestamp
     const renameHandler = (oldFileName, newFileName) => {

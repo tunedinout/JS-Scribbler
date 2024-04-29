@@ -22,6 +22,7 @@ import { useTabJS } from './hooks'
  * @param {Function} props.onFileChange
  * @param {String} props.code
  * @param {Error} Props.runtimeError
+ * @param {String} props.driveFolderId
  * @returns {JSX.Element}
  */
 export default function TabJavascript({
@@ -30,6 +31,7 @@ export default function TabJavascript({
     // code from app
     code,
     runtimeError,
+    driveFolderId,
 }) {
     const {
         currentFile,
@@ -41,7 +43,7 @@ export default function TabJavascript({
         focus,
         doUnfocus,
         onChange,
-    } = useTabJS({ onCodeChange, onFileChange, code })
+    } = useTabJS({ onCodeChange, onFileChange, code, driveFolderId })
 
     return (
         <div className="esfiddle-js-tab-container">

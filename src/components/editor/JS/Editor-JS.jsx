@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
 import './Editor-JS.css'
 import AceEditor from 'react-ace'
-import { compileJavaScript } from '../../../util'
+import { compileJavaScript } from '../../../indexedDB.util'
 import { TextField } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import { useEditor } from './hooks'
@@ -63,6 +63,7 @@ function Editor({
         focus,
         doUnfocus,
         runtimeError,
+        onChange,
     })
 
     // handler that updates renamed file in db

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { compileJavaScript } from '../../../util';
+import { compileJavaScript } from '../../../indexedDB.util';
 
 export function useEditor({
     onChange,
