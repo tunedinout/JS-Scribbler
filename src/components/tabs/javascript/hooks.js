@@ -132,10 +132,8 @@ export function useTabJS({ onCodeChange, onFileChange, code, driveFolderId }) {
     }, [isUploading, code, currentFile, storeFile, getExistingSesionObjects]), 500)
 
     useEffect(() => {
-        // console.log(currentFile)
-        // save to current file
 
-
+        // current file must not be null / undefined
         if (currentFile) {
             logger(`[code, currentFile] =>`);
             log(`inside current file`)
@@ -154,6 +152,8 @@ export function useTabJS({ onCodeChange, onFileChange, code, driveFolderId }) {
         return () => {
             saveCurrentFile.cleanUp()
         }
+        // do not include current file
+        // causes infinite loop
     }, [code])
 
     useEffect(() => {
