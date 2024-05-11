@@ -1,8 +1,8 @@
 .esfiddle-js-tab-container {
     color: white;
     display: flex;
-    flex-direction: row;
-    width: fit-content;
+    width: 95%;
+    height: 100%
 }
 .esfiddle-js-tab-container__file-explorer{
     position: relative;

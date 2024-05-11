@@ -1,190 +1,115 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
-import {
-    getExistingSesionObjects,
-    runCode,
-    updateSessionObject,
-} from './indexedDB.util'
+import { runCode } from './indexedDB.util'
 import './App.css'
 import Oauth2Callback from './pages/Oauth2Callback'
 import HomePage from './pages/HomePage'
-import { getLogger, redirectToAuth } from './util'
+import { getLogger, getLoginDetails } from './util'
+import { createDriveAppFolder, refreshAccessToken } from './api'
 
-/*
-TODOS: 
---------
 
-Add Grid layout
-
-once indexdb is being used for most file storage needs 
-// is there a way to include cache
-
-*/
 const logger = getLogger('APP')
 function App() {
-    const [code, setCode] = useState('')
-    const [isCompilationError, setIsCompilationError] = useState(false)
-    const [runtimeError, setRuntimeError] = useState(null)
-    const [isRun, SetIsRun] = useState(false)
-    const [backupDriveFolderId, setBackupDriveFolderId] = useState(null)
+    const [driveFolderId, setDriveFolderId] = useState(null)
+    const [accessToken, setAccessToken] = useState('')
+    const [expiryDate, setExpiryDate] = useState(0)
+    const [refreshToken, setRefreshToken] = useState('')
 
     useEffect(() => {
-        if (isRun) {
-            try {
-                runCode(code)
-            } catch (error) {
-                setRuntimeError(error)
-                console.error(`error occured after running code`, error)
-            } finally {
-                SetIsRun(false)
-            }
-        }
-    }, [code, isRun])
+        logger(`access token effect`)(`accessToken`, accessToken)
+    }, [accessToken])
 
-    const handleRunClick = function () {
-        if (!isCompilationError) {
-            SetIsRun(true)
-        }
-    }
-    function onCodeChange(__code, isError) {
-        setCode(__code)
-        setIsCompilationError(isError)
-    }
-    function onFileChange() {
-        setRuntimeError(null)
+    const oauth2CallbackHandler = ({
+        accessToken,
+        expiryDate,
+        refreshToken,
+    }) => {
+        setAccessToken(accessToken)
+        setRefreshToken(refreshToken)
+        setExpiryDate(expiryDate)
     }
 
-    async function loadFiles(folderId) {
-        const log = logger(`loadFiles`);
-        log(`folderId`, folderId)
-        const result = await getExistingSesionObjects();
-        const { accessToken } = result[0];
-        const response =   await fetch(`http://localhost:3000/drive/load-files`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                accessToken,
-                folderId
-            })
-        });
-        const filesData = await response.json();
-        log(`filesdata`,filesData);
+    useEffect(() => {
+        const loadAuthDetails = async () => {
+            const log = logger(`loadAuthDetails`)
+            // this redirect to auth URL if the tokens are not defined
+            // or not set
+            const loginResponse = await getLoginDetails()
+            log(`loginResponse`, loginResponse)
 
-    }
+            // if there is nothing in the indexeddb i.e login details
+            // ususally the first time login
+            // at this time - loginResponse is undefined
 
-    const handleSession = useCallback(async () => {
-        const log = logger(`handleSession - inline fn`)
-        //add session handler
-        const result = await getExistingSesionObjects()
-        if (result.length) {
-            log('handleSession - result', result)
-            // session obj at 0
-            const {
-                accessToken,
-                refreshToken: existingRefreshToken,
-                email,
-                name,
-                expiryDate,
-            } = result[0]
-
-            if (!(accessToken || existingRefreshToken)) {
-                log(`redirect to Auth block`)
-                await redirectToAuth()
+            if (!loginResponse || loginResponse?.message) {
+                // handle the errors
                 return
             }
+            const { accessToken, refreshToken, expiryDate } = loginResponse
 
-            // token is expired refresh token
-            if (expiryDate < Date.now()) {
-                setBackupDriveFolderId(null)
-                const response = await fetch(
-                    `http://localhost:3000/auth/google/refresh`,
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            refreshToken: existingRefreshToken,
-                            email,
-                        }),
-                    }
-                )
-                const jsonResponse = await response.json()
-                const {
-                    accessToken,
-                    refreshToken,
-                    idToken,
-                    expiryDate,
-                    type = 'Bearer',
-                } = jsonResponse
-                // lets update session
-                await updateSessionObject(
-                    accessToken,
-                    idToken,
-                    expiryDate,
-                    refreshToken,
-                    email
-                )
-                log(`refreshEndPoint`, jsonResponse)
-            } else {
-                log(`backupDriveFolder`, backupDriveFolderId)
-                if (backupDriveFolderId) return
-                // get current session object
-                const response = await fetch(
-                    `http://localhost:3000/drive/create/folder`,
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            accessToken,
-                        }),
-                    }
-                )
-                // get the id of the created / existing folder
-                const jsonResponse = await response.json()
-                const { id } = jsonResponse
-                setBackupDriveFolderId(id)
-                // save current file in drie
+            setAccessToken(accessToken)
+            setRefreshToken(refreshToken)
+            setExpiryDate(expiryDate)
+        }
 
-                log('jsonResponse', jsonResponse)
+        loadAuthDetails()
+    }, [])
+
+    useEffect(() => {
+        // assume expiry date is only defined
+        if (expiryDate && refreshToken) {
+            const timer = setTimeout(
+                async () => {
+                    const {
+                        accessToken,
+                        refreshToken: newRefreshToken,
+                        expiryDate,
+                    } = await refreshAccessToken(refreshToken)
+                    setAccessToken(accessToken)
+                    setRefreshToken(newRefreshToken)
+                    setExpiryDate(expiryDate)
+                },
+                Math.max(expiryDate - Date.now(), 0)
+            )
+
+            return () => clearTimeout(timer)
+        }
+    }, [expiryDate, refreshToken])
+
+    useEffect(() => {
+        // this should only run once i.e the first time accessToken is set
+        if (!driveFolderId && accessToken) {
+            const createAppFolder = async () => {
+                const log = logger(`createAppFolder`)
+                const folderCreateResponse =
+                    await createDriveAppFolder(accessToken)
+                log(`folderCreateResponse -> `, folderCreateResponse)
+                if (!folderCreateResponse?.message) {
+                    log(`received esfiddle folderid`, folderCreateResponse?.id)
+                    setDriveFolderId(folderCreateResponse?.id)
+                } else {
+                    // user is shown the error
+                    return
+                }
             }
-        } else {
-            // redirect to auth
-
-            redirectToAuth()
+            createAppFolder()
         }
-    }, [backupDriveFolderId])
+    }, [driveFolderId, accessToken])
 
-    useEffect(() => {
-       const id =  setInterval(handleSession, 10000)
-        return () => clearInterval(id)
-    }, [handleSession])
-
-    useEffect(() => {
-        if(backupDriveFolderId) {
-            loadFiles(backupDriveFolderId);
-        }
-    }, [backupDriveFolderId])
     return (
         <Router>
             <Routes>
-                <Route path="/oauth2callback" element={<Oauth2Callback />} />
+                <Route
+                    path="/oauth2callback"
+                    element={<Oauth2Callback {...{ oauth2CallbackHandler }} />}
+                />
                 <Route
                     path="/"
                     element={
                         <HomePage
                             {...{
-                                handleRunClick,
-                                onCodeChange,
-                                onFileChange,
-                                isCompilationError,
-                                runtimeError,
-                                code,
-                                driveFolderId: backupDriveFolderId,
+                                driveFolderId,
+                                accessToken,
                             }}
                         />
                     }

@@ -1,31 +1,38 @@
-import React from 'react'
+import React, { useState } from 'react'
 import ButtonBar from '../components/button-bar/ButtonBar'
 import GoogleLoginWidget from '../components/login/GoogleLoginWidget'
-import TabJavascript from '../components/tabs/javascript/TabJavascript'
+import CodingGround from '../components/content/coding-ground/CodingGround'
 
 // create session management component that works at app level
 
 export default function HomePage({
-    isCompilationError,
-    runtimeError,
     code,
-    onFileChange,
-    onCodeChange,
-    handleRunClick,
-    driveFolderId
+    driveFolderId,
+    accessToken,
 }) {
+    const [isRun, setIsRun] = useState(false);
+    const [disableRun, setDisableRun ] = useState(false);
+
     return (
         <div className="App">
             <ButtonBar
                 {...{
-                    disableRun: isCompilationError,
-                    onRunButton: handleRunClick,
+                    disableRun,
+                    onRunButton: () => setIsRun(true) ,
                 }}
             />
             <GoogleLoginWidget />
+            <CodingGround
+                {...{
+                    // TODO: lets this component be responsible saving the said file
 
-            <TabJavascript
-                {...{ onCodeChange, onFileChange, code, runtimeError, driveFolderId }}
+                    isRun,
+                    setIsRun,
+                    setDisableRun,
+                    code,
+                    driveFolderId,
+                    accessToken,
+                }}
             />
         </div>
     )

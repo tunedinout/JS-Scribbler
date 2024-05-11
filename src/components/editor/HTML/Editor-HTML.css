@@ -59,7 +59,7 @@ button:hover {
 .ace-github-dark {
   background-color: #212020
 }
-.esfiddle-js-tab-filename-input{
+.esfiddle-html-tab-filename-input{
   width: 250px;
   display: flex;
   flex-direction: row;
@@ -70,18 +70,17 @@ button:hover {
   /* margin-bottom: 4px;
   margin-top: 4px; */
 }
-.esfiddle-js-tab-filename-input__button{
+.esfiddle-html-tab-filename-input__button{
   background: green;
 }
-.esfiddle-js-tab-filename-input__edit{
+.esfiddle-html-tab-filename-input__edit{
   display: flex;
   vertical-align: center;
 }
-.esfiddle-js-editor-container {
+.esfiddle-html-editor-container {
   display: flex;
   flex-direction: column;
   width: 100%;
   height: 94%;
-  /* height: 700px; */
   margin-right: 16px;
 }

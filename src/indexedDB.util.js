@@ -1,35 +1,7 @@
 import { getLogger } from './util'
 
 const logger = getLogger(`indexedDB.util.js`)
-export function runCode(code) {
-    code = `
-   function __esFiddle__wrapper(){
-    ${code}
-   }
-   __esFiddle__wrapper();
-   `
 
-    try {
-        let evalFn = new Function(code)
-        evalFn()
-    } catch (error) {
-        throw error
-    }
-}
-export function compileJavaScript(code) {
-    if (!window.Babel) return
-    try {
-        // Compile JavaScript code
-        const compiledCode = window.Babel.transform(code, {
-            presets: ['es2017'],
-        }).code
-        return null
-    } catch (error) {
-        // Handle compilation errors
-        console.log(error)
-        return error
-    }
-}
 export function createJSFileObject({ name: filename, data: code, id }) {
     const blob = new Blob([code], { type: 'text/javascript' })
     // why use an array containing the blob ?
@@ -61,9 +33,7 @@ export function openIndexedDBForSessionIO() {
     })
 }
 
-export async function deleteSessionStore() {
-    
-}
+export async function deleteSessionStore() {}
 
 export async function storeSessionObject({
     accessToken,
@@ -72,15 +42,15 @@ export async function storeSessionObject({
     refreshToken,
     expiryDate,
 }) {
-    const log = logger(`storeSessionObject func`);
+    const log = logger(`storeSessionObject func`)
     const sessionObject = { accessToken, email, name, refreshToken, expiryDate }
     log('StoreSessionObject', sessionObject)
     return new Promise(async (resolve, reject) => {
         try {
             // cclear session data
-            await clearExistingSessionObject();
-            await saveSessionObject(sessionObject);
-            resolve(sessionObject);
+            await clearExistingSessionObject()
+            await saveSessionObject(sessionObject)
+            resolve(sessionObject)
         } catch (error) {
             reject(error)
         }
@@ -98,7 +68,7 @@ export async function updateSessionObject(
     refreshToken,
     email
 ) {
-    const log = logger(`updateSessionObject`);
+    const log = logger(`updateSessionObject`)
     return new Promise(async (resolve, reject) => {
         const db = await openIndexedDBForSessionIO()
         const transaction = db.transaction(['session'], 'readwrite')
@@ -112,7 +82,7 @@ export async function updateSessionObject(
             // resolve(res)
             // do not resolve add the new object
             const transaction = db.transaction(['session'], 'readwrite')
-            const sessionObjectStore = transaction.objectStore('session') 
+            const sessionObjectStore = transaction.objectStore('session')
             const addRequest = sessionObjectStore.add({
                 email,
                 accessToken,
@@ -128,7 +98,7 @@ export async function updateSessionObject(
     })
 }
 async function saveSessionObject(obj) {
-    const log = logger(`saveSessionObject`);
+    const log = logger(`saveSessionObject`)
     return new Promise(async (resolve, reject) => {
         const db = await openIndexedDBForSessionIO()
         const transaction = db.transaction(['session'], 'readwrite')
@@ -145,18 +115,17 @@ async function saveSessionObject(obj) {
 }
 async function clearExistingSessionObject() {
     return new Promise(async (resolve, request) => {
-        const db = await openIndexedDBForSessionIO();
-        const transaction = db.transaction(['session'], 'readwrite');
+        const db = await openIndexedDBForSessionIO()
+        const transaction = db.transaction(['session'], 'readwrite')
         const sessionObjectStore = transaction.objectStore('session')
-        const sessionRequest = sessionObjectStore.clear();
+        const sessionRequest = sessionObjectStore.clear()
         sessionRequest.onsuccess = () => {
-            resolve();
+            resolve()
         }
-       
     })
 }
 export async function getExistingSesionObjects() {
-    const log = logger(`getExistingSesionObjects`);
+    const log = logger(`getExistingSesionObjects`)
     return new Promise(async (resolve, reject) => {
         try {
             const db = await openIndexedDBForSessionIO()
@@ -169,7 +138,7 @@ export async function getExistingSesionObjects() {
 
             request.onerror = (e) => reject(e)
             request.onsuccess = () => {
-               log('getExistingSesionObjects', request.result)
+                log('getExistingSesionObjects', request.result)
                 resolve(request.result)
             }
         } catch (error) {
@@ -201,7 +170,7 @@ export function openIndexedDBForFileIO() {
     })
 }
 
-/**
+/**DECOMMISSION
  * Updates and/Or creates a file object
  * in the indexedDB
  *
@@ -210,7 +179,7 @@ export function openIndexedDBForFileIO() {
  * @param {File} params.data
  */
 export async function storeFile(file) {
-    const log = logger(`storeFile`);
+    const log = logger(`storeFile`)
     log(`storing file with id`, file.id)
     try {
         const {
@@ -310,7 +279,7 @@ export async function getAllFiles() {
         return []
     }
 }
-/**
+/**DECOMISSION
  *
  * @returns {File} - with file.data as string
  */
@@ -432,5 +401,24 @@ function transformFiles(files = []) {
         // the data property for all files
         file.data = dataURLToString(file.data)
         return file
+    })
+}
+
+export async function openIndexedDBForFiddleSessions() {
+    return new Promise((resolve, reject) => {
+        const request = window.indexedDB.open('FiddleSessions', 1)
+
+        request.onerror = () => reject('Error opening file db')
+        request.onsuccess = () => resolve(request.result)
+
+        request.onupgradeneeded = (event) => {
+            // get the prev version of the db
+            const db = event.target.result
+
+            // structural change - create object store
+            db.createObjectStore('fiddles', {
+                keyPath: 'name',
+            })
+        }
     })
 }

@@ -1,3 +1,7 @@
+import DOMPurify from 'dompurify'
+import { getAuthURL, refreshAccessToken } from './api'
+import { getExistingSesionObjects } from './indexedDB.util'
+const logger = getLogger(`util.js`)
 export function getLogger() {
     // ideally excul
     let excludedPrefixes = []
@@ -22,24 +26,6 @@ export function getLogger() {
                 ...args
             )
         }
-    }
-}
-
-export async function redirectToAuth() {
-    try {
-        const response = await fetch('http://localhost:3000/auth/google', {
-            method: 'GET',
-            headers: {
-                'Access-Control-Allow-Origin': '*',
-            },
-        })
-        const authObj = await response.json()
-        console.log(authObj)
-        // get authed
-        // navigate(authObj.authUrl);
-        window.location.href = authObj.authURL
-    } catch (error) {
-        console.error(error)
     }
 }
 
@@ -77,14 +63,101 @@ export function debounce(func = () => {}, wait = 0, isImmediate = false) {
             func.apply(context, args)
     }
 
-    // give clean up function for react effects 
-    // without this whenever dependencies 
+    // give clean up function for react effects
+    // without this whenever dependencies
     // of the given callback (func) changes or mount/unmout happens
-    // the stale debounced function will 
+    // the stale debounced function will
     // also be called
     debouncedFunction.cleanUp = function () {
         clearTimeout(timeout)
         timeout = null
     }
     return debouncedFunction
+}
+
+export function sanitizeHTML(inputHTML = '') {
+    const log = logger(`sanitizeHTML`)
+    if (!inputHTML) return ''
+
+    const sanitizedHTML = DOMPurify.sanitize(inputHTML)
+    log(`Sanitized HTML`, sanitizeHTML)
+    return sanitizedHTML
+}
+
+const isExpired = (expiryDate) => {
+    const log = logger(`isExpired`);
+    const expiryDateTime = new Date(expiryDate).getTime();
+    log(`expiryDateTime`, expiryDateTime);
+    const currentTime = Date.now();
+    log(`currentTime`, currentTime);
+    log(`result of compare`, expiryDateTime < currentTime)
+    return expiryDateTime < currentTime;
+};
+/**
+ *  if the accessToken is expired it is refreshed, if accessToken or refreshtoken
+ *  is not defined user is redirect for authentication via oauth2.0
+ * @returns {
+ *              accessToken,
+ *              expiryDate,
+ *              refreshToken,
+ *              email,
+ *              name
+ *           }
+ */
+export async function getLoginDetails() {
+    const log = logger(`getLoginDetails`)
+    const result = await getExistingSesionObjects()
+    if (result.length) {
+        log('handleSession - result', result)
+        // session obj at 0
+        const { accessToken, refreshToken: existingRefreshToken, expiryDate: existingTokenExpiration } = result[0]
+
+        if (!(accessToken || existingRefreshToken)) {
+            log(`redirect to Auth block`)
+            // await redirectToAuth()
+            return
+        }
+        // log(`expiration logic`,isExpired(existingTokenExpiration))
+        // token is expired refresh token
+        return result[0];
+    } else {
+        // redirect to auth
+
+        // redirectToAuth()
+    }
+}
+
+export function runCode(code) {
+    code = `
+   function __esFiddle__wrapper(){
+    ${code}
+   }
+   __esFiddle__wrapper();
+   `
+
+    try {
+        let evalFn = new Function(code)
+        evalFn()
+    } catch (error) {
+        throw error
+    }
+}
+export function compileJavaScript(code) {
+    if (!window.Babel) return
+    try {
+        // Compile JavaScript code
+        const compiledCode = window.Babel.transform(code, {
+            presets: ['es2017'],
+        }).code
+        return null
+    } catch (error) {
+        // Handle compilation errors
+        console.log(error)
+        return error
+    }
+}
+
+export async function redirectToAuth() {
+    const { authURL } = await getAuthURL()
+    window.location.href = authURL;
 }

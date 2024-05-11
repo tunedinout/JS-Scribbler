@@ -5,7 +5,7 @@ import { CommonButtonStyles } from '../../components/styled.global'
 import { List } from '@mui/material'
 import { MdDelete } from 'react-icons/md'
 
-const FilesContainer = styled.div`
+const SessionsContainer = styled.div`
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -15,7 +15,7 @@ const FilesContainer = styled.div`
     position: relative;
 `
 
-const FilesHeadingWrapper = styled.div`
+const SessionsHeadingWrapper = styled.div`
     margin-bottom: 4px;
     width: 100%;
     font-size: 12px;
@@ -30,7 +30,7 @@ const FilesHeadingWrapper = styled.div`
     padding-bottom: 4px;
 `
 
-const FilesListWrapper = styled(List)`
+const SessionsListWrapper = styled(List)`
     height: 100%;
     overflow: auto;
     border-radius: 4px;
@@ -45,7 +45,7 @@ const ListItemNameHover = styled.div`
     text-overflow: ellipsis;
 `
 
-const ContentEditableFileName = styled.div`
+const ContentEditableSessionName = styled.div`
     border: none;
     outline: none;
     cursor: pointer;
@@ -99,11 +99,11 @@ const DeleteButtonContainer = styled(MdDelete)`
     display: flex;
 `
 export {
-    FilesContainer,
-    FilesHeadingWrapper,
-    FilesListWrapper,
+    SessionsContainer,
+    SessionsHeadingWrapper,
+    SessionsListWrapper,
     ListItemNameHover,
-    ContentEditableFileName,
+    ContentEditableSessionName,
     StyledPlusIcon,
     CollapseIcon,
     ExpandIcon,

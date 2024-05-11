@@ -1,32 +1,29 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
-import './Editor-JS.css'
+import './Editor-CSS.css'
 import AceEditor from 'react-ace'
-import { compileJavaScript } from '../../../indexedDB.util'
-import { TextField } from '@mui/material'
-import { styled } from '@mui/material/styles'
 import { useEditor } from '../hooks'
 
 // REMOVE This
-const CustomTextfield = styled(TextField)(({}) => ({
-    '& .MuiOutlinedInput-root': {
-        '& fieldset': {
-            border: 'none',
-            borderBottom: '1px solid chocolate',
-            borderRadius: '0',
-        },
-        '& input': {
-            padding: '2px 2px',
-            fontSize: '12px',
-            color: 'white',
-            '&:disabled': {
-                color: 'white', // Change to your desired disabled font color
-                '-webkit-text-fill-color': 'burlywood',
-                borderBottom: '1px solid chocolate',
-            },
-        },
-    },
-}))
+// const CustomTextfield = styled(TextField)(({}) => ({
+//     '& .MuiOutlinedInput-root': {
+//         '& fieldset': {
+//             border: 'none',
+//             borderBottom: '1px solid chocolate',
+//             borderRadius: '0',
+//         },
+//         '& input': {
+//             padding: '2px 2px',
+//             fontSize: '12px',
+//             color: 'white',
+//             '&:disabled': {
+//                 color: 'white', // Change to your desired disabled font color
+//                 '-webkit-text-fill-color': 'burlywood',
+//                 borderBottom: '1px solid chocolate',
+//             },
+//         },
+//     },
+// }))
 /** An Ace Editor intergrated component
  * updates calling component by calling onChange.
  *
@@ -44,9 +41,10 @@ const CustomTextfield = styled(TextField)(({}) => ({
  * @param {Error} runtimeError - any error that is thrown when code is executed
  * @returns {JSX.Element}
  */
-function EditorJS({
+function EditorCSS({
     onChange,
     // APP.js maintains code for execution and other things
+    // init code string from upstream comp
     code: codeString,
     focus,
     doUnfocus,
@@ -60,6 +58,7 @@ function EditorJS({
         highlightActiveLine,
         code
     } = useEditor({
+        type: 'css',
         code: codeString,
         focus,
         doUnfocus,
@@ -70,18 +69,16 @@ function EditorJS({
     // handler that updates renamed file in db
 
     return (
-        <div className="esfiddle-js-editor-container">
+        <div className="esfiddle-css-editor-container">
             <AceEditor
                 ref={editorRef}
                 // error annotations
                 style={{width: 'inherit', height: 'inherit'}}
                 annotations={annotations}
                 value={code}
-                mode={'javascript'}
+                mode={'css'}
                 theme="github_dark"
                 onChange={handleChange}
-                // width="inherit"
-                // height="inherit"
                 fontSize={fontSize}
                 showPrintMargin={false}
                 highlightActiveLine={highlightActiveLine}
@@ -92,13 +89,13 @@ function EditorJS({
                     fontSize: '12px',
                     fontFamily: "'Source Code Pro'",
                 }}
-                className="esfiddle-js-editor"
+                className="esfiddle-css-editor"
             />
         </div>
     )
 }
-EditorJS.propTypes = {
+EditorCSS.propTypes = {
     onChange: PropTypes.func.isRequired,
     code: PropTypes.string.isRequired,
 }
-export default EditorJS;
+export default EditorCSS

@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { compileJavaScript } from '../../../indexedDB.util';
+import {HTMLHint} from 'htmlhint';
 
 export function useEditor({
+    type,
     onChange,
     code: codeString,
     focus: isFocus,
@@ -14,7 +15,7 @@ export function useEditor({
     const [highlightActiveLine, setHighlightActiveLine] = useState(false)
     const [showLineNumbers, setShowLineNumbers] = useState(true)
     const [showGutter, setShowGutter] = useState(true)
-    const [fontSize, setFontSize] = useState(12)
+    const [fontSize, setFontSize] = useState(12);
 
     // annotations for errors
     const [annotations, setAnnotations] = useState([])
@@ -65,42 +66,43 @@ export function useEditor({
     }, [codeString])
 
     // compiles user code
-    useEffect(() => {
-        //console.log('code is changing', code)
-        if (code) {
-            const err = compileJavaScript(code)
-            //console.log(`error after compilation - ${err}`)
-            if (err) {
-                if (err?.loc) {
-                    const { line, column } = err.loc
-                    // check if it already exists or not
-                    if (
-                        !annotations.find(
-                            ({ row, column: col, text, type }) =>
-                                row == line - 1 &&
-                                col == column &&
-                                (text === err?.message ||
-                                    (`Error occurred at (${line}:${column})` &&
-                                        type == 'error'))
-                        )
-                    )
-                        setAnnotations([
-                            ...annotations,
-                            {
-                                row: line - 1,
-                                column,
-                                text:
-                                    err?.message ||
-                                    `Error occurred at (${line}:${column})`,
-                                type: 'error',
-                            },
-                        ])
-                }
-            } else {
-                setAnnotations([])
-            }
-        }
-    }, [code])
+    // TODO: remove since we are using workers
+    // useEffect(() => {
+    //     //console.log('code is changing', code)
+    //     if (code && type === 'js') {
+    //         const err = compileJavaScript(code)
+    //         //console.log(`error after compilation - ${err}`)
+    //         if (err) {
+    //             if (err?.loc) {
+    //                 const { line, column } = err.loc
+    //                 // check if it already exists or not
+    //                 if (
+    //                     !annotations.find(
+    //                         ({ row, column: col, text, type }) =>
+    //                             row == line - 1 &&
+    //                             col == column &&
+    //                             (text === err?.message ||
+    //                                 (`Error occurred at (${line}:${column})` &&
+    //                                     type == 'error'))
+    //                     )
+    //                 )
+    //                     setAnnotations([
+    //                         ...annotations,
+    //                         {
+    //                             row: line - 1,
+    //                             column,
+    //                             text:
+    //                                 err?.message ||
+    //                                 `Error occurred at (${line}:${column})`,
+    //                             type: 'error',
+    //                         },
+    //                     ])
+    //             }
+    //         } else {
+    //             setAnnotations([])
+    //         }
+    //     }
+    // }, [code,type])
 
     // captures run time error
     useEffect(() => {
@@ -137,7 +139,7 @@ export function useEditor({
     const handleChange = (newCode) => {
         // const newCode = e.target.value;
         onChange(newCode, Boolean(annotations.length))
-        setCode(newCode)
+        setCode(newCode);
     }
 
     return {
@@ -148,4 +150,29 @@ export function useEditor({
         annotations,
         handleChange,
     }
+}
+
+const customHTMLRules = {
+    ...HTMLHint.defaultRuleset,
+    'doctype-first': false,
+}
+
+
+export function useHtmlLint(code) {
+    // collect html errors
+    const [annotations, setAnnotations] = useState([]);
+
+    useEffect(() => {
+        const errors = HTMLHint.verify(code, customHTMLRules );
+        const mappedErrors = errors.map(error => ({
+            row: error.line - 1,
+            column: error.col,
+            text: error.message,
+            type: 'error'
+        }));
+
+        setAnnotations(mappedErrors);
+    }, [code])
+
+    return annotations;
 }

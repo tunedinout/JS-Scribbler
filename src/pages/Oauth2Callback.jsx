@@ -6,7 +6,7 @@ import { getExistingSesionObjects, storeSessionObject } from '../indexedDB.util'
 const logger = getLogger('Oauth2Callback')
 
 // collects access token and saves to indexedDb
-export default function Oauth2Callback() {
+export default function Oauth2Callback({ oauth2CallbackHandler}) {
     const navigate = useNavigate()
     const [searchParams] = useSearchParams()
     const [isRedirectToHome, setIsRedirectToHome] = useState(false)
@@ -40,6 +40,9 @@ export default function Oauth2Callback() {
                             refreshToken,
                             expiryDate,
                         })
+                        // call the handler to set the login deets
+                        oauth2CallbackHandler({accessToken, refreshToken, expiryDate})
+                        
                     }
                 }
 

@@ -1,73 +1,110 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { MdDelete } from 'react-icons/md'
-import { RiJavascriptFill } from 'react-icons/ri'
-import { ContentEditableFileName, DeleteButtonContainer } from './styles'
+import {
+    CollapseExpandIconContainer,
+    CollapseIcon,
+    ContentEditableSessionName,
+    DeleteButtonContainer,
+    ExpandIcon,
+} from './styles'
 import { useCustomListItemWrapper } from './hooks'
 import { ListItem, styled } from '@mui/material'
-
+import { RiFolder2Fill } from 'react-icons/ri'
+import CodeFiles from './CodeFiles'
+import { getLogger } from '../../util'
+const logger = getLogger(`CustomListItemWrapper`)
 export default function CustomListItemWrapper({
-    file,
-    renameHandler,
-    deleteHandler,
-    selectFileHandler,
+    session,
+    renameSessionHandler,
+    deleteSessionHandler,
+    selectSessionHandler,
     isSelected,
 }) {
+    // can be either css, html and JS
+    const [selectedFile, setSelectedFile] = useState('js')
     const {
         isHover,
         setIsHover,
         isInputMode,
         setIsInputMode,
-        newFileName,
-        setNewFileName,
-        fileRef,
+        newSessionName,
+        setNewSessionName,
+        sessionRef,
         onInputHandler,
-        onFileInputClick,
-    } = useCustomListItemWrapper({ file, renameHandler })
+        setIsCollapsed,
+        isCollapsed,
+    } = useCustomListItemWrapper({ session, renameSessionHandler })
+
+    useEffect(() => {
+        logger(`selectedFile effect`)(`selectedFile`, selectedFile);
+        selectSessionHandler(session, selectedFile)
+    }, [selectedFile])
 
     return (
-        <CustomListItem
-            {...{
-                disableRipple: true,
-                key: file.id,
-                button: true,
-                onClick: (e) => selectFileHandler(file, e),
-                onMouseMove: () => setIsHover(true),
-                onMouseLeave: () => setIsHover(false),
-                // for css
-                isSelected,
-            }}
-        >
-            <CustomListItemIcon>
-                <RiJavascriptFill size={20} fill="yellow" />
-            </CustomListItemIcon>
-
-            <ContentEditableFileName
+        <>
+            <CustomListItem
                 {...{
-                    ref: fileRef,
-                    contentEditable: isInputMode,
-                    onClick: (e) => {
-                        e.stopPropagation()
-                        setIsInputMode(true)
-                    },
-                    onInput: onInputHandler,
+                    disableRipple: true,
+                    key: session.id,
+                    button: true,
+                    onClick: (e) => selectSessionHandler(session, selectedFile),
+                    onMouseMove: () => setIsHover(true),
+                    onMouseLeave: () => setIsHover(false),
+                    // for css
+                    isSelected,
                 }}
             >
-                {newFileName}
-            </ContentEditableFileName>
-
-            {isHover && (
-                <DeleteButtonContainer
-                    {...{ onClick: (e) => deleteHandler(file) }}
+                <CollapseExpandIconContainer
+                    onClick={() => setIsCollapsed(!isCollapsed)}
                 >
-                    <MdDelete
-                        {...{
-                            size: 12,
-                            title: 'Delete file',
-                        }}
-                    />
-                </DeleteButtonContainer>
+                    {!isCollapsed && (
+                        <CollapseIcon size={16} title="Collapse" />
+                    )}
+                    {isCollapsed && <ExpandIcon size={16} title="Expand" />}
+                </CollapseExpandIconContainer>
+                <CustomListItemIcon>
+                    <RiFolder2Fill size={20} fill="yellow" />
+                </CustomListItemIcon>
+
+                <ContentEditableSessionName
+                    {...{
+                        ref: sessionRef,
+                        contentEditable: isInputMode,
+                        onClick: (e) => {
+                            e.stopPropagation()
+                            setIsInputMode(true)
+                        },
+                        onInput: onInputHandler,
+                    }}
+                >
+                    {newSessionName}
+                </ContentEditableSessionName>
+
+                {isHover && (
+                    <DeleteButtonContainer
+                        {...{ onClick: (e) => deleteSessionHandler(session) }}
+                    >
+                        <MdDelete
+                            {...{
+                                size: 12,
+                                title: 'Delete session',
+                            }}
+                        />
+                    </DeleteButtonContainer>
+                )}
+            </CustomListItem>
+            {!isCollapsed && (
+                <CodeFiles
+                
+                    onFileSelectionChange={(file) => setSelectedFile(file)}
+                    isParentSelected={isSelected}
+                    sessionId={session.id}
+                    js={session.js}
+                    css={session.css}
+                    html={session.html}
+                />
             )}
-        </CustomListItem>
+        </>
     )
 }
 

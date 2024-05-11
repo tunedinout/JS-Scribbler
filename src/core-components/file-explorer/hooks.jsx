@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 
-function useCustomListItemWrapper({ file, renameHandler }) {
+function useCustomListItemWrapper({ session, renameSessionHandler }) {
     const [isHover, setIsHover] = useState(false)
     const [isInputMode, setIsInputMode] = useState(false)
-    const [newFileName, setNewFileName] = useState(file.name)
-    const fileRef = useRef()
+    const [newSessionName, setNewSessionName] = useState(session.name)
+    const [isCollapsed, setIsCollapsed] = useState(true);
+    const sessionRef = useRef()
     const {  updateCursor } = useCustomCursorSelection({
-        inputRef: fileRef,
+        inputRef: sessionRef,
     })
 
     useEffect(() => {
@@ -14,7 +15,7 @@ function useCustomListItemWrapper({ file, renameHandler }) {
     }, [isInputMode])
 
     function onInputHandler(e) {
-        setNewFileName(e.target.textContent)
+        setNewSessionName(e.target.textContent)
         updateCursor()
     }
 
@@ -22,29 +23,31 @@ function useCustomListItemWrapper({ file, renameHandler }) {
         () => {
 
             if(isInputMode){
-                const oldFileName = file.name;
-                const newFileName = fileRef.current.textContent
+                const oldSessionName = session.name;
+                const newSessionName = sessionRef.current.textContent
                 console.log(
-                    `The old file name = ${oldFileName}, new = ${newFileName} `
+                    `The old session name = ${oldSessionName}, new = ${newSessionName} `
                 )
-                renameHandler(oldFileName, newFileName)
+                renameSessionHandler(oldSessionName, newSessionName)
                 setIsInputMode(false);
             }
             
         },
-        [ file, isInputMode, fileRef]
+        [ session, isInputMode, sessionRef]
     )
-    useOutsideClick({ handler: outsideClickHandler, ref: fileRef })
+    useOutsideClick({ handler: outsideClickHandler, ref: sessionRef })
 
     return {
         isHover,
         setIsHover,
         isInputMode,
         setIsInputMode,
-        newFileName,
-        setNewFileName,
-        fileRef,
+        newSessionName,
+        setNewSessionName,
+        sessionRef,
         onInputHandler,
+        isCollapsed,
+        setIsCollapsed
     }
 }
 /**
@@ -86,7 +89,7 @@ function useCustomCursorSelection({ inputRef }) {
 function useOutsideClick({ handler, ref }) {
     useEffect(() => {
         // add event listener on document
-        // when target not equal to file ref
+        // when target not equal to session ref
         const handleOutsideClick = (e) => {
             console.log('useOutsideClick')
             // ref.current.blur()
