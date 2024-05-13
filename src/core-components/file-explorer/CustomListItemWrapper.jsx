@@ -63,7 +63,7 @@ export default function CustomListItemWrapper({
                     {isCollapsed && <ExpandIcon size={16} title="Expand" />}
                 </CollapseExpandIconContainer>
                 <CustomListItemIcon>
-                    <RiFolder2Fill size={20} fill="yellow" />
+                    <RiFolder2Fill size={20} fill="#F9F871" />
                 </CustomListItemIcon>
 
                 <ContentEditableSessionName

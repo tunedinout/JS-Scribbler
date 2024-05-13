@@ -1,14 +1,9 @@
 /* Preview.css */
-.preview {
-    width: 100%;
-    height: 89%;
-    /* padding: 10px; */
-    background-color: black;
-  }
+
   
   .preview div {
     /* border: 1px solid #ccc; */
-    border-radius: 5px;
+    /* border-radius: 5px; */
     /* padding: 10px; */
     /* background-color: #f9f9f9; */
     /* min-height: 200px; */

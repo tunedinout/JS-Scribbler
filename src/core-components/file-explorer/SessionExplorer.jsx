@@ -20,10 +20,11 @@ export default function SessionExplorer({
     createSessionHandler,
     selectSessionHandler,
     currentSession,
-    disableCreateSession
+    disableCreateSession,
+    isCreateMode,
+    setIsCreateMode,
 }) {
     const [isCollapsed, setIsCollapsed] = useState(false)
-    const [isCreateMode, setIsCreateMode] = useState(false)
 
     // useEffect(() => console.log(`isCreateMode = ${isCreateMode}`), [isCreateMode])
 

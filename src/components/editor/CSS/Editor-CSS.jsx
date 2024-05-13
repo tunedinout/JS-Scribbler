@@ -69,7 +69,7 @@ function EditorCSS({
     // handler that updates renamed file in db
 
     return (
-        <div className="esfiddle-css-editor-container">
+        <div className="esfiddle-editor-container">
             <AceEditor
                 ref={editorRef}
                 // error annotations

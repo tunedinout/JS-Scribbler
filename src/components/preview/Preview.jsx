@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import './Preview.css';
-// initially just run html and css 
+import './Preview.css'
+import { getLogger } from '../../util';
+import DOMPurify from 'dompurify'
+// initially just run html and css
 const origContentSrcDoc = `<!DOCTYPE html>
 <html>
   <head>
@@ -10,35 +12,43 @@ const origContentSrcDoc = `<!DOCTYPE html>
   <body>
   </body>
 </html>`
-const errorTracker = `<script>
+const errorTracker = `
 window.onerror = function(message, url, lineNo, columnNo, error) {
   parent.postMessage({type: 'error', message, error: error.toString(), lineNo, columnNo}, '*');
-}
-</script>`
+  // prevent firing of default event handler
+  return true;
+}`
 
+const logger = getLogger(`Preview`)
 function Preview({ htmlContent, css, js, isRun }) {
     const [srcDoc, setSrcDoc] = useState(origContentSrcDoc)
 
+    // useEffect(() => {
+    //     logger(`isHtmlError`)(isHtmlError)
+    // }, [isHtmlError])
+
     useEffect(() => {
-      if(isRun)
-      setSrcDoc(`<!DOCTYPE html>
+        if (isRun)
+            setSrcDoc(`<!DOCTYPE html>
       <html>
         <head>
           <title>Preview</title>
           <style> ${css} </style>
         </head>
         <body>
-          ${htmlContent}
+          ${DOMPurify.sanitize(htmlContent)}
+          <script>
           ${errorTracker}
+          </script>
           <script>
               ${js}
           </script>
         </body>
       </html>`)
-      else{
-        
-      }
-    },[isRun, htmlContent, css , js])
+        else {
+            setSrcDoc(origContentSrcDoc)
+        }
+    }, [isRun, htmlContent, css, js])
 
     return (
         <div className="preview">

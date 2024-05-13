@@ -6,6 +6,7 @@ import { compileJavaScript } from '../../../indexedDB.util'
 import { TextField } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import { useEditor } from '../hooks'
+import { getLogger } from '../../../util'
 
 // REMOVE This
 const CustomTextfield = styled(TextField)(({}) => ({
@@ -44,6 +45,7 @@ const CustomTextfield = styled(TextField)(({}) => ({
  * @param {Error} runtimeError - any error that is thrown when code is executed
  * @returns {JSX.Element}
  */
+const logger = getLogger( `EditorJS`);
 function EditorJS({
     onChange,
     // APP.js maintains code for execution and other things
@@ -67,15 +69,19 @@ function EditorJS({
         onChange,
     })
 
+    useEffect(() => {
+        logger(`annotations`)(annotations);
+    },[annotations])
+
     // handler that updates renamed file in db
 
     return (
-        <div className="esfiddle-js-editor-container">
+        <div className="esfiddle-editor-container">
             <AceEditor
                 ref={editorRef}
                 // error annotations
                 style={{width: 'inherit', height: 'inherit'}}
-                annotations={annotations}
+                annotations={[...annotations]}
                 value={code}
                 mode={'javascript'}
                 theme="github_dark"
@@ -88,7 +94,7 @@ function EditorJS({
                 wrapEnabled={true}
                 setOptions={{
                     scrollPastEnd: true,
-                    useWorker: true,
+                    useWorker: !runtimeError,
                     fontSize: '12px',
                     fontFamily: "'Source Code Pro'",
                 }}

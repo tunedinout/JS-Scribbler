@@ -19,6 +19,7 @@ export default function HomePage({
                 {...{
                     disableRun,
                     onRunButton: () => setIsRun(true) ,
+                    isOfflineMode: !accessToken
                 }}
             />
             <GoogleLoginWidget />

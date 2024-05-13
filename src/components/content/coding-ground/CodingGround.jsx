@@ -14,6 +14,9 @@ import { fetchExistingFiddleSessions } from '../../../api'
 import EditorCSS from '../../editor/CSS/Editor-CSS'
 import EditorHTML from '../../editor/HTML/Editor-HTML'
 import Preview from '../../preview/Preview'
+import { RiJavascriptFill } from 'react-icons/ri'
+import { FaPlus } from 'react-icons/fa'
+import { storeCurrentFiddleSesion } from '../../../indexedDB.util'
 
 /**
  * @component
@@ -42,28 +45,15 @@ const logger = getLogger(`CodingGround`)
 export default function CodingGround({
     isRun,
     setIsRun,
-    setDisableRun,
-    code,
     driveFolderId,
     accessToken,
 }) {
-    const [mode, setMode] = useState('offline')
     const [disableCreateSession, setDisableCreateSession] = useState(false)
     const [sessions, setSessions] = useState([])
     const initRef = useRef(null)
-    // we should have id of the current session so
-    // so that current code changes and we update it
+
     const [currentSession, setCurrentSession] = useState(null)
-    // this comes from current session
-    // setup such as current session object is updated
-    // locally first and then
-    // without the user noticiing committed to the drive
 
-    // we need these there variables so that we dont have to
-    // load from the api
-
-    //TODO:  find a way to hold local state of each file
-    // all api related activities be on the background
     const [currentJSCode, setCurrentJSCode] = useState('')
     const [currentHTMLCode, setCurrentHTMLCode] = useState('')
     const [currentCSSCode, setCurrentCSSCode] = useState('')
@@ -71,30 +61,25 @@ export default function CodingGround({
     // by default a js file should be selected
     const [selectedCode, setSelectedCode] = useState('js')
 
-    //     const el = document.getElementById("esfiddle-test-heading");
-    // el.addEventListener("click", ()=>{
-    //     console.log(`clicked`)
-    // })
-    // const promise = Promise.resolve(9);
-
-    // editor
-    // lets say by defautl editor is focused
-
-    // there should be some sort of change in focus if we change fiels
-    // I think unfocus is needed when creating a new session other than
-    // that it has no use
     const [focusEditor, setFocusEditor] = useState(true)
 
     // when set should be an instance of error
     const [jsRuntimeError, setJSRuntimeError] = useState(null)
+    const [isHtmlError, setIsHtmlError] = useState(false)
+
+    const [hideExplorer, setHideExplorer] = useState(true)
+    const [isCreateMode, setIsCreateMode] = useState(false)
 
     // only when a new session is created focus is stolen
     // from the editor
     const doUnfocus = () => setFocusEditor(false)
 
     const onJSCodeChange = debounce((newJSCode) => {
-        // const log = logger(`onJSCodeChange`)
-        // log(`newJSCode`, newJSCode);
+        if (newJSCode === currentJSCode) return
+        // let user proceed and remove all runtime error
+        setJSRuntimeError(null)
+        const log = logger(`onJSCodeChange`)
+        log(`newJSCode`, newJSCode)
         setCurrentSession({ ...currentSession, js: newJSCode })
     }, 300)
     const onCSSCodeChange = debounce((newCSSCode) => {
@@ -108,12 +93,42 @@ export default function CodingGround({
         setCurrentSession({ ...currentSession, html: newHTMLCode })
     }, 300)
 
-    useEffect(() => {
-        if (accessToken) {
-            setMode('online')
-        }
-    }, [accessToken])
+    const onHtmlError = (errors) => {
+        // use this cb to not add the html to preview
+        setIsHtmlError(Boolean(errors.length))
+    }
 
+    useEffect(() => {
+        const messageInterceptorHandler = function (event) {
+            const log = logger(`messageInterceptorHandler`)
+            if (
+                event.data.type === 'error'
+                // event.origin === 'http://localhost:3001/console'
+            ) {
+                log(event)
+                setJSRuntimeError(() => event.data.message)
+            }
+        }
+        window.addEventListener('message', messageInterceptorHandler)
+        return () =>
+            window.removeEventListener('message', messageInterceptorHandler)
+    }, [])
+
+    // useEffect(() => {
+    //     if(!isRun){
+    //         setJSRuntimeError(null);
+    //     }
+    // },[isRun])
+
+    // useEffect(() => {
+    //     if (accessToken) {
+    //         setIsOffline(false);
+    //     }
+    // }, [accessToken])
+
+    // useEffect(() => {
+    //     onModeChange(isOffline);
+    // },[isOffline])
 
     useEffect(() => {
         // should be defined
@@ -136,33 +151,44 @@ export default function CodingGround({
         }
     }, [currentSession, selectedCode])
 
-    const loadFiddleSessions = useCallback(async () => {
-        const log = logger(`loadFiddleSessions`)
-        if (!initRef.current) {
-            initRef.current = 'init'
-        } else {
-            if (!driveFolderId) return
+    // const loadFiddleSessions = useCallback(async () => {
+    //     const log = logger(`loadFiddleSessions`)
+    //     if (!initRef.current) {
+    //         initRef.current = 'init'
+    //     } else {
+    //         if (!driveFolderId) return
 
-            log(`received accessToken`, accessToken)
-            const response = await fetchExistingFiddleSessions(
-                accessToken,
-                driveFolderId
-            )
+    //         log(`received accessToken`, accessToken)
+    //         const response = await fetchExistingFiddleSessions(
+    //             accessToken,
+    //             driveFolderId
+    //         )
 
-            if (!response.message)
-                log(`fetchExistingFiddleSessions -> `, response)
-            else {
-                // even if we get 401 APP will update it for us and then
-                // below effect will run it
-                //  show the error to the user
-                return
-            }
-        }
-    }, [driveFolderId, initRef, accessToken])
+    //         if (!response.message)
+    //             log(`fetchExistingFiddleSessions -> `, response)
+    //         else {
+    //             // even if we get 401 APP will update it for us and then
+    //             // below effect will run it
+    //             //  show the error to the user
+    //             return
+    //         }
+    //     }
+    // }, [driveFolderId, initRef, accessToken])
+
+    // useEffect(() => {
+    //     loadFiddleSessions()
+    // }, [loadFiddleSessions])
 
     useEffect(() => {
-        loadFiddleSessions()
-    }, [loadFiddleSessions])
+        const saveCurrentSessionToIndexDB = async () => {
+            await storeCurrentFiddleSesion(currentSession)
+        }
+        // access token is not there
+        // user in offline mode
+        if (currentSession && !accessToken) {
+            saveCurrentSessionToIndexDB(currentSession)
+        }
+    }, [currentSession, accessToken])
 
     const createSessionHandler = ({ name }, cb) => {
         const log = logger(`createSessionHandler`)
@@ -178,14 +204,6 @@ export default function CodingGround({
         setCurrentSession(newSessionObj)
 
         cb()
-        // in offline mode user can only create one
-        // fiddle
-        if (mode === 'offline') {
-            setDisableCreateSession(true)
-        } else {
-            // if user decides to login using google
-            setDisableCreateSession(false)
-        }
     }
 
     const deleteSessionHandler = () => {
@@ -218,20 +236,24 @@ export default function CodingGround({
                 At this level having a flex-box space between the session explorer and Editors space 
             */}
             {/* TODO: Change this to fiddle session explore */}
-            <div className="esfiddle-js-tab-container__file-explorer">
-                <SessionExplorer
-                    {...{
-                        currentSession,
-                        createSessionHandler,
-                        deleteSessionHandler,
-                        renameSessionHandler,
-                        selectSessionHandler,
-                        label: 'Sessions',
-                        sessions,
-                        disableCreateSession,
-                    }}
-                />
-            </div>
+            {!hideExplorer && (
+                <div className="esfiddle-js-tab-container__file-explorer">
+                    <SessionExplorer
+                        {...{
+                            currentSession,
+                            createSessionHandler,
+                            deleteSessionHandler,
+                            renameSessionHandler,
+                            selectSessionHandler,
+                            label: 'Sessions',
+                            sessions,
+                            disableCreateSession,
+                            isCreateMode,
+                            setIsCreateMode,
+                        }}
+                    />
+                </div>
+            )}
 
             {selectedCode === 'js' && currentSession && (
                 <EditorJS
@@ -265,12 +287,38 @@ export default function CodingGround({
                         onChange: onHTMLCodeChange,
                         code: currentHTMLCode,
                         runtimeError: null,
+                        onHtmlError,
                     }}
                 />
             )}
 
             {/*TODO:  Add a preview  */}
-            <Preview htmlContent={currentHTMLCode} css={currentCSSCode} js={currentJSCode} isRun={isRun}  />
+
+            {currentSession && (
+                <Preview
+                    htmlContent={currentHTMLCode}
+                    css={currentCSSCode}
+                    js={currentJSCode}
+                    isRun={isRun}
+                    isHtmlError={isHtmlError}
+                />
+            )}
+
+            {/* Show default screen */}
+            {!currentSession && hideExplorer && (
+                <div className="esfiddle-initial-screen-container">
+                    <div
+                        className="esfiddle-initial-create-fiddle-button"
+                        onClick={() => {
+                            setHideExplorer(false)
+                            setIsCreateMode(true)
+                        }}
+                    >
+                        <FaPlus size={25} color="#3c3c3c" />
+                        <span>Create a fiddle</span>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

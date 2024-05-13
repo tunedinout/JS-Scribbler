@@ -115,7 +115,9 @@ export function useEditor({
                     row: 0,
                     column: 0,
                     text:
-                        runtimeError?.message ||
+                    // runtime error is only received as the error string 
+                    // via postmessage from the iframe
+                        runtimeError ||
                         `Error occurred at (${1}:${1})`,
                     type: 'error',
                     isRuntime: true,

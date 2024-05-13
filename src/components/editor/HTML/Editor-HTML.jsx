@@ -48,6 +48,7 @@ function EditorHTML({
     focus,
     doUnfocus,
     runtimeError,
+    onHtmlError,
 }) {
     const {
         editorRef,
@@ -67,12 +68,15 @@ function EditorHTML({
 
     const errors = useHtmlLint(code);
 
+    useEffect(() => {
+       onHtmlError(errors);
+    },[errors])
     
 
     // handler that updates renamed file in db
 
     return (
-        <div className="esfiddle-html-editor-container">
+        <div className="esfiddle-editor-container">
             <AceEditor
                 ref={editorRef}
                 // error annotations
