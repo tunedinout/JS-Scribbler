@@ -4,9 +4,8 @@ import { runCode } from './indexedDB.util'
 import './App.css'
 import Oauth2Callback from './pages/Oauth2Callback'
 import HomePage from './pages/HomePage'
-import { getLogger, getLoginDetails } from './util'
+import { getLogger, getLoginDetails, redirectToAuth } from './util'
 import { createDriveAppFolder, refreshAccessToken } from './api'
-
 
 const logger = getLogger('APP')
 function App() {
@@ -14,42 +13,47 @@ function App() {
     const [accessToken, setAccessToken] = useState('')
     const [expiryDate, setExpiryDate] = useState(0)
     const [refreshToken, setRefreshToken] = useState('')
+    const [userInfo, setUserInfo] = useState(null)
 
     useEffect(() => {
-        logger(`access token effect`)(`accessToken`, accessToken)
-    }, [accessToken])
+        logger(`User Info effect`)(`userInfo`, userInfo)
+    }, [userInfo])
 
     const oauth2CallbackHandler = ({
         accessToken,
         expiryDate,
         refreshToken,
+        name,
+        email,
     }) => {
         setAccessToken(accessToken)
         setRefreshToken(refreshToken)
-        setExpiryDate(expiryDate)
+        setExpiryDate(expiryDate);
+        setUserInfo({name, email})
+
     }
 
     useEffect(() => {
         const loadAuthDetails = async () => {
             const log = logger(`loadAuthDetails`)
-            // this redirect to auth URL if the tokens are not defined
-            // or not set
+
             const loginResponse = await getLoginDetails()
             log(`loginResponse`, loginResponse)
 
-            // if there is nothing in the indexeddb i.e login details
-            // ususally the first time login
-            // at this time - loginResponse is undefined
+            // if user has not signed in (offline mode)
+            // loginResponse is null
 
             if (!loginResponse || loginResponse?.message) {
                 // handle the errors
                 return
             }
-            const { accessToken, refreshToken, expiryDate } = loginResponse
+            const { accessToken, refreshToken, expiryDate, name, email } =
+                loginResponse
 
             setAccessToken(accessToken)
             setRefreshToken(refreshToken)
             setExpiryDate(expiryDate)
+            setUserInfo({ name, email })
         }
 
         loadAuthDetails()
@@ -64,10 +68,14 @@ function App() {
                         accessToken,
                         refreshToken: newRefreshToken,
                         expiryDate,
+                        name,
+                        email,
                     } = await refreshAccessToken(refreshToken)
                     setAccessToken(accessToken)
                     setRefreshToken(newRefreshToken)
                     setExpiryDate(expiryDate)
+                    // TODO: we dont need to really do this
+                    setUserInfo({ name, email })
                 },
                 Math.max(expiryDate - Date.now(), 0)
             )
@@ -79,6 +87,7 @@ function App() {
     useEffect(() => {
         // this should only run once i.e the first time accessToken is set
         if (!driveFolderId && accessToken) {
+            // create a folder called esfiddle in google drive
             const createAppFolder = async () => {
                 const log = logger(`createAppFolder`)
                 const folderCreateResponse =
@@ -96,6 +105,14 @@ function App() {
         }
     }, [driveFolderId, accessToken])
 
+    const handleSignIn = async () => {
+        // setAccessToken(token)
+        // call the api
+        if (!accessToken) {
+            redirectToAuth()
+        }
+    }
+
     return (
         <Router>
             <Routes>
@@ -110,6 +127,8 @@ function App() {
                             {...{
                                 driveFolderId,
                                 accessToken,
+                                handleSignIn,
+                                userInfo,
                             }}
                         />
                     }

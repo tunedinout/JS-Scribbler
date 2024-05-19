@@ -1,6 +1,10 @@
 // NOTE: GENERAL format of error response handling
 // will help us by checking the res.message for errors
+
+import { getLogger } from "./util"
+
 // and handle that directly in the calling code
+const logger = getLogger(`API.JS`)
 export async function sendAuthCode(authCode) {
     try {
         const response = await fetch('http://localhost:3000/auth/google', {
@@ -178,55 +182,63 @@ export async function fetchExistingFiddleSession(accessToken, fiddleSessionId) {
 export async function createFiddleSession(
     accessToken,
     esfiddleFolderId,
-    fiddleSessionName
-) {
-    try {
-        const response = await fetch(
-            `http://localhost:3000/drive/folder/sessions?esfiddleFolderId=${esfiddleFolderId}`,
-            {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                },
-                body: JSON.stringify({
-                    fiddleSessionName,
-                    esfiddleFolderId,
-                }),
-            }
-        ).then((res) => res.json())
-        return response
-    } catch ({ response }) {
-        return {
-            message:
-                response?.data?.message ||
-                response?.data ||
-                `unable to create fiddle session with name ${fiddleSessionName}`,
-        }
-    }
-}
-
-/**
- * 
- * @param {String} accessToken 
- * @param {String} fiddleSessionName - name of current fiddle session
- * @param {String} js - new contents of the index.js file
- * @param {*} css  - new contents of the index.css file
- * @param {*} html  - new contents of the index.html file
- * @returns 
- */
-export async function udpateFiddleSession(
-    accessToken,
-    fiddleSessionId,
+    fiddleSessionName,
     js = '',
     css = '',
     html = ''
 ) {
     try {
         const response = await fetch(
-            `http://localhost:3000/drive/folder/sessions/${fiddleSessionId}`,
+            `http://localhost:3000/drive/folder/session`,
             {
-                method: 'GET',
+                method: 'POST',
                 headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${accessToken}`,
+                },
+                body: JSON.stringify({
+                    fiddleSessionName,
+                    esfiddleFolderId,
+                    js,
+                    css,
+                    html,
+                }),
+            }
+        ).then(res => res.json());
+
+        return response;
+    } catch (error) {
+        // always do it like this
+        // because it can report other runtime errors to the dev as well
+        console.error(error);
+        throw error;
+    }
+}
+
+/**
+ *
+ * @param {String} accessToken
+ * @param {String} fiddleSessionName - name of current fiddle session
+ * @param {String} js - new contents of the index.js file
+ * @param {*} css  - new contents of the index.css file
+ * @param {*} html  - new contents of the index.html file
+ * @returns
+ */
+export async function updateFiddleSession(
+    accessToken,
+    fiddleSessionId,
+    js = '',
+    css = '',
+    html = ''
+) {
+    const log = logger(`updateFiddleSession`);
+    try {
+        const response = await fetch(
+            `http://localhost:3000/drive/folder/session/${fiddleSessionId}`,
+            {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
                     Authorization: `Bearer ${accessToken}`,
                 },
                 body: JSON.stringify({
@@ -236,7 +248,9 @@ export async function udpateFiddleSession(
                     html,
                 }),
             }
-        ).then((res) => res.json())
+        );
+        log(`response`, response);
+
         return response
     } catch ({ response }) {
         return {

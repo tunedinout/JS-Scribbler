@@ -36,9 +36,11 @@ export default function CustomListItemWrapper({
     } = useCustomListItemWrapper({ session, renameSessionHandler })
 
     useEffect(() => {
-        logger(`selectedFile effect`)(`selectedFile`, selectedFile);
-        selectSessionHandler(session, selectedFile)
-    }, [selectedFile])
+        logger(`selectedFile effect`)(`selectedFile`, selectedFile, session)
+        if (isSelected) {
+            selectSessionHandler(session, selectedFile)
+        }
+    }, [selectedFile, isSelected, session])
 
     return (
         <>
@@ -95,9 +97,10 @@ export default function CustomListItemWrapper({
             </CustomListItem>
             {!isCollapsed && (
                 <CodeFiles
-                
                     onFileSelectionChange={(file) => setSelectedFile(file)}
                     isParentSelected={isSelected}
+                    // TODO: remove below props, i dont think they are needed
+
                     sessionId={session.id}
                     js={session.js}
                     css={session.css}

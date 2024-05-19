@@ -28,7 +28,7 @@ function useCustomListItemWrapper({ session, renameSessionHandler }) {
                 console.log(
                     `The old session name = ${oldSessionName}, new = ${newSessionName} `
                 )
-                renameSessionHandler(oldSessionName, newSessionName)
+                renameSessionHandler(session, newSessionName)
                 setIsInputMode(false);
             }
             
@@ -63,6 +63,12 @@ function useCustomCursorSelection({ inputRef }) {
             // give to some document API
             const range = document.createRange()
             const sel = document.getSelection()
+
+            // if the text is empty string 
+            if(!inputRef.current.childNodes[0]?.length){
+                const textNode = document.createTextNode('');
+                inputRef.current.appendChild(textNode);
+            }
             // give the node on which cursor
             // position needs to set and give
             // the cursor position

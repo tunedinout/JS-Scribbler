@@ -84,7 +84,7 @@ function EditorCSS({
                 highlightActiveLine={highlightActiveLine}
                 wrapEnabled={true}
                 setOptions={{
-                    scrollPastEnd: true,
+                    // scrollPastEnd: true,
                     useWorker: true,
                     fontSize: '12px',
                     fontFamily: "'Source Code Pro'",

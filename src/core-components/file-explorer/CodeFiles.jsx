@@ -5,6 +5,7 @@ import { RiJavascriptFill } from 'react-icons/ri'
 import { MdCss, MdHtml, MdJavascript } from 'react-icons/md'
 
 export default function CodeFiles({
+    // TODO: remove this, parent does not have this prop
     sessionId,
     js = '',
     html = '',

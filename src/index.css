@@ -7,7 +7,7 @@ body {
   overflow: hidden;
   min-width: 966px;
   min-height: 990px;;
-  overflow: auto;
+  /* overflow: auto; */
 }
 
 code {

@@ -41,7 +41,7 @@ export default function Oauth2Callback({ oauth2CallbackHandler}) {
                             expiryDate,
                         })
                         // call the handler to set the login deets
-                        oauth2CallbackHandler({accessToken, refreshToken, expiryDate})
+                        oauth2CallbackHandler({accessToken, refreshToken, expiryDate,name,email})
                         
                     }
                 }

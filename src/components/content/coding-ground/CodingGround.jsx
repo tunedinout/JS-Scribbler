@@ -2,21 +2,26 @@ import './CodingGround.css'
 import SessionExplorer from '../../../core-components/file-explorer/SessionExplorer'
 import EditorJS from '../../editor/JS/Editor-JS'
 import { useEditor } from '../../editor/hooks'
-import {
-    debounce,
-    getLogger,
-    getLoginDetails,
-    redirectToAuth,
-    runCode,
-} from '../../../util'
+import { debounce, getCodStrings, getLogger } from '../../../util'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { fetchExistingFiddleSessions } from '../../../api'
+import {
+    createFiddleSession,
+    fetchExistingFiddleSession,
+    fetchExistingFiddleSessions,
+    udpateFiddleSession,
+    updateFiddleSession,
+} from '../../../api'
 import EditorCSS from '../../editor/CSS/Editor-CSS'
 import EditorHTML from '../../editor/HTML/Editor-HTML'
 import Preview from '../../preview/Preview'
 import { RiJavascriptFill } from 'react-icons/ri'
 import { FaPlus } from 'react-icons/fa'
-import { storeCurrentFiddleSesion } from '../../../indexedDB.util'
+import {
+    clearAllFiddleSessions,
+    loadAllFiddleSessions,
+    loadFiddleSession,
+    storeCurrentFiddleSesion,
+} from '../../../indexedDB.util'
 
 /**
  * @component
@@ -47,6 +52,9 @@ export default function CodingGround({
     setIsRun,
     driveFolderId,
     accessToken,
+    setLoading,
+    setAutoSaving,
+    autoSaving,
 }) {
     const [disableCreateSession, setDisableCreateSession] = useState(false)
     const [sessions, setSessions] = useState([])
@@ -69,6 +77,8 @@ export default function CodingGround({
 
     const [hideExplorer, setHideExplorer] = useState(true)
     const [isCreateMode, setIsCreateMode] = useState(false)
+
+    const [ifOfflineFiddlesSaved, setIfOfflineFiddlesSaved] = useState(false)
 
     // only when a new session is created focus is stolen
     // from the editor
@@ -99,6 +109,113 @@ export default function CodingGround({
     }
 
     useEffect(() => {
+        const commitOfflineFiddlesToDrive = async () => {
+            setLoading(true)
+            const log = logger(`commitOfflineFiddlesToDrive`)
+            let offlineFiddleSessions = await loadAllFiddleSessions()
+            if (!offlineFiddleSessions.length) {
+                setLoading(false)
+                setIfOfflineFiddlesSaved(true)
+                return
+            }
+
+            log(`offlineFiddleSessions`, offlineFiddleSessions)
+
+            try {
+                const saveFiddlesResponse = await Promise.all(
+                    offlineFiddleSessions.map(({ name, js, css, html }) => {
+                        return createFiddleSession(
+                            accessToken,
+                            driveFolderId,
+                            name,
+                            js,
+                            css,
+                            html
+                        )
+                    })
+                )
+                await clearAllFiddleSessions()
+            } catch (error) {
+                console.error(`error occurred while saving fiddles in drive`)
+            }
+            setLoading(false)
+            setIfOfflineFiddlesSaved(true)
+        }
+        if (accessToken && driveFolderId) {
+            commitOfflineFiddlesToDrive()
+        }
+    }, [accessToken, driveFolderId])
+
+    useEffect(() => {
+        const loadAllFiddleSessions = async () => {
+            const log = logger(`loadAllFiddleSessions`)
+            setLoading(true)
+            let fiddlesResponse = await fetchExistingFiddleSessions(
+                accessToken,
+                driveFolderId
+            )
+            if (fiddlesResponse?.message) {
+                log(`failed while fetching fiddles from drive`)
+                setLoading(false)
+            }
+            log(`fiddlesResponse`, fiddlesResponse)
+
+            const allFiddlesInDrive = await Promise.all(
+                fiddlesResponse.map(({ id, name }) => {
+                    // each is an array of 3 files
+                    return fetchExistingFiddleSession(accessToken, id).then(
+                        (arrayOfFileData) => {
+                            log(`allFiddlesInDrive element `, arrayOfFileData)
+                            const codeObj = getCodStrings(arrayOfFileData)
+                            return { id, name, ...codeObj }
+                        }
+                    )
+                })
+            )
+
+            log(`allFiddlesInDrive`, allFiddlesInDrive)
+            setSessions(allFiddlesInDrive)
+
+            const newCurrenSession = allFiddlesInDrive[0]
+            setCurrentSession(newCurrenSession)
+            setCurrentJSCode(newCurrenSession.js)
+            setCurrentHTMLCode(newCurrenSession.html)
+            setCurrentCSSCode(newCurrenSession.css)
+
+            setHideExplorer(false)
+            // TODO: set first one as the current session
+            setLoading(false)
+        }
+        logger(`effect load fiddle`)(ifOfflineFiddlesSaved)
+        if (accessToken && driveFolderId && ifOfflineFiddlesSaved) {
+            loadAllFiddleSessions()
+            setIfOfflineFiddlesSaved(false)
+        }
+    }, [accessToken, driveFolderId, ifOfflineFiddlesSaved])
+
+    useEffect(() => {
+        const loadFromIndexedDB = async () => {
+            const log = logger(`loadFromIndexedDB Offline fiddles`)
+            const offlineFiddleSessions = await loadAllFiddleSessions()
+            if (!offlineFiddleSessions.length) return
+            setSessions(offlineFiddleSessions)
+            // set the first of all the sessions as the currrent one
+            setHideExplorer(false)
+            const newSession = offlineFiddleSessions[0]
+            setCurrentSession(newSession)
+            setCurrentJSCode(newSession.js)
+            setCurrentHTMLCode(newSession.html)
+            setCurrentCSSCode(newSession.css)
+            log(`offlineFiddleSessions`, offlineFiddleSessions)
+        }
+        if (!accessToken) {
+            // user is in offline mode
+            loadFromIndexedDB()
+        }
+        // else case handled by a seperate effect
+    }, [accessToken])
+
+    useEffect(() => {
         const messageInterceptorHandler = function (event) {
             const log = logger(`messageInterceptorHandler`)
             if (
@@ -114,29 +231,14 @@ export default function CodingGround({
             window.removeEventListener('message', messageInterceptorHandler)
     }, [])
 
-    // useEffect(() => {
-    //     if(!isRun){
-    //         setJSRuntimeError(null);
-    //     }
-    // },[isRun])
-
-    // useEffect(() => {
-    //     if (accessToken) {
-    //         setIsOffline(false);
-    //     }
-    // }, [accessToken])
-
-    // useEffect(() => {
-    //     onModeChange(isOffline);
-    // },[isOffline])
-
     useEffect(() => {
         // should be defined
         if (currentSession) {
             // let the user click the button ele
             setIsRun(false)
             const log = logger(`currentSession - Use Effect`)
-            log(`called`)
+            log(`currentSession`, currentSession)
+            // this handles the selection of the file
             switch (selectedCode) {
                 case 'js':
                     setCurrentJSCode(currentSession.js)
@@ -151,57 +253,71 @@ export default function CodingGround({
         }
     }, [currentSession, selectedCode])
 
-    // const loadFiddleSessions = useCallback(async () => {
-    //     const log = logger(`loadFiddleSessions`)
-    //     if (!initRef.current) {
-    //         initRef.current = 'init'
-    //     } else {
-    //         if (!driveFolderId) return
-
-    //         log(`received accessToken`, accessToken)
-    //         const response = await fetchExistingFiddleSessions(
-    //             accessToken,
-    //             driveFolderId
-    //         )
-
-    //         if (!response.message)
-    //             log(`fetchExistingFiddleSessions -> `, response)
-    //         else {
-    //             // even if we get 401 APP will update it for us and then
-    //             // below effect will run it
-    //             //  show the error to the user
-    //             return
-    //         }
-    //     }
-    // }, [driveFolderId, initRef, accessToken])
-
-    // useEffect(() => {
-    //     loadFiddleSessions()
-    // }, [loadFiddleSessions])
-
     useEffect(() => {
         const saveCurrentSessionToIndexDB = async () => {
             await storeCurrentFiddleSesion(currentSession)
         }
+
+        const saveCurrentSessionToDrive = async ({ id, js, css, html }) => {
+            if (!autoSaving) {
+                setAutoSaving(true)
+                // above object could contain name if we want to support renaming
+                const log = logger(`saveCurrentSessionToDrive`)
+                const response = await updateFiddleSession(
+                    accessToken,
+                    id,
+                    js,
+                    css,
+                    html
+                )
+                log(`response`, response)
+                setAutoSaving(false)
+            }
+        }
         // access token is not there
         // user in offline mode
-        if (currentSession && !accessToken) {
-            saveCurrentSessionToIndexDB(currentSession)
+        if (currentSession) {
+            if (!accessToken) {
+                // offline mode
+                setAutoSaving(true)
+                saveCurrentSessionToIndexDB(currentSession)
+                setAutoSaving(false)
+            } else {
+                // signed in user
+                debounce(saveCurrentSessionToDrive(currentSession), 300)
+            }
         }
     }, [currentSession, accessToken])
 
-    const createSessionHandler = ({ name }, cb) => {
+    const createSessionHandler = async ({ name }, cb) => {
         const log = logger(`createSessionHandler`)
         log('called with new session', name)
+       
+        if(!accessToken) {
+            // offline mode
+            const newSessionObj = {
+                name,
+                js: '',
+                css: '',
+                html: '',
+            }
+            
+            setSessions([...sessions, newSessionObj])
+            setCurrentSession(newSessionObj)
+        }else {
+            // online mode
+            try {
+                const newFiddle = await createFiddleSession(accessToken, driveFolderId, name, '', '', '' );
+                setSessions([...sessions, newFiddle]);
+                setCurrentSession(newFiddle);
+                
+            } catch (error) {
+                console.error( `failed while creating fiddle -> `, error)
+            }
 
-        const newSessionObj = {
-            name,
-            js: '',
-            css: '',
-            html: '',
         }
-        setSessions([newSessionObj])
-        setCurrentSession(newSessionObj)
+
+        
 
         cb()
     }
@@ -216,7 +332,7 @@ export default function CodingGround({
         log('called')
     }
 
-    const selectSessionHandler = (session, selectedFile = 'js') => {
+    const selectSessionHandler = async (session, selectedFile = 'js') => {
         const log = logger(`selectSessionHandler`)
         log('called', session, selectedFile)
         if (session.name === currentSession.name) {
@@ -224,9 +340,44 @@ export default function CodingGround({
             // only file has change
             setSelectedCode(selectedFile)
         } else {
-            // fiddle session selected has also changed
-            setCurrentSession(session)
-            setSelectedCode(selectedFile)
+            if (!accessToken) {
+                const fiddleSession = await loadFiddleSession(session.name)
+                log(`fiddleSessionLoaded`, fiddleSession)
+                setSessions(
+                    sessions.map((existingFiddleSession) => {
+                        if (existingFiddleSession.name === session.name) {
+                            return fiddleSession
+                        } else {
+                            return existingFiddleSession
+                        }
+                    })
+                )
+                setCurrentSession(fiddleSession)
+                setSelectedCode(selectedFile)
+                setCurrentCSSCode(fiddleSession.css)
+                setCurrentHTMLCode(fiddleSession.html)
+                setCurrentJSCode(fiddleSession.js)
+            } else {
+                // user has signed in with google
+                // the fiddles obj will have id assigned to them
+                log(`loading fiddle session`, session)
+                setLoading(true)
+                const fiddleSessionResponse = await fetchExistingFiddleSession(
+                    accessToken,
+                    session.id
+                ).then((arrayOfFileData) => {
+                    const codeObj = getCodStrings(arrayOfFileData)
+                    return { ...session, ...codeObj }
+                })
+                log(`fiddleSessionResponse`, fiddleSessionResponse)
+
+                setCurrentSession(fiddleSessionResponse)
+                setSelectedCode(selectedFile)
+                setCurrentHTMLCode(fiddleSessionResponse.html)
+                setCurrentCSSCode(fiddleSessionResponse.css)
+                setCurrentJSCode(fiddleSessionResponse.js)
+                setLoading(false)
+            }
         }
     }
 
@@ -245,7 +396,7 @@ export default function CodingGround({
                             deleteSessionHandler,
                             renameSessionHandler,
                             selectSessionHandler,
-                            label: 'Sessions',
+                            label: 'Fiddles',
                             sessions,
                             disableCreateSession,
                             isCreateMode,

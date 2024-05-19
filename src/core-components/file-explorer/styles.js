@@ -10,7 +10,7 @@ const SessionsContainer = styled.div`
     flex-direction: column;
     align-items: flex-start;
     margin-right: 16px;
-    height: 600px;
+    height: 88%;
     width: 220px;
     position: relative;
 `

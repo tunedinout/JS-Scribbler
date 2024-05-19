@@ -1,5 +1,5 @@
 import DOMPurify from 'dompurify'
-import { getAuthURL, refreshAccessToken } from './api'
+import { getAuthURL } from './api'
 import { getExistingSesionObjects } from './indexedDB.util'
 const logger = getLogger(`util.js`)
 export function getLogger() {
@@ -85,14 +85,14 @@ export function sanitizeHTML(inputHTML = '') {
 }
 
 const isExpired = (expiryDate) => {
-    const log = logger(`isExpired`);
-    const expiryDateTime = new Date(expiryDate).getTime();
-    log(`expiryDateTime`, expiryDateTime);
-    const currentTime = Date.now();
-    log(`currentTime`, currentTime);
+    const log = logger(`isExpired`)
+    const expiryDateTime = new Date(expiryDate).getTime()
+    log(`expiryDateTime`, expiryDateTime)
+    const currentTime = Date.now()
+    log(`currentTime`, currentTime)
     log(`result of compare`, expiryDateTime < currentTime)
-    return expiryDateTime < currentTime;
-};
+    return expiryDateTime < currentTime
+}
 /**
  *  if the accessToken is expired it is refreshed, if accessToken or refreshtoken
  *  is not defined user is redirect for authentication via oauth2.0
@@ -110,54 +110,49 @@ export async function getLoginDetails() {
     if (result.length) {
         log('handleSession - result', result)
         // session obj at 0
-        const { accessToken, refreshToken: existingRefreshToken, expiryDate: existingTokenExpiration } = result[0]
+        const {
+            accessToken,
+            refreshToken: existingRefreshToken,
+            expiryDate: existingTokenExpiration,
+        } = result[0]
 
         if (!(accessToken || existingRefreshToken)) {
-            log(`redirect to Auth block`)
+            log(`access token / refresh token not found`)
             // await redirectToAuth()
-            return
+            return null
         }
-        // log(`expiration logic`,isExpired(existingTokenExpiration))
-        // token is expired refresh token
-        return result[0];
+        return result[0]
     } else {
-        // redirect to auth
-
-        // redirectToAuth()
-    }
-}
-
-export function runCode(code) {
-    code = `
-   function __esFiddle__wrapper(){
-    ${code}
-   }
-   __esFiddle__wrapper();
-   `
-
-    try {
-        let evalFn = new Function(code)
-        evalFn()
-    } catch (error) {
-        throw error
-    }
-}
-export function compileJavaScript(code) {
-    if (!window.Babel) return
-    try {
-        // Compile JavaScript code
-        const compiledCode = window.Babel.transform(code, {
-            presets: ['es2017'],
-        }).code
         return null
-    } catch (error) {
-        // Handle compilation errors
-        console.log(error)
-        return error
     }
 }
 
 export async function redirectToAuth() {
     const { authURL } = await getAuthURL()
-    window.location.href = authURL;
+    window.location.href = authURL
+}
+
+/**
+ * 
+ * @param {Array} arrayOfFileData - [{ id, mimeType, data}] - contains 
+ * 3 such object one for javscript, one for css and one for html
+ */
+export function getCodStrings(arrayOfFileData) {
+    const codeObj = arrayOfFileData.reduce(
+        (acc, current) => {
+            const { mimeType = '', data = '' } = current
+            if (mimeType.includes('css')) {
+                acc.css = data
+            } else if (
+                mimeType.includes('javascript')
+            ) {
+                acc.js = data
+            } else if (mimeType.includes('html')) {
+                acc.html = data
+            }
+            return acc
+        },
+        {}
+    )
+    return codeObj;
 }

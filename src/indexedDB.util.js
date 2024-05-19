@@ -242,6 +242,26 @@ export async function loadAllFiddleSessions() {
     });
 }
 
+// Function to clear all fiddle sessions
+export async function clearAllFiddleSessions() {
+    const db = await openIndexedDBForFiddleSessions();
+    const transaction = db.transaction(['fiddles'], 'readwrite');
+    const fiddlesObjectStore = transaction.objectStore('fiddles');
+
+    return new Promise((resolve, reject) => {
+        const request = fiddlesObjectStore.clear();
+
+        request.onsuccess = () => {
+            console.log('All fiddle sessions cleared successfully.');
+            resolve('All fiddle sessions cleared successfully.');
+        };
+
+        request.onerror = (err) => {
+            console.error('Error clearing fiddle sessions:', err);
+            reject('Error clearing fiddle sessions: ' + err);
+        };
+    });
+}
 
 
 

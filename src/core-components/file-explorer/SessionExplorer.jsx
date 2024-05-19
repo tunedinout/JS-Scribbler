@@ -66,9 +66,9 @@ export default function SessionExplorer({
                                     // the default js , css and html is already selected
                                     selectSessionHandler,
                                     index,
-                                    key: session.id,
+                                    key: session.name,
                                     // TODO: remove all file selection 
-                                    isSelected: currentSession.id === session.id,
+                                    isSelected: currentSession.name === session.name,
                                 }}
                             />
                         )

@@ -21,11 +21,11 @@ window.onerror = function(message, url, lineNo, columnNo, error) {
 
 const logger = getLogger(`Preview`)
 function Preview({ htmlContent, css, js, isRun }) {
-    const [srcDoc, setSrcDoc] = useState(origContentSrcDoc)
+    const [srcDoc, setSrcDoc] = useState(origContentSrcDoc);
 
-    // useEffect(() => {
-    //     logger(`isHtmlError`)(isHtmlError)
-    // }, [isHtmlError])
+    useEffect(() => {
+        logger(`htmlContent`)(htmlContent)
+    }, [htmlContent])
 
     useEffect(() => {
         if (isRun)
