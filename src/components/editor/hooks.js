@@ -9,13 +9,12 @@ export function useEditor({
     doUnfocus,
     runtimeError,
 }) {
-    const [code, setCode] = useState('')
     // applied settings state
     const [tabWidth, setTabWidth] = useState(2)
     const [highlightActiveLine, setHighlightActiveLine] = useState(false)
     const [showLineNumbers, setShowLineNumbers] = useState(true)
     const [showGutter, setShowGutter] = useState(true)
-    const [fontSize, setFontSize] = useState(12);
+    const [fontSize, setFontSize] = useState(10);
 
     // annotations for errors
     const [annotations, setAnnotations] = useState([])
@@ -61,9 +60,9 @@ export function useEditor({
     }, [])
 
     // receive code changes from APP
-    useEffect(() => {
-        setCode(codeString)
-    }, [codeString])
+    // useEffect(() => {
+    //     setCode(codeString)
+    // }, [codeString])
 
     // compiles user code
     // TODO: remove since we are using workers
@@ -141,14 +140,12 @@ export function useEditor({
     const handleChange = (newCode) => {
         // const newCode = e.target.value;
         onChange(newCode, Boolean(annotations.length))
-        setCode(newCode);
     }
 
     return {
         fontSize,
         highlightActiveLine,
         editorRef,
-        code,
         annotations,
         handleChange,
     }

@@ -84,24 +84,30 @@ export default function CodingGround({
     // from the editor
     const doUnfocus = () => setFocusEditor(false)
 
-    const onJSCodeChange = debounce((newJSCode) => {
+    const onJSCodeChange = (newJSCode) => {
         if (newJSCode === currentJSCode) return
         // let user proceed and remove all runtime error
         setJSRuntimeError(null)
-        const log = logger(`onJSCodeChange`)
-        log(`newJSCode`, newJSCode)
+        setIsRun(false)
+        // const log = logger(`onJSCodeChange`)
+        // log(`newJSCode`, newJSCode)
+        setCurrentJSCode(newJSCode)
         setCurrentSession({ ...currentSession, js: newJSCode })
-    }, 300)
-    const onCSSCodeChange = debounce((newCSSCode) => {
+    }
+    const onCSSCodeChange = (newCSSCode) => {
         // const log = logger(`onCSSCodeChange`)
         // log(`newCSSCode`, newCSSCode)
+        setIsRun(false)
+        setCurrentCSSCode(newCSSCode)
         setCurrentSession({ ...currentSession, css: newCSSCode })
-    }, 300)
-    const onHTMLCodeChange = debounce((newHTMLCode) => {
+    }
+    const onHTMLCodeChange = (newHTMLCode) => {
         // const log = logger(`onHTMLCodeChange`)
         // log(`newHTMLCode`, newHTMLCode)
+        setCurrentHTMLCode(newHTMLCode)
+        setIsRun(false)
         setCurrentSession({ ...currentSession, html: newHTMLCode })
-    }, 300)
+    }
 
     const onHtmlError = (errors) => {
         // use this cb to not add the html to preview
@@ -161,7 +167,7 @@ export default function CodingGround({
             log(`fiddlesResponse`, fiddlesResponse)
 
             const allFiddlesInDrive = await Promise.all(
-                fiddlesResponse.map(({ id, name }) => {
+                fiddlesResponse?.map(({ id, name }) => {
                     // each is an array of 3 files
                     return fetchExistingFiddleSession(accessToken, id).then(
                         (arrayOfFileData) => {
@@ -231,27 +237,27 @@ export default function CodingGround({
             window.removeEventListener('message', messageInterceptorHandler)
     }, [])
 
-    useEffect(() => {
-        // should be defined
-        if (currentSession) {
-            // let the user click the button ele
-            setIsRun(false)
-            const log = logger(`currentSession - Use Effect`)
-            log(`currentSession`, currentSession)
-            // this handles the selection of the file
-            switch (selectedCode) {
-                case 'js':
-                    setCurrentJSCode(currentSession.js)
-                    break
-                case 'css':
-                    setCurrentCSSCode(currentSession.css)
-                    break
-                case 'html':
-                    setCurrentHTMLCode(currentSession.html)
-                    break
-            }
-        }
-    }, [currentSession, selectedCode])
+    // useEffect(() => {
+    //     // should be defined
+    //     if (currentSession) {
+    //         // let the user click the button ele
+    //         // setIsRun(false)
+    //         const log = logger(`currentSession - Use Effect`)
+    //         log(`currentSession`, currentSession)
+    //         // this handles the selection of the file
+    //         switch (selectedCode) {
+    //             case 'js':
+    //                 setCurrentJSCode(currentSession.js)
+    //                 break
+    //             case 'css':
+    //                 setCurrentCSSCode(currentSession.css)
+    //                 break
+    //             case 'html':
+    //                 setCurrentHTMLCode(currentSession.html)
+    //                 break
+    //         }
+    //     }
+    // }, [currentSession, selectedCode])
 
     useEffect(() => {
         const saveCurrentSessionToIndexDB = async () => {
@@ -284,7 +290,7 @@ export default function CodingGround({
                 setAutoSaving(false)
             } else {
                 // signed in user
-                debounce(saveCurrentSessionToDrive(currentSession), 300)
+                debounce(saveCurrentSessionToDrive(currentSession), 1000)
             }
         }
     }, [currentSession, accessToken])
@@ -292,8 +298,8 @@ export default function CodingGround({
     const createSessionHandler = async ({ name }, cb) => {
         const log = logger(`createSessionHandler`)
         log('called with new session', name)
-       
-        if(!accessToken) {
+
+        if (!accessToken) {
             // offline mode
             const newSessionObj = {
                 name,
@@ -301,23 +307,33 @@ export default function CodingGround({
                 css: '',
                 html: '',
             }
-            
+
             setSessions([...sessions, newSessionObj])
             setCurrentSession(newSessionObj)
-        }else {
+
+            setCurrentJSCode(newSessionObj.js)
+            setCurrentHTMLCode(newSessionObj.html)
+            setCurrentCSSCode(newSessionObj.css)
+        } else {
             // online mode
             try {
-                const newFiddle = await createFiddleSession(accessToken, driveFolderId, name, '', '', '' );
-                setSessions([...sessions, newFiddle]);
-                setCurrentSession(newFiddle);
-                
+                const newFiddle = await createFiddleSession(
+                    accessToken,
+                    driveFolderId,
+                    name,
+                    '',
+                    '',
+                    ''
+                )
+                setSessions([...sessions, newFiddle])
+                setCurrentSession(newFiddle)
+                setCurrentJSCode(newFiddle.js)
+                setCurrentHTMLCode(newFiddle.html)
+                setCurrentCSSCode(newFiddle.css)
             } catch (error) {
-                console.error( `failed while creating fiddle -> `, error)
+                console.error(`failed while creating fiddle -> `, error)
             }
-
         }
-
-        
 
         cb()
     }

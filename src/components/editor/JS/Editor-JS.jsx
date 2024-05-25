@@ -60,7 +60,6 @@ function EditorJS({
         handleChange,
         fontSize,
         highlightActiveLine,
-        code
     } = useEditor({
         code: codeString,
         focus,
@@ -82,7 +81,7 @@ function EditorJS({
                 // error annotations
                 style={{width: 'inherit', height: 'inherit'}}
                 annotations={[...annotations]}
-                value={code}
+                value={codeString}
                 mode={'javascript'}
                 theme="github_dark"
                 onChange={handleChange}
@@ -105,6 +104,5 @@ function EditorJS({
 }
 EditorJS.propTypes = {
     onChange: PropTypes.func.isRequired,
-    code: PropTypes.string.isRequired,
 }
 export default EditorJS;

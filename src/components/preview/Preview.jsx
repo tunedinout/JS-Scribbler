@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import './Preview.css'
-import { getLogger } from '../../util';
+import { getLogger } from '../../util'
 import DOMPurify from 'dompurify'
 // initially just run html and css
 const origContentSrcDoc = `<!DOCTYPE html>
@@ -21,7 +21,7 @@ window.onerror = function(message, url, lineNo, columnNo, error) {
 
 const logger = getLogger(`Preview`)
 function Preview({ htmlContent, css, js, isRun }) {
-    const [srcDoc, setSrcDoc] = useState(origContentSrcDoc);
+    const [srcDoc, setSrcDoc] = useState(origContentSrcDoc)
 
     useEffect(() => {
         logger(`htmlContent`)(htmlContent)

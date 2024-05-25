@@ -138,7 +138,7 @@ export async function redirectToAuth() {
  * 3 such object one for javscript, one for css and one for html
  */
 export function getCodStrings(arrayOfFileData) {
-    const codeObj = arrayOfFileData.reduce(
+    const codeObj = arrayOfFileData?.reduce(
         (acc, current) => {
             const { mimeType = '', data = '' } = current
             if (mimeType.includes('css')) {

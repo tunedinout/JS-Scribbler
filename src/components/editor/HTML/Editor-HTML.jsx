@@ -56,7 +56,6 @@ function EditorHTML({
         handleChange,
         fontSize,
         highlightActiveLine,
-        code
     } = useEditor({
         type : 'html',
         code: codeString,
@@ -66,7 +65,7 @@ function EditorHTML({
         onChange,
     })
 
-    const errors = useHtmlLint(code);
+    const errors = useHtmlLint(codeString);
 
     useEffect(() => {
        onHtmlError(errors);
@@ -82,7 +81,7 @@ function EditorHTML({
                 // error annotations
                 style={{width: 'inherit', height: 'inherit'}}
                 annotations={[...annotations, ...errors]}
-                value={code}
+                value={codeString}
                 mode={'html'}
                 theme="github_dark"
                 onChange={handleChange}

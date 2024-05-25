@@ -4,26 +4,6 @@ import './Editor-CSS.css'
 import AceEditor from 'react-ace'
 import { useEditor } from '../hooks'
 
-// REMOVE This
-// const CustomTextfield = styled(TextField)(({}) => ({
-//     '& .MuiOutlinedInput-root': {
-//         '& fieldset': {
-//             border: 'none',
-//             borderBottom: '1px solid chocolate',
-//             borderRadius: '0',
-//         },
-//         '& input': {
-//             padding: '2px 2px',
-//             fontSize: '12px',
-//             color: 'white',
-//             '&:disabled': {
-//                 color: 'white', // Change to your desired disabled font color
-//                 '-webkit-text-fill-color': 'burlywood',
-//                 borderBottom: '1px solid chocolate',
-//             },
-//         },
-//     },
-// }))
 /** An Ace Editor intergrated component
  * updates calling component by calling onChange.
  *
@@ -43,8 +23,6 @@ import { useEditor } from '../hooks'
  */
 function EditorCSS({
     onChange,
-    // APP.js maintains code for execution and other things
-    // init code string from upstream comp
     code: codeString,
     focus,
     doUnfocus,
@@ -56,7 +34,6 @@ function EditorCSS({
         handleChange,
         fontSize,
         highlightActiveLine,
-        code
     } = useEditor({
         type: 'css',
         code: codeString,
@@ -75,7 +52,7 @@ function EditorCSS({
                 // error annotations
                 style={{width: 'inherit', height: 'inherit'}}
                 annotations={annotations}
-                value={code}
+                value={codeString}
                 mode={'css'}
                 theme="github_dark"
                 onChange={handleChange}

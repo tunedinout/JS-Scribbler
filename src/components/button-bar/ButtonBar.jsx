@@ -37,7 +37,7 @@ export default function ButtonBar({
                 </Tooltip>
             )}
 
-            {userInfo && (
+            {userInfo && userInfo.email && (
                 <Tooltip title={`Signed in as ${userInfo.email}  `}>
                     <IconButton>
                         <FaUserCircle color="green" size={16} />
@@ -45,7 +45,7 @@ export default function ButtonBar({
                 </Tooltip>
             )}
 
-            {!userInfo && (
+            {!userInfo?.email && (
                 <Tooltip title="Sign in with google.">
                     <IconButton onClick={handleSignIn}>
                         <FcGoogle size={16} />
