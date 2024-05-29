@@ -5,6 +5,7 @@ import { useEditor } from '../../editor/hooks'
 import { debounce, getCodStrings, getLogger } from '../../../util'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
+    createDriveAppFolder,
     createFiddleSession,
     fetchExistingFiddleSession,
     fetchExistingFiddleSessions,
@@ -22,6 +23,7 @@ import {
     loadFiddleSession,
     storeCurrentFiddleSesion,
 } from '../../../indexedDB.util'
+import { useAuth } from '../../../auth/AuthProvider'
 
 /**
  * @component
@@ -50,12 +52,12 @@ const logger = getLogger(`CodingGround`)
 export default function CodingGround({
     isRun,
     setIsRun,
-    driveFolderId,
-    accessToken,
     setLoading,
     setAutoSaving,
     autoSaving,
 }) {
+    const [driveFolderId, setDriveFolderId] = useState(null)
+    const { accessToken, invalidateAccessToken } = useAuth()
     const [disableCreateSession, setDisableCreateSession] = useState(false)
     const [sessions, setSessions] = useState([])
     const initRef = useRef(null)
@@ -115,6 +117,34 @@ export default function CodingGround({
     }
 
     useEffect(() => {
+        // this should only run once i.e the first time accessToken is set
+        if (!driveFolderId && accessToken) {
+            // create a folder called esfiddle in google drive
+            const createAppFolder = async () => {
+                const log = logger(`createAppFolder`)
+                const folderCreateResponse =
+                    await createDriveAppFolder(accessToken)
+                log(`folderCreateResponse -> `, folderCreateResponse)
+                if (!folderCreateResponse?.message) {
+                    log(`received esfiddle folderid`, folderCreateResponse?.id)
+                    setDriveFolderId(folderCreateResponse?.id)
+                } else {
+                    const status = folderCreateResponse.status
+                    log(
+                        `folderCreateResponse status`,
+                        folderCreateResponse.status
+                    )
+                    if (status === 401) {
+                        invalidateAccessToken()
+                    }
+                    return
+                }
+            }
+            createAppFolder()
+        }
+    }, [driveFolderId, accessToken])
+
+    useEffect(() => {
         const commitOfflineFiddlesToDrive = async () => {
             setLoading(true)
             const log = logger(`commitOfflineFiddlesToDrive`)
@@ -142,7 +172,10 @@ export default function CodingGround({
                 )
                 await clearAllFiddleSessions()
             } catch (error) {
-                console.error(`error occurred while saving fiddles in drive`)
+                const { response = {} } = error
+                if (response?.status === 401) {
+                    invalidateAccessToken()
+                }
             }
             setLoading(false)
             setIfOfflineFiddlesSaved(true)
@@ -155,6 +188,7 @@ export default function CodingGround({
     useEffect(() => {
         const loadAllFiddleSessions = async () => {
             const log = logger(`loadAllFiddleSessions`)
+            let abort = false;
             setLoading(true)
             let fiddlesResponse = await fetchExistingFiddleSessions(
                 accessToken,
@@ -163,6 +197,10 @@ export default function CodingGround({
             if (fiddlesResponse?.message) {
                 log(`failed while fetching fiddles from drive`)
                 setLoading(false)
+                if (fiddlesResponse?.status === 401) {
+                    invalidateAccessToken()
+                    return
+                }
             }
             log(`fiddlesResponse`, fiddlesResponse)
 
@@ -175,9 +213,19 @@ export default function CodingGround({
                             const codeObj = getCodStrings(arrayOfFileData)
                             return { id, name, ...codeObj }
                         }
-                    )
+                    ).catch((error) => {
+                        log(`error while fetching exiting fiddles`, error);
+                        const { response = {} } = error;
+                        if(response?.status === 401){
+                            invalidateAccessToken();
+                            abort = true;
+                            throw error;
+                        }
+                    })
                 })
             )
+            if(abort)
+            return;
 
             log(`allFiddlesInDrive`, allFiddlesInDrive)
             setSessions(allFiddlesInDrive)
@@ -237,28 +285,6 @@ export default function CodingGround({
             window.removeEventListener('message', messageInterceptorHandler)
     }, [])
 
-    // useEffect(() => {
-    //     // should be defined
-    //     if (currentSession) {
-    //         // let the user click the button ele
-    //         // setIsRun(false)
-    //         const log = logger(`currentSession - Use Effect`)
-    //         log(`currentSession`, currentSession)
-    //         // this handles the selection of the file
-    //         switch (selectedCode) {
-    //             case 'js':
-    //                 setCurrentJSCode(currentSession.js)
-    //                 break
-    //             case 'css':
-    //                 setCurrentCSSCode(currentSession.css)
-    //                 break
-    //             case 'html':
-    //                 setCurrentHTMLCode(currentSession.html)
-    //                 break
-    //         }
-    //     }
-    // }, [currentSession, selectedCode])
-
     useEffect(() => {
         const saveCurrentSessionToIndexDB = async () => {
             await storeCurrentFiddleSesion(currentSession)
@@ -277,6 +303,9 @@ export default function CodingGround({
                     html
                 )
                 log(`response`, response)
+                if(response.status === 401){
+                    invalidateAccessToken()
+                }
                 setAutoSaving(false)
             }
         }
@@ -332,6 +361,10 @@ export default function CodingGround({
                 setCurrentCSSCode(newFiddle.css)
             } catch (error) {
                 console.error(`failed while creating fiddle -> `, error)
+                const { response = {} } = error
+                if (response?.status === 401) {
+                    invalidateAccessToken()
+                }
             }
         }
 
@@ -377,22 +410,29 @@ export default function CodingGround({
                 // user has signed in with google
                 // the fiddles obj will have id assigned to them
                 log(`loading fiddle session`, session)
+                let abort = false
                 setLoading(true)
-                const fiddleSessionResponse = await fetchExistingFiddleSession(
-                    accessToken,
-                    session.id
-                ).then((arrayOfFileData) => {
-                    const codeObj = getCodStrings(arrayOfFileData)
-                    return { ...session, ...codeObj }
-                })
-                log(`fiddleSessionResponse`, fiddleSessionResponse)
-
-                setCurrentSession(fiddleSessionResponse)
-                setSelectedCode(selectedFile)
-                setCurrentHTMLCode(fiddleSessionResponse.html)
-                setCurrentCSSCode(fiddleSessionResponse.css)
-                setCurrentJSCode(fiddleSessionResponse.js)
-                setLoading(false)
+                await fetchExistingFiddleSession(accessToken, session.id)
+                    .then((arrayOfFileData) => {
+                        const codeObj = getCodStrings(arrayOfFileData)
+                        return { ...session, ...codeObj }
+                    })
+                    .then((fiddleSessionResponse) => {
+                        log(`fiddleSessionResponse`, fiddleSessionResponse)
+                        setCurrentSession(fiddleSessionResponse)
+                        setSelectedCode(selectedFile)
+                        setCurrentHTMLCode(fiddleSessionResponse.html)
+                        setCurrentCSSCode(fiddleSessionResponse.css)
+                        setCurrentJSCode(fiddleSessionResponse.js)
+                        setLoading(false)
+                    })
+                    .catch((error) => {
+                        const { response = {} } = error
+                        if (response?.status === 401) {
+                            log(`invalidating access token`)
+                            invalidateAccessToken()
+                        }
+                    })
             }
         }
     }

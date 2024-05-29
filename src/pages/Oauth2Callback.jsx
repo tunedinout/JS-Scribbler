@@ -3,10 +3,16 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { sendAuthCode } from '../api'
 import { getLogger } from '../util'
 import { getExistingSesionObjects, storeSessionObject } from '../indexedDB.util'
+import { useAuth } from '../auth/AuthProvider'
 const logger = getLogger('Oauth2Callback')
 
-// collects access token and saves to indexedDb
-export default function Oauth2Callback({ oauth2CallbackHandler}) {
+/**
+ * 
+ * @param {Function} oauth2CallbackHandler - updates accessToken, refreshToken, ExpiryDate, email, name
+ * @returns {React.Component}
+ */
+export default function Oauth2Callback() {
+    const { oauth2CallbackHandler } = useAuth();
     const navigate = useNavigate()
     const [searchParams] = useSearchParams()
     const [isRedirectToHome, setIsRedirectToHome] = useState(false)
@@ -61,7 +67,6 @@ export default function Oauth2Callback({ oauth2CallbackHandler}) {
     return (
         <div>
             <h1>Processing...</h1>
-            {/* You can show a loading spinner or message here */}
         </div>
     )
 }

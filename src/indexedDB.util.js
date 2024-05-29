@@ -39,12 +39,11 @@ export async function storeSessionObject({
     accessToken,
     email,
     name,
-    refreshToken,
-    expiryDate,
+    refreshToken
 }) {
-    const log = logger(`storeSessionObject func`)
-    const sessionObject = { accessToken, email, name, refreshToken, expiryDate }
-    log('StoreSessionObject', sessionObject)
+    // const log = logger(`storeSessionObject func`)
+    const sessionObject = { accessToken, email, name, refreshToken }
+    // log('StoreSessionObject', sessionObject)
     return new Promise(async (resolve, reject) => {
         try {
             // cclear session data
@@ -64,7 +63,6 @@ export async function storeSessionObject({
 export async function updateSessionObject(
     accessToken,
     idToken,
-    expiryDate,
     refreshToken,
     email
 ) {
@@ -87,9 +85,7 @@ export async function updateSessionObject(
                 email,
                 accessToken,
                 idToken,
-                expiryDate,
                 refreshToken,
-                type: 'Bearer',
             })
 
             addRequest.onsuccess = () => resolve(addRequest.result)
@@ -125,7 +121,7 @@ async function clearExistingSessionObject() {
     })
 }
 export async function getExistingSesionObjects() {
-    const log = logger(`getExistingSesionObjects`)
+    // const log = logger(`getExistingSesionObjects`)
     return new Promise(async (resolve, reject) => {
         try {
             const db = await openIndexedDBForSessionIO()
@@ -138,7 +134,7 @@ export async function getExistingSesionObjects() {
 
             request.onerror = (e) => reject(e)
             request.onsuccess = () => {
-                log('getExistingSesionObjects', request.result)
+                // log('getExistingSesionObjects', request.result)
                 resolve(request.result)
             }
         } catch (error) {

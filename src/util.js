@@ -1,3 +1,4 @@
+import axios from 'axios';
 import DOMPurify from 'dompurify'
 import { getAuthURL } from './api'
 import { getExistingSesionObjects } from './indexedDB.util'
@@ -133,26 +134,80 @@ export async function redirectToAuth() {
 }
 
 /**
- * 
- * @param {Array} arrayOfFileData - [{ id, mimeType, data}] - contains 
+ *
+ * @param {Array} arrayOfFileData - [{ id, mimeType, data}] - contains
  * 3 such object one for javscript, one for css and one for html
  */
 export function getCodStrings(arrayOfFileData) {
-    const codeObj = arrayOfFileData?.reduce(
-        (acc, current) => {
-            const { mimeType = '', data = '' } = current
-            if (mimeType.includes('css')) {
-                acc.css = data
-            } else if (
-                mimeType.includes('javascript')
-            ) {
-                acc.js = data
-            } else if (mimeType.includes('html')) {
-                acc.html = data
-            }
-            return acc
-        },
-        {}
-    )
-    return codeObj;
+    const codeObj = arrayOfFileData?.reduce((acc, current) => {
+        const { mimeType = '', data = '' } = current
+        if (mimeType.includes('css')) {
+            acc.css = data
+        } else if (mimeType.includes('javascript')) {
+            acc.js = data
+        } else if (mimeType.includes('html')) {
+            acc.html = data
+        }
+        return acc
+    }, {})
+    return codeObj
+}
+
+/**
+ * Retries a fetch request a number of times, 3 if not specified in the second parameter
+ * @param {Object} params - Parameters for the fetch function.
+ * @param {string} params.url - URL to fetch.
+ * @param {string} params.method - HTTP method (e.g., 'GET', 'POST').
+ * @param {Object} [params.body] - Optional body for the request.
+ * @param {Object} [params.headers] - Optional headers for the request.
+ * @param {number} [retries=3] - Number of retries, defaults to 3.
+ * @returns {JSON} response object in json form
+ */
+export async function fetchRetry({ url, method, body, headers }, retries = 3) {
+    const log = logger(`fetchRetry`)
+    log(`params`, { url, method, body, headers }, retries)
+    try {
+        const response = await fetch(url, {
+            method,
+            body,
+            headers,
+        })
+        if (!response.ok) {
+            throw new Error(`failed to fetch`)
+        }
+        // if no error return json response
+        const jsonResponse = await response.json()
+        return jsonResponse
+    } catch (error) {
+        if (retries > 1) {
+            return fetchRetry({ url, method, body, headers }, retries - 1)
+        }
+        // if retries are finished throw error
+        throw error
+    }
+}
+
+export async function axiosRetry({ url, method, data, headers }, retries = 3) {
+    const log = logger(`axiosRetry`)
+    try {
+        const response = await axios({
+            method,
+            url,
+            data,
+            headers,
+        })
+        return response
+    } catch ({ response }) {
+        if (retries > 1) {
+            return axiosRetry({ url, method, data, headers }, retries - 1)
+        }
+
+        return {
+            message:
+                response?.data?.message ||
+                response?.data ||
+                `request at url ${url} failed with Method: ${method}`,
+            ...response,
+        }
+    }
 }

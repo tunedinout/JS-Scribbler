@@ -5,12 +5,7 @@ import { CircularProgress, LinearProgress } from '@mui/material'
 
 // create session management component that works at app level
 
-export default function HomePage({
-    driveFolderId,
-    accessToken,
-    handleSignIn,
-    userInfo,
-}) {
+export default function HomePage() {
     const [isRun, setIsRun] = useState(false)
     const [disableRun, setDisableRun] = useState(false)
     const [loading, setLoading] = useState(false)
@@ -52,9 +47,6 @@ export default function HomePage({
                     {...{
                         disableRun,
                         onRunButton: () => setIsRun(true),
-                        isOfflineMode: !accessToken,
-                        handleSignIn,
-                        userInfo,
                     }}
                 />
                 <CodingGround
@@ -62,8 +54,6 @@ export default function HomePage({
                         isRun,
                         setIsRun,
                         setDisableRun,
-                        driveFolderId,
-                        accessToken,
                         setLoading,
                         setAutoSaving,
                         autoSaving,

@@ -1,19 +1,24 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { ButtonBarContainer, StyledPlayIcon } from './styles'
 import { IoCloudOffline } from 'react-icons/io5'
 import { IoCloudDone } from 'react-icons/io5'
 import { Tooltip, IconButton } from '@mui/material'
 import { FcGoogle } from 'react-icons/fc'
 import { FaSignInAlt, FaUserCircle } from 'react-icons/fa'
+import { useAuth } from '../../auth/AuthProvider'
+import { getLogger } from '../../util'
 // TODO: get his kind of relative path shit out
-
+const logger = getLogger(`ButtonBAR`)
 export default function ButtonBar({
     onRunButton = () => {},
+    // TODO: re-evaluate the use of this
     disableRun = false,
-    isOfflineMode = false,
-    handleSignIn,
-    userInfo,
 }) {
+    const { mode, userInfo, handleSignIn } = useAuth();
+
+    useEffect(() => {
+        logger(`mode effect`)(`mode => `, mode);
+    }, [mode])
     return (
         <ButtonBarContainer>
             <Tooltip title="Run selected fiddle">
@@ -21,7 +26,7 @@ export default function ButtonBar({
                     <StyledPlayIcon onClick={onRunButton} />
                 </IconButton>
             </Tooltip>
-            {isOfflineMode && (
+            {mode === 'offline' && (
                 <Tooltip title="Fiddles are saved offline and persist across restart in this browser profile.">
                     <IconButton>
                         <IoCloudOffline size={16} color="red" />
@@ -29,7 +34,7 @@ export default function ButtonBar({
                 </Tooltip>
             )}
 
-            {!isOfflineMode && (
+            {mode === 'online' && (
                 <Tooltip title="Fiddles are saved in your google drive in folder 'esfiddle'">
                     <IconButton>
                         <IoCloudDone size={16} color="#6CEBB6" />
