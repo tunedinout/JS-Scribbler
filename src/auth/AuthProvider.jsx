@@ -49,9 +49,7 @@ export const AuthProvider = ({ children }) => {
     }, [])
 
     useEffect(() => {
-        logger(`effect for token refresh`)(
-            `params isAccessTokenExpired=${isAccessTokenExpired} and isRefreshTokenFailed=${isRefreshTokenFailed}`
-        )
+       
         if (isAccessTokenExpired && !isRefreshTokenFailed) {
             const loadTokens = async () => {
                 const log = logger(`loadTokens invoked`)
@@ -116,17 +114,6 @@ export const AuthProvider = ({ children }) => {
         if (!accessToken) {
             redirectToAuth()
         }
-    }, [accessToken])
-
-    useEffect(() => {
-        const timeout = setTimeout(() => {
-            if (accessToken) {
-                setAccessToken(
-                    `dfsdfsdfsdfsdfjsldkjflidskjflksdjflksdjflksdjfksdjfslkdjfksdjflskdjflkdsjflksdjflksdjflksdjflkjfsdf`
-                )
-            }
-        }, 30000)
-        return () => clearTimeout(timeout)
     }, [accessToken])
 
     const invalidateAccessToken = useCallback(() => {

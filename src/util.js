@@ -197,17 +197,12 @@ export async function axiosRetry({ url, method, data, headers }, retries = 3) {
             headers,
         })
         return response
-    } catch ({ response }) {
+    } catch (error) {
         if (retries > 1) {
             return axiosRetry({ url, method, data, headers }, retries - 1)
         }
 
-        return {
-            message:
-                response?.data?.message ||
-                response?.data ||
-                `request at url ${url} failed with Method: ${method}`,
-            ...response,
-        }
+        // throw error so that calling code can handle the error;
+        throw error;
     }
 }
