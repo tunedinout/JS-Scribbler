@@ -4,10 +4,10 @@ import { CommonButtonStyles } from '../styled.global';
 
 const StyledPlayIcon = styled(FiPlay)`
     ${CommonButtonStyles}
-    color: #00794A;
+    color: #009CF8;
     font-size: 16px;
     cursor: pointer;
-    fill: #00794A;
+    fill: #009CF8;
 
     ${({ disabled }) => disabled && css`
         opacity: 0.5;

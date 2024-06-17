@@ -1,196 +1,72 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
-import {
-    getExistingSesionObjects,
-    runCode,
-    updateSessionObject,
-} from './indexedDB.util'
+import { runCode } from './indexedDB.util'
 import './App.css'
 import Oauth2Callback from './pages/Oauth2Callback'
 import HomePage from './pages/HomePage'
-import { getLogger, redirectToAuth } from './util'
+import { getLogger, getLoginDetails, redirectToAuth } from './util'
+import { createDriveAppFolder, refreshAccessToken } from './api'
+import { AuthProvider } from './auth/AuthProvider'
 
-/*
-TODOS: 
---------
-
-Add Grid layout
-
-once indexdb is being used for most file storage needs 
-// is there a way to include cache
-
-*/
 const logger = getLogger('APP')
 function App() {
-    const [code, setCode] = useState('')
-    const [isCompilationError, setIsCompilationError] = useState(false)
-    const [runtimeError, setRuntimeError] = useState(null)
-    const [isRun, SetIsRun] = useState(false)
-    const [backupDriveFolderId, setBackupDriveFolderId] = useState(null)
+    const [driveFolderId, setDriveFolderId] = useState(null)
+    const [accessToken, setAccessToken] = useState('')
+    const [expiryDate, setExpiryDate] = useState(0)
+    const [refreshToken, setRefreshToken] = useState('')
+    const [userInfo, setUserInfo] = useState(null)
 
     useEffect(() => {
-        if (isRun) {
-            try {
-                runCode(code)
-            } catch (error) {
-                setRuntimeError(error)
-                console.error(`error occured after running code`, error)
-            } finally {
-                SetIsRun(false)
-            }
-        }
-    }, [code, isRun])
+        logger(`User Info effect`)(`userInfo`, userInfo)
+    }, [userInfo])
 
-    const handleRunClick = function () {
-        if (!isCompilationError) {
-            SetIsRun(true)
-        }
-    }
-    function onCodeChange(__code, isError) {
-        setCode(__code)
-        setIsCompilationError(isError)
-    }
-    function onFileChange() {
-        setRuntimeError(null)
-    }
+    // useEffect(() => {
+    //     // assume expiry date is only defined
+    //     if (expiryDate && refreshToken) {
+    //         const timer = setTimeout(
+    //             async () => {
+    //                 const {
+    //                     accessToken,
+    //                     refreshToken: newRefreshToken,
+    //                     expiryDate,
+    //                     name,
+    //                     email,
+    //                 } = await refreshAccessToken(refreshToken)
+    //                 setAccessToken(accessToken)
+    //                 setRefreshToken(newRefreshToken)
+    //                 setExpiryDate(expiryDate)
+    //                 // TODO: we dont need to really do this
+    //                 setUserInfo({ name, email })
+    //             },
+    //             Math.max(expiryDate - Date.now(), 0)
+    //         )
 
-    async function loadFiles(folderId) {
-        const log = logger(`loadFiles`);
-        log(`folderId`, folderId)
-        const result = await getExistingSesionObjects();
-        const { accessToken } = result[0];
-        const response =   await fetch(`http://localhost:3000/drive/load-files`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                accessToken,
-                folderId
-            })
-        });
-        const filesData = await response.json();
-        log(`filesdata`,filesData);
+    //         return () => clearTimeout(timer)
+    //     }
+    // }, [expiryDate, refreshToken])
 
-    }
+   
 
-    const handleSession = useCallback(async () => {
-        const log = logger(`handleSession - inline fn`)
-        //add session handler
-        const result = await getExistingSesionObjects()
-        if (result.length) {
-            log('handleSession - result', result)
-            // session obj at 0
-            const {
-                accessToken,
-                refreshToken: existingRefreshToken,
-                email,
-                name,
-                expiryDate,
-            } = result[0]
-
-            if (!(accessToken || existingRefreshToken)) {
-                log(`redirect to Auth block`)
-                await redirectToAuth()
-                return
-            }
-
-            // token is expired refresh token
-            if (expiryDate < Date.now()) {
-                setBackupDriveFolderId(null)
-                const response = await fetch(
-                    `http://localhost:3000/auth/google/refresh`,
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            refreshToken: existingRefreshToken,
-                            email,
-                        }),
-                    }
-                )
-                const jsonResponse = await response.json()
-                const {
-                    accessToken,
-                    refreshToken,
-                    idToken,
-                    expiryDate,
-                    type = 'Bearer',
-                } = jsonResponse
-                // lets update session
-                await updateSessionObject(
-                    accessToken,
-                    idToken,
-                    expiryDate,
-                    refreshToken,
-                    email
-                )
-                log(`refreshEndPoint`, jsonResponse)
-            } else {
-                log(`backupDriveFolder`, backupDriveFolderId)
-                if (backupDriveFolderId) return
-                // get current session object
-                const response = await fetch(
-                    `http://localhost:3000/drive/create/folder`,
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            accessToken,
-                        }),
-                    }
-                )
-                // get the id of the created / existing folder
-                const jsonResponse = await response.json()
-                const { id } = jsonResponse
-                setBackupDriveFolderId(id)
-                // save current file in drie
-
-                log('jsonResponse', jsonResponse)
-            }
-        } else {
-            // redirect to auth
-
-            redirectToAuth()
-        }
-    }, [backupDriveFolderId])
-
-    useEffect(() => {
-       const id =  setInterval(handleSession, 10000)
-        return () => clearInterval(id)
-    }, [handleSession])
-
-    useEffect(() => {
-        if(backupDriveFolderId) {
-            loadFiles(backupDriveFolderId);
-        }
-    }, [backupDriveFolderId])
     return (
-        <Router>
-            <Routes>
-                <Route path="/oauth2callback" element={<Oauth2Callback />} />
-                <Route
-                    path="/"
-                    element={
-                        <HomePage
-                            {...{
-                                handleRunClick,
-                                onCodeChange,
-                                onFileChange,
-                                isCompilationError,
-                                runtimeError,
-                                code,
-                                driveFolderId: backupDriveFolderId,
-                            }}
-                        />
-                    }
-                />
-            </Routes>
-        </Router>
+        <AuthProvider>
+            <Router>
+                <Routes>
+                    <Route
+                        path="/oauth2callback"
+                        element={
+                            <Oauth2Callback />
+                        }
+                    />
+                    <Route
+                        path="/"
+                        element={
+                            <HomePage
+                            />
+                        }
+                    />
+                </Routes>
+            </Router>
+        </AuthProvider>
     )
 }
 

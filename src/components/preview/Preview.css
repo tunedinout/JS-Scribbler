@@ -1,18 +1,16 @@
 /* Preview.css */
-.preview {
-    width: 45%;
-    padding: 10px;
-  }
-  
-  .preview h2 {
-    margin-bottom: 5px;
-  }
+
   
   .preview div {
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 10px;
-    background-color: #f9f9f9;
-    min-height: 200px;
+    /* border: 1px solid #ccc; */
+    /* border-radius: 5px; */
+    /* padding: 10px; */
+    /* background-color: #f9f9f9; */
+    /* min-height: 200px; */
   }
   
+
+  .preview iframe {
+    border: none;
+    outline: none;
+  }

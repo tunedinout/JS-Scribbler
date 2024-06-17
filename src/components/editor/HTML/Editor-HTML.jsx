@@ -1,33 +1,29 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
-import './Editor-JS.css'
+import './Editor-HTML.css'
 import AceEditor from 'react-ace'
-import { compileJavaScript } from '../../../indexedDB.util'
-import { TextField } from '@mui/material'
-import { styled } from '@mui/material/styles'
-import { useEditor } from '../hooks'
-import { getLogger } from '../../../util'
+import { useEditor, useHtmlLint } from '../hooks'
 
 // REMOVE This
-const CustomTextfield = styled(TextField)(({}) => ({
-    '& .MuiOutlinedInput-root': {
-        '& fieldset': {
-            border: 'none',
-            borderBottom: '1px solid chocolate',
-            borderRadius: '0',
-        },
-        '& input': {
-            padding: '2px 2px',
-            fontSize: '12px',
-            color: 'white',
-            '&:disabled': {
-                color: 'white', // Change to your desired disabled font color
-                '-webkit-text-fill-color': 'burlywood',
-                borderBottom: '1px solid chocolate',
-            },
-        },
-    },
-}))
+// const CustomTextfield = styled(TextField)(({}) => ({
+//     '& .MuiOutlinedInput-root': {
+//         '& fieldset': {
+//             border: 'none',
+//             borderBottom: '1px solid chocolate',
+//             borderRadius: '0',
+//         },
+//         '& input': {
+//             padding: '2px 2px',
+//             fontSize: '12px',
+//             color: 'white',
+//             '&:disabled': {
+//                 color: 'white', // Change to your desired disabled font color
+//                 '-webkit-text-fill-color': 'burlywood',
+//                 borderBottom: '1px solid chocolate',
+//             },
+//         },
+//     },
+// }))
 /** An Ace Editor intergrated component
  * updates calling component by calling onChange.
  *
@@ -45,14 +41,14 @@ const CustomTextfield = styled(TextField)(({}) => ({
  * @param {Error} runtimeError - any error that is thrown when code is executed
  * @returns {JSX.Element}
  */
-const logger = getLogger( `EditorJS`);
-function EditorJS({
+function EditorHTML({
     onChange,
     // APP.js maintains code for execution and other things
     code: codeString,
     focus,
     doUnfocus,
     runtimeError,
+    onHtmlError,
 }) {
     const {
         editorRef,
@@ -61,6 +57,7 @@ function EditorJS({
         fontSize,
         highlightActiveLine,
     } = useEditor({
+        type : 'html',
         code: codeString,
         focus,
         doUnfocus,
@@ -68,9 +65,12 @@ function EditorJS({
         onChange,
     })
 
+    const errors = useHtmlLint(codeString);
+
     useEffect(() => {
-        logger(`annotations`)(annotations);
-    },[annotations])
+       onHtmlError(errors);
+    },[errors])
+    
 
     // handler that updates renamed file in db
 
@@ -80,29 +80,29 @@ function EditorJS({
                 ref={editorRef}
                 // error annotations
                 style={{width: 'inherit', height: 'inherit'}}
-                annotations={[...annotations]}
+                annotations={[...annotations, ...errors]}
                 value={codeString}
-                mode={'javascript'}
+                mode={'html'}
                 theme="github_dark"
                 onChange={handleChange}
-                // width="inherit"
-                // height="inherit"
                 fontSize={fontSize}
                 showPrintMargin={false}
                 highlightActiveLine={highlightActiveLine}
                 wrapEnabled={true}
                 setOptions={{
                     // scrollPastEnd: true,
-                    useWorker: !runtimeError,
+                    useWorker: false,
                     fontSize: '12px',
                     fontFamily: "'Source Code Pro'",
+                    // enableSnippets: true
                 }}
-                className="esfiddle-js-editor"
+                className="esfiddle-html-editor"
             />
         </div>
     )
 }
-EditorJS.propTypes = {
+EditorHTML.propTypes = {
     onChange: PropTypes.func.isRequired,
+    code: PropTypes.string.isRequired,
 }
-export default EditorJS;
+export default EditorHTML

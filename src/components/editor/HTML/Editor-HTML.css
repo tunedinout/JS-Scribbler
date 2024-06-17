@@ -39,21 +39,27 @@ button:hover {
 .highlighted-keyword {
   color: #bc70fd;
 }
-
+/* .ace_gutter{
+  padding-top: 10px;
+}
+.ace_content{
+  padding-top: 10px;
+  padding-left: 8px;
+} */
 .ace_editor {
   border-radius: 4px;
   color: white;
   /* Enable resizing here */
-  /* resize: both;
+  /* resize: both; */
   overflow: auto;
-  height: 300px;
+ /* height: 300px;
   width: 600px; */
 
 }
 .ace-github-dark {
   background-color: #212020
 }
-.esfiddle-js-tab-filename-input{
+.esfiddle-html-tab-filename-input{
   width: 250px;
   display: flex;
   flex-direction: row;
@@ -64,10 +70,10 @@ button:hover {
   /* margin-bottom: 4px;
   margin-top: 4px; */
 }
-.esfiddle-js-tab-filename-input__button{
+.esfiddle-html-tab-filename-input__button{
   background: green;
 }
-.esfiddle-js-tab-filename-input__edit{
+.esfiddle-html-tab-filename-input__edit{
   display: flex;
   vertical-align: center;
 }

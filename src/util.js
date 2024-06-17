@@ -1,3 +1,8 @@
+import axios from 'axios';
+import DOMPurify from 'dompurify'
+import { getAuthURL } from './api'
+import { getExistingSesionObjects } from './indexedDB.util'
+const logger = getLogger(`util.js`)
 export function getLogger() {
     // ideally excul
     let excludedPrefixes = []
@@ -22,24 +27,6 @@ export function getLogger() {
                 ...args
             )
         }
-    }
-}
-
-export async function redirectToAuth() {
-    try {
-        const response = await fetch('http://localhost:3000/auth/google', {
-            method: 'GET',
-            headers: {
-                'Access-Control-Allow-Origin': '*',
-            },
-        })
-        const authObj = await response.json()
-        console.log(authObj)
-        // get authed
-        // navigate(authObj.authUrl);
-        window.location.href = authObj.authURL
-    } catch (error) {
-        console.error(error)
     }
 }
 
@@ -77,14 +64,145 @@ export function debounce(func = () => {}, wait = 0, isImmediate = false) {
             func.apply(context, args)
     }
 
-    // give clean up function for react effects 
-    // without this whenever dependencies 
+    // give clean up function for react effects
+    // without this whenever dependencies
     // of the given callback (func) changes or mount/unmout happens
-    // the stale debounced function will 
+    // the stale debounced function will
     // also be called
     debouncedFunction.cleanUp = function () {
         clearTimeout(timeout)
         timeout = null
     }
     return debouncedFunction
+}
+
+export function sanitizeHTML(inputHTML = '') {
+    const log = logger(`sanitizeHTML`)
+    if (!inputHTML) return ''
+
+    const sanitizedHTML = DOMPurify.sanitize(inputHTML)
+    log(`Sanitized HTML`, sanitizeHTML)
+    return sanitizedHTML
+}
+
+const isExpired = (expiryDate) => {
+    const log = logger(`isExpired`)
+    const expiryDateTime = new Date(expiryDate).getTime()
+    log(`expiryDateTime`, expiryDateTime)
+    const currentTime = Date.now()
+    log(`currentTime`, currentTime)
+    log(`result of compare`, expiryDateTime < currentTime)
+    return expiryDateTime < currentTime
+}
+/**
+ *  if the accessToken is expired it is refreshed, if accessToken or refreshtoken
+ *  is not defined user is redirect for authentication via oauth2.0
+ * @returns {
+ *              accessToken,
+ *              expiryDate,
+ *              refreshToken,
+ *              email,
+ *              name
+ *           }
+ */
+export async function getLoginDetails() {
+    const log = logger(`getLoginDetails`)
+    const result = await getExistingSesionObjects()
+    if (result.length) {
+        log('handleSession - result', result)
+        // session obj at 0
+        const {
+            accessToken,
+            refreshToken: existingRefreshToken,
+            expiryDate: existingTokenExpiration,
+        } = result[0]
+
+        if (!(accessToken || existingRefreshToken)) {
+            log(`access token / refresh token not found`)
+            // await redirectToAuth()
+            return null
+        }
+        return result[0]
+    } else {
+        return null
+    }
+}
+
+export async function redirectToAuth() {
+    const { authURL } = await getAuthURL()
+    window.location.href = authURL
+}
+
+/**
+ *
+ * @param {Array} arrayOfFileData - [{ id, mimeType, data}] - contains
+ * 3 such object one for javscript, one for css and one for html
+ */
+export function getCodStrings(arrayOfFileData) {
+    const codeObj = arrayOfFileData?.reduce((acc, current) => {
+        const { mimeType = '', data = '' } = current
+        if (mimeType.includes('css')) {
+            acc.css = data
+        } else if (mimeType.includes('javascript')) {
+            acc.js = data
+        } else if (mimeType.includes('html')) {
+            acc.html = data
+        }
+        return acc
+    }, {})
+    return codeObj
+}
+
+/**
+ * Retries a fetch request a number of times, 3 if not specified in the second parameter
+ * @param {Object} params - Parameters for the fetch function.
+ * @param {string} params.url - URL to fetch.
+ * @param {string} params.method - HTTP method (e.g., 'GET', 'POST').
+ * @param {Object} [params.body] - Optional body for the request.
+ * @param {Object} [params.headers] - Optional headers for the request.
+ * @param {number} [retries=3] - Number of retries, defaults to 3.
+ * @returns {JSON} response object in json form
+ */
+export async function fetchRetry({ url, method, body, headers }, retries = 3) {
+    const log = logger(`fetchRetry`)
+    log(`params`, { url, method, body, headers }, retries)
+    try {
+        const response = await fetch(url, {
+            method,
+            body,
+            headers,
+        })
+        if (!response.ok) {
+            throw new Error(`failed to fetch`)
+        }
+        // if no error return json response
+        const jsonResponse = await response.json()
+        return jsonResponse
+    } catch (error) {
+        if (retries > 1) {
+            return fetchRetry({ url, method, body, headers }, retries - 1)
+        }
+        // if retries are finished throw error
+        throw error
+    }
+}
+
+export async function axiosRetry({ url, method, data, headers }, retries = 3) {
+    const log = logger(`axiosRetry`)
+    try {
+        const response = await axios({
+            method,
+            url,
+            data,
+            headers,
+        })
+        return response
+    } catch (error) {
+        if (retries > 1) {
+            return axiosRetry({ url, method, data, headers }, retries - 1)
+        }
+
+        // throw error so that calling code can handle the error;
+        throw error;
+    }
 }

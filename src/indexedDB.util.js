@@ -1,35 +1,7 @@
 import { getLogger } from './util'
 
 const logger = getLogger(`indexedDB.util.js`)
-export function runCode(code) {
-    code = `
-   function __esFiddle__wrapper(){
-    ${code}
-   }
-   __esFiddle__wrapper();
-   `
 
-    try {
-        let evalFn = new Function(code)
-        evalFn()
-    } catch (error) {
-        throw error
-    }
-}
-export function compileJavaScript(code) {
-    if (!window.Babel) return
-    try {
-        // Compile JavaScript code
-        const compiledCode = window.Babel.transform(code, {
-            presets: ['es2017'],
-        }).code
-        return null
-    } catch (error) {
-        // Handle compilation errors
-        console.log(error)
-        return error
-    }
-}
 export function createJSFileObject({ name: filename, data: code, id }) {
     const blob = new Blob([code], { type: 'text/javascript' })
     // why use an array containing the blob ?
@@ -61,26 +33,23 @@ export function openIndexedDBForSessionIO() {
     })
 }
 
-export async function deleteSessionStore() {
-    
-}
+export async function deleteSessionStore() {}
 
 export async function storeSessionObject({
     accessToken,
     email,
     name,
-    refreshToken,
-    expiryDate,
+    refreshToken
 }) {
-    const log = logger(`storeSessionObject func`);
-    const sessionObject = { accessToken, email, name, refreshToken, expiryDate }
-    log('StoreSessionObject', sessionObject)
+    // const log = logger(`storeSessionObject func`)
+    const sessionObject = { accessToken, email, name, refreshToken }
+    // log('StoreSessionObject', sessionObject)
     return new Promise(async (resolve, reject) => {
         try {
             // cclear session data
-            await clearExistingSessionObject();
-            await saveSessionObject(sessionObject);
-            resolve(sessionObject);
+            await clearExistingSessionObject()
+            await saveSessionObject(sessionObject)
+            resolve(sessionObject)
         } catch (error) {
             reject(error)
         }
@@ -94,11 +63,10 @@ export async function storeSessionObject({
 export async function updateSessionObject(
     accessToken,
     idToken,
-    expiryDate,
     refreshToken,
     email
 ) {
-    const log = logger(`updateSessionObject`);
+    const log = logger(`updateSessionObject`)
     return new Promise(async (resolve, reject) => {
         const db = await openIndexedDBForSessionIO()
         const transaction = db.transaction(['session'], 'readwrite')
@@ -112,14 +80,12 @@ export async function updateSessionObject(
             // resolve(res)
             // do not resolve add the new object
             const transaction = db.transaction(['session'], 'readwrite')
-            const sessionObjectStore = transaction.objectStore('session') 
+            const sessionObjectStore = transaction.objectStore('session')
             const addRequest = sessionObjectStore.add({
                 email,
                 accessToken,
                 idToken,
-                expiryDate,
                 refreshToken,
-                type: 'Bearer',
             })
 
             addRequest.onsuccess = () => resolve(addRequest.result)
@@ -128,7 +94,7 @@ export async function updateSessionObject(
     })
 }
 async function saveSessionObject(obj) {
-    const log = logger(`saveSessionObject`);
+    const log = logger(`saveSessionObject`)
     return new Promise(async (resolve, reject) => {
         const db = await openIndexedDBForSessionIO()
         const transaction = db.transaction(['session'], 'readwrite')
@@ -143,20 +109,25 @@ async function saveSessionObject(obj) {
         }
     })
 }
-async function clearExistingSessionObject() {
-    return new Promise(async (resolve, request) => {
-        const db = await openIndexedDBForSessionIO();
-        const transaction = db.transaction(['session'], 'readwrite');
+export async function clearExistingSessionObject() {
+    const log = logger(`clearExistingSessionObject`);
+    return new Promise(async (resolve, reject) => {
+        const db = await openIndexedDBForSessionIO()
+        const transaction = db.transaction(['session'], 'readwrite')
         const sessionObjectStore = transaction.objectStore('session')
-        const sessionRequest = sessionObjectStore.clear();
+        const sessionRequest = sessionObjectStore.clear()
         sessionRequest.onsuccess = () => {
-            resolve();
+            log(`Existing Session object Delete Success.`)
+            resolve()
+        };
+        sessionRequest.onerror = () => {
+            log(`unable to clear existing session object`)
+            reject(`unable to clear existing session object.`);
         }
-       
     })
 }
 export async function getExistingSesionObjects() {
-    const log = logger(`getExistingSesionObjects`);
+    // const log = logger(`getExistingSesionObjects`)
     return new Promise(async (resolve, reject) => {
         try {
             const db = await openIndexedDBForSessionIO()
@@ -169,7 +140,7 @@ export async function getExistingSesionObjects() {
 
             request.onerror = (e) => reject(e)
             request.onsuccess = () => {
-               log('getExistingSesionObjects', request.result)
+                // log('getExistingSesionObjects', request.result)
                 resolve(request.result)
             }
         } catch (error) {
@@ -179,258 +150,120 @@ export async function getExistingSesionObjects() {
     })
 }
 
-export function openIndexedDBForFileIO() {
+
+
+export async function openIndexedDBForFiddleSessions() {
     return new Promise((resolve, reject) => {
-        const request = window.indexedDB.open('FileDatabase', 1)
+        const request = window.indexedDB.open('FiddleSessions', 1)
+
         request.onerror = () => reject('Error opening file db')
-        request.onsuccess = () => {
-            // // console.log(`openIndexedDBForFileIO - success`, request.result);
-            resolve(request.result)
-        }
+        request.onsuccess = () => resolve(request.result)
 
         request.onupgradeneeded = (event) => {
-            // console.log('onupgraded called')
+            // get the prev version of the db
             const db = event.target.result
-            const filesObjectStore = db.createObjectStore('files', {
-                keyPath: 'id',
-            })
-            filesObjectStore.createIndex('timestamp', 'timestamp', {
-                unique: false,
+
+            // structural change - create object store
+            db.createObjectStore('fiddles', {
+                keyPath: 'name',
             })
         }
     })
 }
 
-/**
- * Updates and/Or creates a file object
- * in the indexedDB
- *
- * @param {File} file = {id, name, data, timestamp}, file should have a timestamp
- * @param {string} file.id
- * @param {File} params.data
- */
-export async function storeFile(file) {
-    const log = logger(`storeFile`);
-    log(`storing file with id`, file.id)
-    try {
-        const {
-            id: fileId,
-            name: fileName,
-            data: fileStringdata,
-            timestamp,
-        } = file
-        const db = await openIndexedDBForFileIO()
-        const blob = await fileToDataURL(file)
+// TODO: Tech debt 
+// 1. handle transaction complete states 
+// 2. alos try to catch error overall ass well 
 
-        const transaction = db.transaction(['files'], 'readwrite')
-        const filesObjectStore = transaction.objectStore('files')
+export async function storeCurrentFiddleSesion(currentSession){
+    const log = logger(`storeFile`)
+    log(`storing fiddle session with name`, currentSession.name);
+    const db = await openIndexedDBForFiddleSessions();
+    const transaction = db.transaction(['fiddles'], 'readwrite');
+    const fiddlesObjectStore =  transaction.objectStore('fiddles');
 
-        const request = filesObjectStore.get(fileId)
-        // always use the request handlers
-        // instead of directly using request object
+    const request = fiddlesObjectStore.get(currentSession.name);
 
-        return new Promise((resolve, reject) => {
-            request.onsuccess = async (event) => {
-                const existingFile = event.target.result
-                // console.log('storeFile - existingFile', existingFile);
-                if (request?.result) {
-                    // data changed
-                    existingFile.data = blob
-                    // name changed
-                    existingFile.name = fileName
-                    // timestamp changed
-                    existingFile.timestamp =
-                        existingFile.timestamp || new Date().getTime()
-                    await filesObjectStore.put(existingFile)
-                    resolve({ ...existingFile, data: dataURLToString(blob) })
-                } else {
-                    // add time stamp
-                    const newFileObj = {
-                        id: generateUUID(),
-                        name: file.name,
-                        data: blob,
-                        timestamp: file.timestamp || new Date().getTime(),
-                    }
-                    await filesObjectStore.add(newFileObj)
-                    resolve({ ...newFileObj, data: dataURLToString(blob) })
+    return new Promise( (resolve, reject) => {
+        request.onsuccess = async (event) => {
+            const existingFiddleSession = event.target.result;
+            if(existingFiddleSession) {
+                try {
+                    await fiddlesObjectStore.put(currentSession);
+                    resolve({fiddle: currentSession});
+                } catch (error) {
+                    reject(error);
+                }
+               
+            }else{
+                try {
+                    await fiddlesObjectStore.add(currentSession);
+                    resolve({fiddle: currentSession});
+                } catch (error) {
+                    reject(error);
                 }
             }
-            request.onerror = (event) => {
-                console.error('Error retrieving file:', event.target.error)
-                reject(null)
+        };
+        request.onerror = (err) => reject(err);
+    }) 
+}
+
+export async function loadFiddleSession(fiddleName) {
+    const db = await openIndexedDBForFiddleSessions();
+    const transaction = db.transaction(['fiddles'], 'readonly');
+    const fiddlesObjectStore = transaction.objectStore('fiddles');
+    const request = fiddlesObjectStore.get(fiddleName);
+
+    return new Promise((resolve, reject) => {
+        request.onsuccess = () => {
+            if (request.result) {
+                resolve(request.result);
+            } else {
+                reject('No session found with the name: ' + fiddleName);
             }
-        })
-    } catch (error) {
-        console.error(`Error storing file: `, error)
-    }
+        };
+        request.onerror = () => {
+            reject('Error retrieving the fiddle session: ' + request.error);
+        };
+    });
 }
 
-export async function getFileById(id) {
-    // const log = logger(`getFileById`);
-    try {
-        const db = await openIndexedDBForFileIO()
-        const transaction = db.transaction(['files'], 'readonly')
-        const filesObjectStore = transaction.objectStore('files')
-        const request = filesObjectStore.get(id)
+export async function loadAllFiddleSessions() {
+    const db = await openIndexedDBForFiddleSessions();
+    const transaction = db.transaction(['fiddles'], 'readonly');
+    const fiddlesObjectStore = transaction.objectStore('fiddles');
+    const request = fiddlesObjectStore.getAll(); // Retrieve all records from the store
 
-        return new Promise((resolve, reject) => {
-            request.onsuccess = () => {
-                if (request.result) {
-                    // console.log("getFileById - success", request.result);
-                    resolve(request.result.data)
-                } else {
-                    resolve(null)
-                }
-            }
-            request.onerror = (error) => reject(error)
-        })
-    } catch (error) {
-        console.error(`error reading file:`, error)
-        return null
-    }
+    return new Promise((resolve, reject) => {
+        request.onsuccess = () => {
+            resolve(request.result); // Returns an array of all fiddle sessions
+        };
+        request.onerror = () => {
+            reject('Error retrieving all fiddle sessions: ' + request.error);
+        };
+    });
 }
 
-export async function getAllFiles() {
-    try {
-        const db = await openIndexedDBForFileIO()
-        const transaction = db.transaction(['files'], 'readonly')
-        const filesObjectStore = transaction.objectStore('files')
-        const request = filesObjectStore.getAll()
+// Function to clear all fiddle sessions
+export async function clearAllFiddleSessions() {
+    const db = await openIndexedDBForFiddleSessions();
+    const transaction = db.transaction(['fiddles'], 'readwrite');
+    const fiddlesObjectStore = transaction.objectStore('fiddles');
 
-        return new Promise((resolve, reject) => {
-            request.onsuccess = () => {
-                // console.log("getAllFiles - success", request.result);
-                const files = request.result
-                resolve(transformFiles(files))
-            }
-            request.onerror = (error) => reject(error)
-        })
-    } catch (error) {
-        console.error(`error during getting all files: `, error)
-        return []
-    }
-}
-/**
- *
- * @returns {File} - with file.data as string
- */
-export async function loadLastUsedFile() {
-    try {
-        const db = await openIndexedDBForFileIO()
-        // create a new transaction for
-        // readonly access on files
-        const transaction = db.transaction(['files'], 'readwrite')
+    return new Promise((resolve, reject) => {
+        const request = fiddlesObjectStore.clear();
 
-        // use transaction to get the object store
-        // for how lond a transaction is valid
+        request.onsuccess = () => {
+            console.log('All fiddle sessions cleared successfully.');
+            resolve('All fiddle sessions cleared successfully.');
+        };
 
-        const filesObjectStore = transaction.objectStore('files')
-        // console.log(filesObjectStore.index('timestamp'))
-
-        const request = filesObjectStore
-            .index('timestamp')
-            .openCursor(null, 'prev')
-        // return a promise which resolves to the file contents
-        return new Promise((resolve, reject) => {
-            request.onsuccess = function (event) {
-                // console.log(`file has been loaded`);
-                const cursor = event.target.result
-                // console.log(`cursor in loadLastUsedFile`,cursor )
-                if (cursor) {
-                    const lastFile = cursor.value
-                    // console.log("lastFile", lastFile);
-                    // since we are storing name in the id
-                    resolve(transformFiles([lastFile][0]))
-                } else {
-                    // no files were found
-                    resolve(null)
-                }
-            }
-
-            request.onupgradeneeded = (event) => {
-                const db = event.target.result
-                const filesObjectStore = db.createObjectStore('files', {
-                    keyPath: 'id',
-                })
-                filesObjectStore.createIndex('timestamp', 'timestamp', {
-                    unique: false,
-                })
-            }
-        })
-    } catch (error) {
-        console.error(error)
-        return null
-    }
+        request.onerror = (err) => {
+            console.error('Error clearing fiddle sessions:', err);
+            reject('Error clearing fiddle sessions: ' + err);
+        };
+    });
 }
 
-/**
- *
- * @param {string} id of the file to be deleted
- * @returns deleted file id
- */
-export async function removeFile(id) {
-    try {
-        const db = await openIndexedDBForFileIO()
-        const transaction = db.transaction(['files'], 'readwrite')
-        const storeObject = transaction.objectStore('files')
-        const request = storeObject.delete(id)
 
-        return new Promise((resolve, reject) => {
-            request.onsuccess = () => {
-                resolve(id)
-            }
-            request.onerror = () => {
-                reject(null)
-            }
-        })
-    } catch (error) {
-        console.error(`Error while deleting file id =  ${id}`, error)
-        return null
-    }
-}
 
-// helper function for util fn
-export const dataURLToString = (fileDataAsDataURL) => {
-    if (!fileDataAsDataURL) return ''
-    const [, base64Data] = fileDataAsDataURL.split(',')
-    return atob(base64Data)
-}
-
-export function generateUUID() {
-    /// 4 on the third section
-    // indicates its UUID version 4
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-        // generate a random number in range 0 - 16
-        // Bitwise OR to get the integer part
-        const r = (Math.random() * 16) | 0
-        // r & ox3 binds r to be 0 - 3 in binary
-        // | ox8 - generated num in the range 8 - 11
-        const v = c === 'x' ? r : (r & 0x3) | 0x8
-        return v.toString(16)
-    })
-}
-
-/**
- *
- * @param {File} files : list of file objects {id,name,data,timestamp}
- */
-export const getLastUsedFile = (files) =>
-    files.reduce((lastFile, currentFile) => {
-        const lastFileTimestamp = lastFile.timestamp
-        const currentFileTimestamp = lastFile.timestamp
-        return lastFileTimestamp > currentFileTimestamp ? lastFile : currentFile
-    })
-
-/**
- *
- * @param {File[]} files - An array of file objects
- *                          with data as base64
- */
-function transformFiles(files = []) {
-    return files.map((file) => {
-        // when fetched from db it should be an object containing
-        // the data property for all files
-        file.data = dataURLToString(file.data)
-        return file
-    })
-}

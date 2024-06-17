@@ -1,48 +1,43 @@
 import React, {  useEffect, useRef, useState } from 'react'
-import { ContentEditableFileName } from './styles'
+import { ContentEditableSessionName } from './styles'
 import { CustomListItem, CustomListItemIcon } from './CustomListItemWrapper'
-import { FaRegFile } from 'react-icons/fa'
+import { RiFolder2Fill } from 'react-icons/ri'
 import { useCustomCursorSelection, useOutsideClick } from './hooks'
 
 export default function CustomListItemInput({ handler }) {
     console.log('CustomListItemInput')
-    const { onFileNameInput, value: newFilename, ref } = useCustomListItemInput({handler});
+    const { onSessionNameInput, value: newSessionName, ref } = useNewSessionInput({handler});
     return (
         <CustomListItem>
             <CustomListItemIcon>
-                <FaRegFile size={20} />
+                <RiFolder2Fill size={20} color='yellow' />
             </CustomListItemIcon>
-            <ContentEditableFileName
+            <ContentEditableSessionName
                 {...{
                     ref,
-                    value: newFilename,
+                    value: newSessionName,
                     contentEditable: true,
-                    onInput: onFileNameInput,
+                    onInput: onSessionNameInput,
                 }}
             >
-                {newFilename}
-            </ContentEditableFileName>
+                {newSessionName}
+            </ContentEditableSessionName>
         </CustomListItem>
     )
 }
 
-function useCustomListItemInput({handler}) {
+function useNewSessionInput({handler}) {
     const ref = useRef(null)
     const [value, setValue] = useState('untitled-file')
     const { updateCursor } = useCustomCursorSelection({inputRef: ref});
-    const onFileNameInput = (e) => {
+    const onSessionNameInput = (e) => {
         setValue(e.target.textContent)
         // sends cursor to where the change has been made
         updateCursor();
     }
     const handleOutSideClick = (e) => {
         
-            // TODO : check if a module can be created to handle
-            // all the cases to allow
-            // or perhaps validation
-
-            // call the create file handler
-            // with last value
+           
             console.log(document.activeElement)
             if(!(document.activeElement === ref?.current)){
                 handler(ref.current.textContent)
@@ -63,7 +58,7 @@ function useCustomListItemInput({handler}) {
    },[ref])
 
     return {
-        onFileNameInput,
+        onSessionNameInput,
         value,
         ref,
     }

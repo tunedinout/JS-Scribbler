@@ -1,6 +1,6 @@
 {
     "tabWidth" : 2,
-    "fontSize": 14,
+    "fontSize": 10,
     "highlightActiveLine": false,
     "showLineNumbers": true,
     "showGutter" : true
