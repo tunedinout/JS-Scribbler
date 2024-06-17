@@ -109,14 +109,20 @@ async function saveSessionObject(obj) {
         }
     })
 }
-async function clearExistingSessionObject() {
-    return new Promise(async (resolve, request) => {
+export async function clearExistingSessionObject() {
+    const log = logger(`clearExistingSessionObject`);
+    return new Promise(async (resolve, reject) => {
         const db = await openIndexedDBForSessionIO()
         const transaction = db.transaction(['session'], 'readwrite')
         const sessionObjectStore = transaction.objectStore('session')
         const sessionRequest = sessionObjectStore.clear()
         sessionRequest.onsuccess = () => {
+            log(`Existing Session object Delete Success.`)
             resolve()
+        };
+        sessionRequest.onerror = () => {
+            log(`unable to clear existing session object`)
+            reject(`unable to clear existing session object.`);
         }
     })
 }

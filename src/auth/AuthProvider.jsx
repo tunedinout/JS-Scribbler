@@ -6,7 +6,7 @@ import React, {
     useState,
 } from 'react'
 import { refreshAccessToken } from '../api'
-import { storeSessionObject } from '../indexedDB.util'
+import { clearExistingSessionObject, storeSessionObject } from '../indexedDB.util'
 import { getLogger, getLoginDetails, redirectToAuth } from '../util'
 
 const AuthContext = createContext(null)
@@ -112,6 +112,7 @@ export const AuthProvider = ({ children }) => {
         // setAccessToken(token)
         // call the api
         if (!accessToken) {
+            await clearExistingSessionObject();
             redirectToAuth()
         }
     }, [accessToken])
