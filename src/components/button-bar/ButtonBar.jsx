@@ -21,13 +21,13 @@ export default function ButtonBar({
     }, [mode])
     return (
         <ButtonBarContainer>
-            <Tooltip title="Run selected fiddle">
+            <Tooltip title="Run selected scribbler">
                 <IconButton>
                     <StyledPlayIcon onClick={onRunButton} />
                 </IconButton>
             </Tooltip>
             {mode === 'offline' && (
-                <Tooltip title="Fiddles are saved offline and persist across restart in this browser profile.">
+                <Tooltip title="Scribblers are saved offline and persist across restart in this browser profile.">
                     <IconButton>
                         <IoCloudOffline size={16} color="red" />
                     </IconButton>
@@ -35,7 +35,7 @@ export default function ButtonBar({
             )}
 
             {mode === 'online' && (
-                <Tooltip title="Fiddles are saved in your google drive in folder 'scribbler'">
+                <Tooltip title="Scribblers are saved in your google drive in folder 'scribbler'">
                     <IconButton>
                         <IoCloudDone size={16} color="#6CEBB6" />
                     </IconButton>

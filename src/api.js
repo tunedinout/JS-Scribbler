@@ -122,13 +122,13 @@ export async function createDriveAppFolder(accessToken) {
  *
  * @param {String} accessToken
  * @param {String} scribblerFolderId
- * @returns an array of {id,name} - of existing fiddle sessions
+ * @returns an array of {id,name} - of existing js-scribbler sessions
  */
-export async function fetchExistingFiddleSessions(
+export async function fetchExistingScribblerSessions(
     accessToken,
     scribblerFolderId
 ) {
-    const log = logger(`fetchExistingFiddleSessions`);
+    const log = logger(`fetchExistingScribblerSessions`);
     try {
         const response = await axios({
             url: `http://localhost:3000/drive/folder/sessions?scribblerFolderId=${scribblerFolderId}`,
@@ -144,7 +144,7 @@ export async function fetchExistingFiddleSessions(
             message:
                 response?.data?.message ||
                 response?.data ||
-                'Unable to get existing fiddle sessions.',
+                'Unable to get existing js-scribbler sessions.',
             ...response,
         }
     }
@@ -156,10 +156,10 @@ export async function fetchExistingFiddleSessions(
  * @param {String} scribblerFolderId
  * @returns an array of {mimeType,id,data} - of each css, js and html file
  */
-export async function fetchExistingFiddleSession(accessToken, fiddleSessionId) {
+export async function fetchExistingScribblerSession(accessToken, scribblerSessionId) {
     try {
         const response = await axios({
-            url: `http://localhost:3000/drive/folder/sessions/${fiddleSessionId}`,
+            url: `http://localhost:3000/drive/folder/sessions/${scribblerSessionId}`,
             method: 'GET',
             headers: {
                 Authorization: `Bearer ${accessToken}`,
@@ -171,7 +171,7 @@ export async function fetchExistingFiddleSession(accessToken, fiddleSessionId) {
             message:
                 response?.data?.message ||
                 response?.data ||
-                'Unable to get existing fiddle sessions.',
+                'Unable to get existing js-scribbler sessions.',
             ...response,
         }
     }
@@ -183,10 +183,10 @@ export async function fetchExistingFiddleSession(accessToken, fiddleSessionId) {
  * @param {String} scribblerFolderId
  * @returns response
  */
-export async function createFiddleSession(
+export async function createScribblerSession(
     accessToken,
     scribblerFolderId,
-    fiddleSessionName,
+    scribblerSessionName,
     js = '',
     css = '',
     html = ''
@@ -201,7 +201,7 @@ export async function createFiddleSession(
                 Authorization: `Bearer ${accessToken}`,
             },
             data: {
-                fiddleSessionName,
+                scribblerSessionName,
                 scribblerFolderId,
                 js,
                 css,
@@ -212,7 +212,7 @@ export async function createFiddleSession(
         return response.data
     } catch (error) {
         // throw this error since this method will be used for both 
-        // creating individual fiddle and bulk 
+        // creating individual scribbler and bulk 
         // we loet the calling code decide
         throw error;
     }
@@ -221,29 +221,29 @@ export async function createFiddleSession(
 /**
  *
  * @param {String} accessToken
- * @param {String} fiddleSessionName - name of current fiddle session
+ * @param {String} scribblerSessionName - name of current scribbler session
  * @param {String} js - new contents of the index.js file
  * @param {*} css  - new contents of the index.css file
  * @param {*} html  - new contents of the index.html file
  * @returns
  */
-export async function updateFiddleSession(
+export async function updateScribblerSession(
     accessToken,
-    fiddleSessionId,
+    scribblerSessionId,
     js = '',
     css = '',
     html = ''
 ) {
-    const log = logger(`updateFiddleSession`)
+    const log = logger(`updateScribblerSession`)
     try {
         const response = await axios({
-            url: `http://localhost:3000/drive/folder/session/${fiddleSessionId}`,
+            url: `http://localhost:3000/drive/folder/session/${scribblerSessionId}`,
             method: 'PUT',
             headers: {
                 Authorization: `Bearer ${accessToken}test`,
             },
             data: {
-                fiddleSessionId,
+                scribblerSessionId,
                 js,
                 css,
                 html,
@@ -257,7 +257,7 @@ export async function updateFiddleSession(
             message:
                 response?.data?.message ||
                 response?.data ||
-                `unable to update fiddle session with id ${fiddleSessionId}`,
+                `unable to update scribbler session with id ${scribblerSessionId}`,
             ...response,
         }
     }

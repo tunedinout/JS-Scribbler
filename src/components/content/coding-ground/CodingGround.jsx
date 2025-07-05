@@ -6,11 +6,11 @@ import { debounce, getCodStrings, getLogger } from '../../../util'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
     createDriveAppFolder,
-    createFiddleSession,
-    fetchExistingFiddleSession,
-    fetchExistingFiddleSessions,
-    udpateFiddleSession,
-    updateFiddleSession,
+    createScribblerSession,
+    fetchExistingScribblerSession,
+    fetchExistingScribblerSessions,
+    udpateScribblerSession,
+    updateScribblerSession,
 } from '../../../api'
 import EditorCSS from '../../editor/CSS/Editor-CSS'
 import EditorHTML from '../../editor/HTML/Editor-HTML'
@@ -18,10 +18,10 @@ import Preview from '../../preview/Preview'
 import { RiJavascriptFill } from 'react-icons/ri'
 import { FaPlus } from 'react-icons/fa'
 import {
-    clearAllFiddleSessions,
-    loadAllFiddleSessions,
-    loadFiddleSession,
-    storeCurrentFiddleSesion,
+    clearAllScribblerSessions,
+    loadAllScribblerSessions,
+    loadScribblerSession,
+    storeCurrentScribblerSesion,
 } from '../../../indexedDB.util'
 import { useAuth } from '../../../auth/AuthProvider'
 
@@ -80,7 +80,7 @@ export default function CodingGround({
     const [hideExplorer, setHideExplorer] = useState(true)
     const [isCreateMode, setIsCreateMode] = useState(false)
 
-    const [ifOfflineFiddlesSaved, setIfOfflineFiddlesSaved] = useState(false)
+    const [ifOfflineScribblersSaved, setIfOfflineScribblersSaved] = useState(false)
 
     // only when a new session is created focus is stolen
     // from the editor
@@ -145,22 +145,22 @@ export default function CodingGround({
     }, [driveFolderId, accessToken])
 
     useEffect(() => {
-        const commitOfflineFiddlesToDrive = async () => {
+        const commitOfflineScribblersToDrive = async () => {
             setLoading(true)
-            const log = logger(`commitOfflineFiddlesToDrive`)
-            let offlineFiddleSessions = await loadAllFiddleSessions()
-            if (!offlineFiddleSessions.length) {
+            const log = logger(`commitOfflineScribblersToDrive`)
+            let offlineScribblerSessions = await loadAllScribblerSessions()
+            if (!offlineScribblerSessions.length) {
                 setLoading(false)
-                setIfOfflineFiddlesSaved(true)
+                setIfOfflineScribblersSaved(true)
                 return
             }
 
-            log(`offlineFiddleSessions`, offlineFiddleSessions)
+            log(`offlineScribblerSessions`, offlineScribblerSessions)
 
             try {
-                const saveFiddlesResponse = await Promise.all(
-                    offlineFiddleSessions.map(({ name, js, css, html }) => {
-                        return createFiddleSession(
+                const saveScribblersResponse = await Promise.all(
+                    offlineScribblerSessions.map(({ name, js, css, html }) => {
+                        return createScribblerSession(
                             accessToken,
                             driveFolderId,
                             name,
@@ -170,7 +170,7 @@ export default function CodingGround({
                         )
                     })
                 )
-                await clearAllFiddleSessions()
+                await clearAllScribblerSessions()
             } catch (error) {
                 const { response = {} } = error
                 if (response?.status === 401) {
@@ -178,43 +178,43 @@ export default function CodingGround({
                 }
             }
             setLoading(false)
-            setIfOfflineFiddlesSaved(true)
+            setIfOfflineScribblersSaved(true)
         }
         if (accessToken && driveFolderId) {
-            commitOfflineFiddlesToDrive()
+            commitOfflineScribblersToDrive()
         }
     }, [accessToken, driveFolderId])
 
     useEffect(() => {
-        const loadAllFiddleSessions = async () => {
-            const log = logger(`loadAllFiddleSessions`)
+        const loadAllScribblerSessions = async () => {
+            const log = logger(`loadAllScribblerSessions`)
             let abort = false;
             setLoading(true)
-            let fiddlesResponse = await fetchExistingFiddleSessions(
+            let scribblersResponse = await fetchExistingScribblerSessions(
                 accessToken,
                 driveFolderId
             )
-            if (fiddlesResponse?.message) {
-                log(`failed while fetching fiddles from drive`)
+            if (scribblersResponse?.message) {
+                log(`failed while fetching scribblers from drive`)
                 setLoading(false)
-                if (fiddlesResponse?.status === 401) {
+                if (scribblersResponse?.status === 401) {
                     invalidateAccessToken()
                     return
                 }
             }
-            log(`fiddlesResponse`, fiddlesResponse)
+            log(`scribblersResponse`, scribblersResponse)
 
-            const allFiddlesInDrive = await Promise.all(
-                fiddlesResponse?.map(({ id, name }) => {
+            const allScribblersInDrive = await Promise.all(
+                scribblersResponse?.map(({ id, name }) => {
                     // each is an array of 3 files
-                    return fetchExistingFiddleSession(accessToken, id).then(
+                    return fetchExistingScribblerSession(accessToken, id).then(
                         (arrayOfFileData) => {
-                            log(`allFiddlesInDrive element `, arrayOfFileData)
+                            log(`allScribblersInDrive element `, arrayOfFileData)
                             const codeObj = getCodStrings(arrayOfFileData)
                             return { id, name, ...codeObj }
                         }
                     ).catch((error) => {
-                        log(`error while fetching exiting fiddles`, error);
+                        log(`error while fetching exiting scribblers`, error);
                         const { response = {} } = error;
                         if(response?.status === 401){
                             invalidateAccessToken();
@@ -227,10 +227,10 @@ export default function CodingGround({
             if(abort)
             return;
 
-            log(`allFiddlesInDrive`, allFiddlesInDrive)
-            setSessions(allFiddlesInDrive)
+            log(`allScribblersInDrive`, allScribblersInDrive)
+            setSessions(allScribblersInDrive)
 
-            const newCurrenSession = allFiddlesInDrive[0]
+            const newCurrenSession = allScribblersInDrive[0]
             setCurrentSession(newCurrenSession)
             setCurrentJSCode(newCurrenSession.js)
             setCurrentHTMLCode(newCurrenSession.html)
@@ -240,27 +240,27 @@ export default function CodingGround({
             // TODO: set first one as the current session
             setLoading(false)
         }
-        logger(`effect load fiddle`)(ifOfflineFiddlesSaved)
-        if (accessToken && driveFolderId && ifOfflineFiddlesSaved) {
-            loadAllFiddleSessions()
-            setIfOfflineFiddlesSaved(false)
+        logger(`effect load scribbler`)(ifOfflineScribblersSaved)
+        if (accessToken && driveFolderId && ifOfflineScribblersSaved) {
+            loadAllScribblerSessions()
+            setIfOfflineScribblersSaved(false)
         }
-    }, [accessToken, driveFolderId, ifOfflineFiddlesSaved])
+    }, [accessToken, driveFolderId, ifOfflineScribblersSaved])
 
     useEffect(() => {
         const loadFromIndexedDB = async () => {
-            const log = logger(`loadFromIndexedDB Offline fiddles`)
-            const offlineFiddleSessions = await loadAllFiddleSessions()
-            if (!offlineFiddleSessions.length) return
-            setSessions(offlineFiddleSessions)
+            const log = logger(`loadFromIndexedDB Offline scribblers`)
+            const offlineScribblerSessions = await loadAllScribblerSessions()
+            if (!offlineScribblerSessions.length) return
+            setSessions(offlineScribblerSessions)
             // set the first of all the sessions as the currrent one
             setHideExplorer(false)
-            const newSession = offlineFiddleSessions[0]
+            const newSession = offlineScribblerSessions[0]
             setCurrentSession(newSession)
             setCurrentJSCode(newSession.js)
             setCurrentHTMLCode(newSession.html)
             setCurrentCSSCode(newSession.css)
-            log(`offlineFiddleSessions`, offlineFiddleSessions)
+            log(`offlineScribblerSessions`, offlineScribblerSessions)
         }
         if (!accessToken) {
             // user is in offline mode
@@ -287,7 +287,7 @@ export default function CodingGround({
 
     useEffect(() => {
         const saveCurrentSessionToIndexDB = async () => {
-            await storeCurrentFiddleSesion(currentSession)
+            await storeCurrentScribblerSesion(currentSession)
         }
 
         const saveCurrentSessionToDrive = async ({ id, js, css, html }) => {
@@ -295,7 +295,7 @@ export default function CodingGround({
                 setAutoSaving(true)
                 // above object could contain name if we want to support renaming
                 const log = logger(`saveCurrentSessionToDrive`)
-                const response = await updateFiddleSession(
+                const response = await updateScribblerSession(
                     accessToken,
                     id,
                     js,
@@ -346,7 +346,7 @@ export default function CodingGround({
         } else {
             // online mode
             try {
-                const newFiddle = await createFiddleSession(
+                const newScribbler = await createScribblerSession(
                     accessToken,
                     driveFolderId,
                     name,
@@ -354,13 +354,13 @@ export default function CodingGround({
                     '',
                     ''
                 )
-                setSessions([...sessions, newFiddle])
-                setCurrentSession(newFiddle)
-                setCurrentJSCode(newFiddle.js)
-                setCurrentHTMLCode(newFiddle.html)
-                setCurrentCSSCode(newFiddle.css)
+                setSessions([...sessions, newScribbler])
+                setCurrentSession(newScribbler)
+                setCurrentJSCode(newScribbler.js)
+                setCurrentHTMLCode(newScribbler.html)
+                setCurrentCSSCode(newScribbler.css)
             } catch (error) {
-                console.error(`failed while creating fiddle -> `, error)
+                console.error(`failed while creating scribbler -> `, error)
                 const { response = {} } = error
                 if (response?.status === 401) {
                     invalidateAccessToken()
@@ -390,40 +390,40 @@ export default function CodingGround({
             setSelectedCode(selectedFile)
         } else {
             if (!accessToken) {
-                const fiddleSession = await loadFiddleSession(session.name)
-                log(`fiddleSessionLoaded`, fiddleSession)
+                const scribblerSession = await loadScribblerSession(session.name)
+                log(`scribblerSessionLoaded`, scribblerSession)
                 setSessions(
-                    sessions.map((existingFiddleSession) => {
-                        if (existingFiddleSession.name === session.name) {
-                            return fiddleSession
+                    sessions.map((existingScribblerSession) => {
+                        if (existingScribblerSession.name === session.name) {
+                            return scribblerSession
                         } else {
-                            return existingFiddleSession
+                            return existingScribblerSession
                         }
                     })
                 )
-                setCurrentSession(fiddleSession)
+                setCurrentSession(scribblerSession)
                 setSelectedCode(selectedFile)
-                setCurrentCSSCode(fiddleSession.css)
-                setCurrentHTMLCode(fiddleSession.html)
-                setCurrentJSCode(fiddleSession.js)
+                setCurrentCSSCode(scribblerSession.css)
+                setCurrentHTMLCode(scribblerSession.html)
+                setCurrentJSCode(scribblerSession.js)
             } else {
                 // user has signed in with google
-                // the fiddles obj will have id assigned to them
-                log(`loading fiddle session`, session)
+                // the scribblers obj will have id assigned to them
+                log(`loading scribbler session`, session)
                 let abort = false
                 setLoading(true)
-                await fetchExistingFiddleSession(accessToken, session.id)
+                await fetchExistingScribblerSession(accessToken, session.id)
                     .then((arrayOfFileData) => {
                         const codeObj = getCodStrings(arrayOfFileData)
                         return { ...session, ...codeObj }
                     })
-                    .then((fiddleSessionResponse) => {
-                        log(`fiddleSessionResponse`, fiddleSessionResponse)
-                        setCurrentSession(fiddleSessionResponse)
+                    .then((scribblerSessionResponse) => {
+                        log(`scribblerSessionResponse`, scribblerSessionResponse)
+                        setCurrentSession(scribblerSessionResponse)
                         setSelectedCode(selectedFile)
-                        setCurrentHTMLCode(fiddleSessionResponse.html)
-                        setCurrentCSSCode(fiddleSessionResponse.css)
-                        setCurrentJSCode(fiddleSessionResponse.js)
+                        setCurrentHTMLCode(scribblerSessionResponse.html)
+                        setCurrentCSSCode(scribblerSessionResponse.css)
+                        setCurrentJSCode(scribblerSessionResponse.js)
                         setLoading(false)
                     })
                     .catch((error) => {
@@ -442,7 +442,7 @@ export default function CodingGround({
             {/* 
                 At this level having a flex-box space between the session explorer and Editors space 
             */}
-            {/* TODO: Change this to fiddle session explore */}
+            {/* TODO: Change this to scribbler session explore */}
             {!hideExplorer && (
                 <div className="scribbler-js-tab-container__file-explorer">
                     <SessionExplorer
@@ -452,7 +452,7 @@ export default function CodingGround({
                             deleteSessionHandler,
                             renameSessionHandler,
                             selectSessionHandler,
-                            label: 'Fiddles',
+                            label: 'Scribblers',
                             sessions,
                             disableCreateSession,
                             isCreateMode,
@@ -515,14 +515,14 @@ export default function CodingGround({
             {!currentSession && hideExplorer && (
                 <div className="scribbler-initial-screen-container">
                     <div
-                        className="scribbler-initial-create-fiddle-button"
+                        className="scribbler-initial-create-scribbler-button"
                         onClick={() => {
                             setHideExplorer(false)
                             setIsCreateMode(true)
                         }}
                     >
                         <FaPlus size={25} color="#3c3c3c" />
-                        <span>Create a fiddle</span>
+                        <span>Create a scribbler</span>
                     </div>
                 </div>
             )}

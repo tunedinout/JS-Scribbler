@@ -38,7 +38,7 @@ export default function HomePage() {
                     }}
                 >
                     <CircularProgress about='fsdfsdfs'  />
-                    <div>Please wait loading fiddles....</div>
+                    <div>Please wait loading scribblers....</div>
                 </div>
             )}
 
