@@ -152,9 +152,9 @@ export async function getExistingSesionObjects() {
 
 
 
-export async function openIndexedDBForFiddleSessions() {
+export async function openIndexedDBForScribblerSessions() {
     return new Promise((resolve, reject) => {
-        const request = window.indexedDB.open('FiddleSessions', 1)
+        const request = window.indexedDB.open('ScribblerSessions', 1)
 
         request.onerror = () => reject('Error opening file db')
         request.onsuccess = () => resolve(request.result)
@@ -164,7 +164,7 @@ export async function openIndexedDBForFiddleSessions() {
             const db = event.target.result
 
             // structural change - create object store
-            db.createObjectStore('fiddles', {
+            db.createObjectStore('scribblers', {
                 keyPath: 'name',
             })
         }
@@ -175,30 +175,30 @@ export async function openIndexedDBForFiddleSessions() {
 // 1. handle transaction complete states 
 // 2. alos try to catch error overall ass well 
 
-export async function storeCurrentFiddleSesion(currentSession){
+export async function storeCurrentScribblerSesion(currentSession){
     const log = logger(`storeFile`)
-    log(`storing fiddle session with name`, currentSession.name);
-    const db = await openIndexedDBForFiddleSessions();
-    const transaction = db.transaction(['fiddles'], 'readwrite');
-    const fiddlesObjectStore =  transaction.objectStore('fiddles');
+    log(`storing scribbler session with name`, currentSession.name);
+    const db = await openIndexedDBForScribblerSessions();
+    const transaction = db.transaction(['scribblers'], 'readwrite');
+    const scribblersObjectStore =  transaction.objectStore('scribblers');
 
-    const request = fiddlesObjectStore.get(currentSession.name);
+    const request = scribblersObjectStore.get(currentSession.name);
 
     return new Promise( (resolve, reject) => {
         request.onsuccess = async (event) => {
-            const existingFiddleSession = event.target.result;
-            if(existingFiddleSession) {
+            const existingScribblerSession = event.target.result;
+            if(existingScribblerSession) {
                 try {
-                    await fiddlesObjectStore.put(currentSession);
-                    resolve({fiddle: currentSession});
+                    await scribblersObjectStore.put(currentSession);
+                    resolve({scribbler: currentSession});
                 } catch (error) {
                     reject(error);
                 }
                
             }else{
                 try {
-                    await fiddlesObjectStore.add(currentSession);
-                    resolve({fiddle: currentSession});
+                    await scribblersObjectStore.add(currentSession);
+                    resolve({scribbler: currentSession});
                 } catch (error) {
                     reject(error);
                 }
@@ -208,59 +208,59 @@ export async function storeCurrentFiddleSesion(currentSession){
     }) 
 }
 
-export async function loadFiddleSession(fiddleName) {
-    const db = await openIndexedDBForFiddleSessions();
-    const transaction = db.transaction(['fiddles'], 'readonly');
-    const fiddlesObjectStore = transaction.objectStore('fiddles');
-    const request = fiddlesObjectStore.get(fiddleName);
+export async function loadScribblerSession(scribblerName) {
+    const db = await openIndexedDBForScribblerSessions();
+    const transaction = db.transaction(['scribblers'], 'readonly');
+    const scribblersObjectStore = transaction.objectStore('scribblers');
+    const request = scribblersObjectStore.get(scribblerName);
 
     return new Promise((resolve, reject) => {
         request.onsuccess = () => {
             if (request.result) {
                 resolve(request.result);
             } else {
-                reject('No session found with the name: ' + fiddleName);
+                reject('No session found with the name: ' + scribblerName);
             }
         };
         request.onerror = () => {
-            reject('Error retrieving the fiddle session: ' + request.error);
+            reject('Error retrieving the scribbler session: ' + request.error);
         };
     });
 }
 
-export async function loadAllFiddleSessions() {
-    const db = await openIndexedDBForFiddleSessions();
-    const transaction = db.transaction(['fiddles'], 'readonly');
-    const fiddlesObjectStore = transaction.objectStore('fiddles');
-    const request = fiddlesObjectStore.getAll(); // Retrieve all records from the store
+export async function loadAllScribblerSessions() {
+    const db = await openIndexedDBForScribblerSessions();
+    const transaction = db.transaction(['scribblers'], 'readonly');
+    const scribblersObjectStore = transaction.objectStore('scribblers');
+    const request = scribblersObjectStore.getAll(); // Retrieve all records from the store
 
     return new Promise((resolve, reject) => {
         request.onsuccess = () => {
-            resolve(request.result); // Returns an array of all fiddle sessions
+            resolve(request.result); // Returns an array of all scribbler sessions
         };
         request.onerror = () => {
-            reject('Error retrieving all fiddle sessions: ' + request.error);
+            reject('Error retrieving all scribbler sessions: ' + request.error);
         };
     });
 }
 
-// Function to clear all fiddle sessions
-export async function clearAllFiddleSessions() {
-    const db = await openIndexedDBForFiddleSessions();
-    const transaction = db.transaction(['fiddles'], 'readwrite');
-    const fiddlesObjectStore = transaction.objectStore('fiddles');
+// Function to clear all scribbler sessions
+export async function clearAllScribblerSessions() {
+    const db = await openIndexedDBForScribblerSessions();
+    const transaction = db.transaction(['scribblers'], 'readwrite');
+    const scribblersObjectStore = transaction.objectStore('scribblers');
 
     return new Promise((resolve, reject) => {
-        const request = fiddlesObjectStore.clear();
+        const request = scribblersObjectStore.clear();
 
         request.onsuccess = () => {
-            console.log('All fiddle sessions cleared successfully.');
-            resolve('All fiddle sessions cleared successfully.');
+            console.log('All scribbler sessions cleared successfully.');
+            resolve('All scribbler sessions cleared successfully.');
         };
 
         request.onerror = (err) => {
-            console.error('Error clearing fiddle sessions:', err);
-            reject('Error clearing fiddle sessions: ' + err);
+            console.error('Error clearing scribbler sessions:', err);
+            reject('Error clearing scribbler sessions: ' + err);
         };
     });
 }

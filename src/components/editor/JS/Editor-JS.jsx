@@ -75,7 +75,7 @@ function EditorJS({
     // handler that updates renamed file in db
 
     return (
-        <div className="esfiddle-editor-container">
+        <div className="scribbler-editor-container">
             <AceEditor
                 ref={editorRef}
                 // error annotations
@@ -97,7 +97,7 @@ function EditorJS({
                     fontSize: '12px',
                     fontFamily: "'Source Code Pro'",
                 }}
-                className="esfiddle-js-editor"
+                className="scribbler-js-editor"
             />
         </div>
     )

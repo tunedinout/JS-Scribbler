@@ -73,7 +73,7 @@ export default function SessionExplorer({
                             />
                         )
                     })}
-                    {/* TODO: create fiddle session logic goes here */}
+                    {/* TODO: create scribbler session logic goes here */}
                     {isCreateMode && (
                         <CustomListItemInput
                             handler={(name) => {

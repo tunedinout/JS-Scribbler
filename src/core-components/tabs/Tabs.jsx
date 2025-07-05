@@ -1,3 +1,4 @@
+// TODO: Delete all tab files
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import Tabs from "@mui/material/Tabs";
@@ -24,7 +25,7 @@ export default function TabsComponent({ tabs = [] }) {
     setValue(newValue);
   };
   return (
-    <div className="esfiddle-tabs-container">
+    <div className="scribbler-tabs-container">
       <Box sx={{ width: "100%", typography: "body1" }}>
         <TabContext value={value}>
           <Box sx={{ width: "100%" }}>
