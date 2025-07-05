@@ -35,7 +35,7 @@ export default function ButtonBar({
             )}
 
             {mode === 'online' && (
-                <Tooltip title="Fiddles are saved in your google drive in folder 'esfiddle'">
+                <Tooltip title="Fiddles are saved in your google drive in folder 'scribbler'">
                     <IconButton>
                         <IoCloudDone size={16} color="#6CEBB6" />
                     </IconButton>
@@ -54,7 +54,7 @@ export default function ButtonBar({
                 <Tooltip title="Sign in with google.">
                     <IconButton onClick={handleSignIn}>
                         <FcGoogle size={16} />
-                        <FaSignInAlt size={10} color="white" />
+                        
                     </IconButton>
                 </Tooltip>
             )}

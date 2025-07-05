@@ -53,7 +53,7 @@ button:hover {
 .ace-github-dark {
   background-color: #212020
 }
-.esfiddle-js-tab-filename-input{
+.scribbler-js-tab-filename-input{
   width: 250px;
   display: flex;
   flex-direction: row;
@@ -64,10 +64,10 @@ button:hover {
   /* margin-bottom: 4px;
   margin-top: 4px; */
 }
-.esfiddle-js-tab-filename-input__button{
+.scribbler-js-tab-filename-input__button{
   background: green;
 }
-.esfiddle-js-tab-filename-input__edit{
+.scribbler-js-tab-filename-input__edit{
   display: flex;
   vertical-align: center;
 }

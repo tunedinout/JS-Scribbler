@@ -119,14 +119,14 @@ export default function CodingGround({
     useEffect(() => {
         // this should only run once i.e the first time accessToken is set
         if (!driveFolderId && accessToken) {
-            // create a folder called esfiddle in google drive
+            // create a folder called scribbler in google drive
             const createAppFolder = async () => {
                 const log = logger(`createAppFolder`)
                 const folderCreateResponse =
                     await createDriveAppFolder(accessToken)
                 log(`folderCreateResponse -> `, folderCreateResponse)
                 if (!folderCreateResponse?.message) {
-                    log(`received esfiddle folderid`, folderCreateResponse?.id)
+                    log(`received scribbler folderid`, folderCreateResponse?.id)
                     setDriveFolderId(folderCreateResponse?.id)
                 } else {
                     const status = folderCreateResponse.status
@@ -438,13 +438,13 @@ export default function CodingGround({
     }
 
     return (
-        <div className="esfiddle-js-tab-container">
+        <div className="scribbler-js-tab-container">
             {/* 
                 At this level having a flex-box space between the session explorer and Editors space 
             */}
             {/* TODO: Change this to fiddle session explore */}
             {!hideExplorer && (
-                <div className="esfiddle-js-tab-container__file-explorer">
+                <div className="scribbler-js-tab-container__file-explorer">
                     <SessionExplorer
                         {...{
                             currentSession,
@@ -513,9 +513,9 @@ export default function CodingGround({
 
             {/* Show default screen */}
             {!currentSession && hideExplorer && (
-                <div className="esfiddle-initial-screen-container">
+                <div className="scribbler-initial-screen-container">
                     <div
-                        className="esfiddle-initial-create-fiddle-button"
+                        className="scribbler-initial-create-fiddle-button"
                         onClick={() => {
                             setHideExplorer(false)
                             setIsCreateMode(true)

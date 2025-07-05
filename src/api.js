@@ -121,17 +121,17 @@ export async function createDriveAppFolder(accessToken) {
 /**
  *
  * @param {String} accessToken
- * @param {String} esfiddleFolderId
+ * @param {String} scribblerFolderId
  * @returns an array of {id,name} - of existing fiddle sessions
  */
 export async function fetchExistingFiddleSessions(
     accessToken,
-    esfiddleFolderId
+    scribblerFolderId
 ) {
     const log = logger(`fetchExistingFiddleSessions`);
     try {
         const response = await axios({
-            url: `http://localhost:3000/drive/folder/sessions?esfiddleFolderId=${esfiddleFolderId}`,
+            url: `http://localhost:3000/drive/folder/sessions?scribblerFolderId=${scribblerFolderId}`,
             method: 'GET',
             headers: {
                 Authorization: `Bearer ${accessToken}`,
@@ -153,7 +153,7 @@ export async function fetchExistingFiddleSessions(
 /**
  *
  * @param {String} accessToken
- * @param {String} esfiddleFolderId
+ * @param {String} scribblerFolderId
  * @returns an array of {mimeType,id,data} - of each css, js and html file
  */
 export async function fetchExistingFiddleSession(accessToken, fiddleSessionId) {
@@ -180,12 +180,12 @@ export async function fetchExistingFiddleSession(accessToken, fiddleSessionId) {
 /**
  *
  * @param {String} accessToken
- * @param {String} esfiddleFolderId
+ * @param {String} scribblerFolderId
  * @returns response
  */
 export async function createFiddleSession(
     accessToken,
-    esfiddleFolderId,
+    scribblerFolderId,
     fiddleSessionName,
     js = '',
     css = '',
@@ -202,7 +202,7 @@ export async function createFiddleSession(
             },
             data: {
                 fiddleSessionName,
-                esfiddleFolderId,
+                scribblerFolderId,
                 js,
                 css,
                 html,
