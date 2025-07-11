@@ -49,7 +49,8 @@ export default function HomePage() {
                         onRunButton: () => setIsRun(true),
                     }}
                 />
-                <CodingGround
+                <>Hey new login buddy</>
+                {/* <CodingGround
                     {...{
                         isRun,
                         setIsRun,
@@ -58,7 +59,7 @@ export default function HomePage() {
                         setAutoSaving,
                         autoSaving,
                     }}
-                />
+                /> */}
             </div>
         </>
     )

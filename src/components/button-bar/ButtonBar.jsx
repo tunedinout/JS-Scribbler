@@ -6,7 +6,7 @@ import { Tooltip, IconButton } from '@mui/material'
 import { FcGoogle } from 'react-icons/fc'
 import { FaSignInAlt, FaUserCircle } from 'react-icons/fa'
 import { useAuth } from '../../auth/AuthProvider'
-import { getLogger } from '../../util'
+import { getLogger, redirectToAuth } from '../../util'
 // TODO: get his kind of relative path shit out
 const logger = getLogger(`ButtonBAR`)
 export default function ButtonBar({
@@ -14,11 +14,9 @@ export default function ButtonBar({
     // TODO: re-evaluate the use of this
     disableRun = false,
 }) {
-    const { mode, userInfo, handleSignIn } = useAuth();
+    const { isLoggedIn } = useAuth();
+    const handleSignIn = async () => redirectToAuth()
 
-    useEffect(() => {
-        logger(`mode effect`)(`mode => `, mode);
-    }, [mode])
     return (
         <ButtonBarContainer>
             <Tooltip title="Run selected scribbler">
@@ -26,7 +24,7 @@ export default function ButtonBar({
                     <StyledPlayIcon onClick={onRunButton} />
                 </IconButton>
             </Tooltip>
-            {mode === 'offline' && (
+            {!isLoggedIn && (
                 <Tooltip title="Scribblers are saved offline and persist across restart in this browser profile.">
                     <IconButton>
                         <IoCloudOffline size={16} color="red" />
@@ -34,7 +32,7 @@ export default function ButtonBar({
                 </Tooltip>
             )}
 
-            {mode === 'online' && (
+            {isLoggedIn && (
                 <Tooltip title="Scribblers are saved in your google drive in folder 'scribbler'">
                     <IconButton>
                         <IoCloudDone size={16} color="#6CEBB6" />
@@ -42,15 +40,15 @@ export default function ButtonBar({
                 </Tooltip>
             )}
 
-            {userInfo && userInfo.email && (
+            {/* {userInfo && userInfo.email && (
                 <Tooltip title={`Signed in as ${userInfo.email}  `}>
                     <IconButton>
                         <FaUserCircle color="green" size={16} />
                     </IconButton>
                 </Tooltip>
-            )}
+            )} */}
 
-            {!userInfo?.email && (
+            {!isLoggedIn && (
                 <Tooltip title="Sign in with google.">
                     <IconButton onClick={handleSignIn}>
                         <FcGoogle size={16} />

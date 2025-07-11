@@ -262,3 +262,8 @@ export async function updateScribblerSession(
         }
     }
 }
+
+export async function fetchCurrentUser(signal) {
+    const response =  axios.get('http://localhost:3000/api/v1/me', {signal, withCredentials: true})
+    return response
+}

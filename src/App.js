@@ -51,12 +51,12 @@ function App() {
         <AuthProvider>
             <Router>
                 <Routes>
-                    <Route
+                    {/* <Route
                         path="/oauth2callback"
                         element={
                             <Oauth2Callback />
                         }
-                    />
+                    /> */}
                     <Route
                         path="/"
                         element={
