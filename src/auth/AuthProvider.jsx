@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }) => {
         const log = logger(`fetching me...`)
         const controller = new AbortController();
         fetchCurrentUser(controller.signal)
-        .then((user) => {
+        .then(({data: user}) => {
             log(`user`, user)
             setUserInfo(user)
         })

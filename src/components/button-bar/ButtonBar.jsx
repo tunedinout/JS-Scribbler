@@ -14,7 +14,7 @@ export default function ButtonBar({
     // TODO: re-evaluate the use of this
     disableRun = false,
 }) {
-    const { isLoggedIn } = useAuth();
+    const { isLoggedIn, userInfo } = useAuth();
     const handleSignIn = async () => redirectToAuth()
 
     return (
@@ -40,13 +40,13 @@ export default function ButtonBar({
                 </Tooltip>
             )}
 
-            {/* {userInfo && userInfo.email && (
+            {userInfo && userInfo.email && (
                 <Tooltip title={`Signed in as ${userInfo.email}  `}>
                     <IconButton>
                         <FaUserCircle color="green" size={16} />
                     </IconButton>
                 </Tooltip>
-            )} */}
+            )}
 
             {!isLoggedIn && (
                 <Tooltip title="Sign in with google.">
