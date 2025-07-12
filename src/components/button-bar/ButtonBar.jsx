@@ -1,14 +1,12 @@
-import React, { useEffect } from 'react'
 import { ButtonBarContainer, StyledPlayIcon } from './styles'
 import { IoCloudOffline } from 'react-icons/io5'
 import { IoCloudDone } from 'react-icons/io5'
 import { Tooltip, IconButton } from '@mui/material'
 import { FcGoogle } from 'react-icons/fc'
-import { FaSignInAlt, FaUserCircle } from 'react-icons/fa'
+import { FaUserCircle } from 'react-icons/fa'
 import { useAuth } from '../../auth/AuthProvider'
-import { getLogger, redirectToAuth } from '../../util'
+import { redirectToAuth } from '../../util'
 // TODO: get his kind of relative path shit out
-const logger = getLogger(`ButtonBAR`)
 export default function ButtonBar({
     onRunButton = () => {},
     // TODO: re-evaluate the use of this

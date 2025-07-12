@@ -8,26 +8,6 @@ import { styled } from '@mui/material/styles'
 import { useEditor } from '../hooks'
 import { getLogger } from '../../../util'
 
-// REMOVE This
-const CustomTextfield = styled(TextField)(({}) => ({
-    '& .MuiOutlinedInput-root': {
-        '& fieldset': {
-            border: 'none',
-            borderBottom: '1px solid chocolate',
-            borderRadius: '0',
-        },
-        '& input': {
-            padding: '2px 2px',
-            fontSize: '12px',
-            color: 'white',
-            '&:disabled': {
-                color: 'white', // Change to your desired disabled font color
-                '-webkit-text-fill-color': 'burlywood',
-                borderBottom: '1px solid chocolate',
-            },
-        },
-    },
-}))
 /** An Ace Editor intergrated component
  * updates calling component by calling onChange.
  *

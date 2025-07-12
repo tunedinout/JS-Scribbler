@@ -1,8 +1,5 @@
-import './CodingGround.css'
-import SessionExplorer from '../../../core-components/file-explorer/SessionExplorer'
-import EditorJS from '../../editor/JS/Editor-JS'
-import { debounce, getCodStrings, getLogger } from '../../../util'
-import {  useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
+import { FaPlus } from 'react-icons/fa'
 import {
     createDriveAppFolder,
     createScribblerSession,
@@ -10,53 +7,31 @@ import {
     fetchExistingScribblerSessions,
     updateScribblerSession,
 } from '../../../api'
-import EditorCSS from '../../editor/CSS/Editor-CSS'
-import EditorHTML from '../../editor/HTML/Editor-HTML'
-import Preview from '../../preview/Preview'
-import { FaPlus } from 'react-icons/fa'
+import { useAuth } from '../../../auth/AuthProvider'
+import SessionExplorer from '../../../core-components/file-explorer/SessionExplorer'
 import {
     loadAllScribblerSessions,
-    loadScribblerSession,
     storeCurrentScribblerSesion,
 } from '../../../indexedDB.util'
-import { useAuth } from '../../../auth/AuthProvider'
+import { debounce, getCodStrings, getLogger } from '../../../util'
+import EditorCSS from '../../editor/CSS/Editor-CSS'
+import EditorHTML from '../../editor/HTML/Editor-HTML'
+import EditorJS from '../../editor/JS/Editor-JS'
+import Preview from '../../preview/Preview'
+import './CodingGround.css'
 
-/**
- * @component
- * loads all the coding files, is responsible for loading existing session and executing the code
- * must have
- *
- * local state:
- *      1. list of existing files from the user indexedDB
- *      2. Current selected file
- *      2. show/hide file
- * effects:
- *       1. onMount effect to load all existing files
- * handlers:
- *      1. file name change handler
- *      2. selected file change handler
- *
- * @param {object} props - component props
- * @param {Function} props.onCodeChange
- * @param {Function} props.onFileChange
- * @param {String} props.code
- * @param {Error} Props.runtimeError
- * @param {String} props.driveFolderId
- * @returns {JSX.Element}
- */
 const logger = getLogger(`CodingGround`)
 export default function CodingGround({
     isRun,
     setIsRun,
     setLoading,
     setAutoSaving,
-    autoSaving,
+    // autoSaving,
 }) {
     const [driveFolderId, setDriveFolderId] = useState(null)
-    const [disableCreateSession, setDisableCreateSession] = useState(false)
+    const [disableCreateSession] = useState(false)
     const [sessions, setSessions] = useState([])
-    const initRef = useRef(null)
-    const {isLoggedIn} = useAuth()
+    const { isLoggedIn } = useAuth()
 
     const [currentSession, setCurrentSession] = useState(null)
     // by default a js file should be selected
@@ -71,45 +46,59 @@ export default function CodingGround({
     const [hideExplorer, setHideExplorer] = useState(true)
     const [isCreateMode, setIsCreateMode] = useState(false)
 
-    const [ifOfflineScribblersSaved, setIfOfflineScribblersSaved] = useState(false)
+    const [ifOfflineScribblersSaved, setIfOfflineScribblersSaved] =
+        useState(false)
 
     // only when a new session is created focus is stolen
     // from the editor
     const doUnfocus = () => setFocusEditor(false)
 
-    const onJSCodeChange = (newJSCode) => {
-        // let user proceed and remove all runtime error
-        setJSRuntimeError(null)
+    const onCodeChange = (newSessionObj) => {
         setIsRun(false)
-        // const log = logger(`onJSCodeChange`)
-        // log(`newJSCode`, newJSCode)
-        setCurrentSession({ ...currentSession, js: newJSCode })
-    }
-    const onCSSCodeChange = (newCSSCode) => {
-        // const log = logger(`onCSSCodeChange`)
-        // log(`newCSSCode`, newCSSCode)
-        setIsRun(false)
-        setCurrentSession({ ...currentSession, css: newCSSCode })
-    }
-    const onHTMLCodeChange = (newHTMLCode) => {
-        // const log = logger(`onHTMLCodeChange`)
-        // log(`newHTMLCode`, newHTMLCode)
-        setIsRun(false)
-        setCurrentSession({ ...currentSession, html: newHTMLCode })
+        setCurrentSession(newSessionObj)
+        setAutoSaving(true)
+        if (!isLoggedIn) {
+            storeCurrentScribblerSesion(newSessionObj).then(() =>
+                setAutoSaving(false)
+            )
+        } else {
+            debounce(
+                updateScribblerSession(newSessionObj).then(() =>
+                    setAutoSaving(false)
+                ),
+                1000
+            )
+        }
     }
 
     const onHtmlError = (errors) => {
         // use this cb to not add the html to preview
         setIsHtmlError(Boolean(errors.length))
     }
+    useEffect(() => {
+        const messageInterceptorHandler = function (event) {
+            const log = logger(`messageInterceptorHandler`)
+            if (
+                event.data.type === 'error'
+                // event.origin === 'http://localhost:3001/console'
+            ) {
+                log(event)
+                setJSRuntimeError(() => event.data.message)
+            }
+        }
+        window.addEventListener('message', messageInterceptorHandler)
+        return () =>
+            window.removeEventListener('message', messageInterceptorHandler)
+    }, [])
 
     useEffect(() => {
         // this should only run once i.e the first time accessToken is set
-        if (!driveFolderId && isLoggedIn ) {
-            createDriveAppFolder()
-            .then(({data}) => setDriveFolderId(data?.id))
+        if (!driveFolderId && isLoggedIn) {
+            createDriveAppFolder().then(({ data }) =>
+                setDriveFolderId(data?.id)
+            )
         }
-    }, [driveFolderId,isLoggedIn])
+    }, [driveFolderId, isLoggedIn])
 
     useEffect(() => {
         if (driveFolderId) {
@@ -134,17 +123,17 @@ export default function CodingGround({
                     // EAT
                 })
         }
-    }, [driveFolderId,setLoading])
+    }, [driveFolderId, setLoading])
 
     useEffect(() => {
         const log = logger(`effect load scribbler`)
-        if ( driveFolderId && ifOfflineScribblersSaved) {
+        if (driveFolderId && ifOfflineScribblersSaved) {
             fetchExistingScribblerSessions(driveFolderId)
                 .then(({ data: scribbles }) =>
                     Promise.all(
                         scribbles?.map(({ id, name }) =>
                             fetchExistingScribblerSession(id).then(
-                                ({data: fileData}) => ({
+                                ({ data: fileData }) => ({
                                     id,
                                     name,
                                     ...getCodStrings(fileData),
@@ -165,7 +154,6 @@ export default function CodingGround({
                     setLoading(false)
                     setIfOfflineScribblersSaved(false)
                 })
-            
         }
     }, [driveFolderId, ifOfflineScribblersSaved, setLoading])
 
@@ -188,68 +176,29 @@ export default function CodingGround({
         // else case handled by a seperate effect
     }, [isLoggedIn])
 
-    useEffect(() => {
-        const messageInterceptorHandler = function (event) {
-            const log = logger(`messageInterceptorHandler`)
-            if (
-                event.data.type === 'error'
-                // event.origin === 'http://localhost:3001/console'
-            ) {
-                log(event)
-                setJSRuntimeError(() => event.data.message)
-            }
-        }
-        window.addEventListener('message', messageInterceptorHandler)
-        return () =>
-            window.removeEventListener('message', messageInterceptorHandler)
-    }, [])
-
-    useEffect(() => {
-        if (currentSession) {
-            setAutoSaving(true)
-            if (!isLoggedIn) {
-                storeCurrentScribblerSesion(currentSession).then(() =>
-                    setAutoSaving(false)
-                )
-            } else {
-                debounce(
-                    updateScribblerSession(currentSession).then(() =>
-                        setAutoSaving(false)
-                    ),
-                    1000
-                )
-            }
-        }
-    }, [currentSession, isLoggedIn, setAutoSaving])
-
     const createSessionHandler = async ({ name }, cb) => {
         const log = logger(`createSessionHandler`)
         log('called with new session', name)
+        const newSessionObj = {
+            name,
+            js: '',
+            css: '',
+            html: '',
+        }
+        setSessions([...sessions, newSessionObj])
+        setCurrentSession(newSessionObj)
 
         if (!isLoggedIn) {
             // offline mode
-            const newSessionObj = {
-                name,
-                js: '',
-                css: '',
-                html: '',
-            }
-
-            setSessions([...sessions, newSessionObj])
-            setCurrentSession(newSessionObj)
+            storeCurrentScribblerSesion(newSessionObj)
         } else {
             // online mode
-            try {
-                const newScribbler = await createScribblerSession(
-                    driveFolderId,
-                  {name, css: '',js: '',html: ''}
-                )
-                setSessions([...sessions, newScribbler])
-                setCurrentSession(newScribbler)
-            } catch (error) {
-               log(`failed while creating scribbler -> `, error)
-               
-            }
+            createScribblerSession(driveFolderId, newSessionObj).catch(
+                (error) => {
+                    log(`failed while creating scribbler -> `, error)
+                    // EAT
+                }
+            )
         }
 
         cb()
@@ -273,39 +222,8 @@ export default function CodingGround({
             // only file has change
             setSelectedCode(selectedFile)
         } else {
-            if (!isLoggedIn) {
-                const scribblerSession = await loadScribblerSession(session.name)
-                log(`scribblerSessionLoaded`, scribblerSession)
-                setSessions(
-                    sessions.map((existingScribblerSession) => {
-                        if (existingScribblerSession.name === session.name) {
-                            return scribblerSession
-                        } else {
-                            return existingScribblerSession
-                        }
-                    })
-                )
-                setCurrentSession(scribblerSession)
-                setSelectedCode(selectedFile)
-            } else {
-                // user has signed in with google
-                // the scribblers obj will have id assigned to them
-                log(`loading scribbler session`, session)
-                setLoading(true)
-                await fetchExistingScribblerSession(session.id)
-                    .then(({data: arrayOfFileData}) => {
-                        const codeObj = getCodStrings(arrayOfFileData)
-                        return { ...session, ...codeObj }
-                    })
-                    .then((scribblerSessionResponse) => {
-                        log(`scribblerSessionResponse`, scribblerSessionResponse)
-                        setCurrentSession(scribblerSessionResponse)
-                        setSelectedCode(selectedFile)
-                        setLoading(false)
-                    })
-                    .catch((error) => {
-                    })
-            }
+            setCurrentSession(session)
+            setSelectedCode(selectedFile)
         }
     }
 
@@ -339,7 +257,10 @@ export default function CodingGround({
                     {...{
                         focus: focusEditor,
                         doUnfocus,
-                        onChange: onJSCodeChange,
+                        onChange: (js) => {
+                            setJSRuntimeError(null)
+                            onCodeChange({ ...currentSession, js })
+                        },
                         code: currentSession.js,
                         runtimeError: jsRuntimeError,
                     }}
@@ -351,7 +272,8 @@ export default function CodingGround({
                     {...{
                         focus: focusEditor,
                         doUnfocus,
-                        onChange: onCSSCodeChange,
+                        onChange: (css) =>
+                            onCodeChange({ ...currentSession, css }),
                         code: currentSession.css,
                         runtimeError: null,
                     }}
@@ -363,9 +285,10 @@ export default function CodingGround({
                     {...{
                         focus: focusEditor,
                         doUnfocus,
-                        onChange: onHTMLCodeChange,
-                        code: currentSession.html,
+                        onChange: (html) =>
+                            onCodeChange({ ...currentSession, html }),
                         runtimeError: null,
+                        code: currentSession.html,
                         onHtmlError,
                     }}
                 />
