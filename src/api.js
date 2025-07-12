@@ -62,6 +62,7 @@ export async function refreshAccessToken(existingRefreshToken) {
         const response = await axiosRetry({
             url: `http://localhost:3000/auth/google/refresh`,
             method: 'POST',
+            withCredentials: true,
             data: {
                 refreshToken: existingRefreshToken,
             },
@@ -88,23 +89,17 @@ export async function refreshAccessToken(existingRefreshToken) {
     }
 }
 
-/**
- *
- * @param {String} accessToken
- * @returns {id} OR {message} - if error response received
- */
+
 export async function createDriveAppFolder(accessToken) {
     const log = logger(`createDriveAppFolder`)
     try {
         const response = await axios({
             url: `http://localhost:3000/drive/create/folder`,
             method: 'POST',
-            headers: {
-                Authorization: `Bearer ${accessToken},`,
-            },
+            withCredentials: true,
         })
 
-        return response.data
+        return response
     } catch ({ response }) {
         // TODO: carefully evaluate why we do this
         console.log(`error response while creating app folder`, response)
@@ -125,7 +120,6 @@ export async function createDriveAppFolder(accessToken) {
  * @returns an array of {id,name} - of existing js-scribbler sessions
  */
 export async function fetchExistingScribblerSessions(
-    accessToken,
     scribblerFolderId
 ) {
     const log = logger(`fetchExistingScribblerSessions`);
@@ -133,11 +127,9 @@ export async function fetchExistingScribblerSessions(
         const response = await axios({
             url: `http://localhost:3000/drive/folder/sessions?scribblerFolderId=${scribblerFolderId}`,
             method: 'GET',
-            headers: {
-                Authorization: `Bearer ${accessToken}`,
-            },
+            withCredentials: true,
         })
-        return response.data
+        return response
     } catch ({ response }) {
         log(`response`, response)
         return {
@@ -156,16 +148,14 @@ export async function fetchExistingScribblerSessions(
  * @param {String} scribblerFolderId
  * @returns an array of {mimeType,id,data} - of each css, js and html file
  */
-export async function fetchExistingScribblerSession(accessToken, scribblerSessionId) {
+export async function fetchExistingScribblerSession( scribblerSessionId) {
     try {
         const response = await axios({
             url: `http://localhost:3000/drive/folder/sessions/${scribblerSessionId}`,
             method: 'GET',
-            headers: {
-                Authorization: `Bearer ${accessToken}`,
-            },
+            withCredentials: true,
         })
-        return response.data
+        return response
     } catch ({ response }) {
         return {
             message:
@@ -177,39 +167,28 @@ export async function fetchExistingScribblerSession(accessToken, scribblerSessio
     }
 }
 
-/**
- *
- * @param {String} accessToken
- * @param {String} scribblerFolderId
- * @returns response
- */
+
 export async function createScribblerSession(
-    accessToken,
-    scribblerFolderId,
-    scribblerSessionName,
-    js = '',
-    css = '',
-    html = ''
+    driveFolderId,
+    {
+        name = '', js = '', css = '', html = ''
+    }
 ) {
     try {
         const response = await axios({
             url: `http://localhost:3000/drive/folder/session`,
             method: 'POST',
-            headers: {
-                // axios will set this auto
-                // 'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
-            },
+            withCredentials: true,
             data: {
-                scribblerSessionName,
-                scribblerFolderId,
+                scribblerFolderId: driveFolderId,
+                scribblerSessionName: name,
                 js,
                 css,
                 html,
             },
         })
 
-        return response.data
+        return response
     } catch (error) {
         // throw this error since this method will be used for both 
         // creating individual scribbler and bulk 
@@ -218,30 +197,19 @@ export async function createScribblerSession(
     }
 }
 
-/**
- *
- * @param {String} accessToken
- * @param {String} scribblerSessionName - name of current scribbler session
- * @param {String} js - new contents of the index.js file
- * @param {*} css  - new contents of the index.css file
- * @param {*} html  - new contents of the index.html file
- * @returns
- */
-export async function updateScribblerSession(
-    accessToken,
-    scribblerSessionId,
-    js = '',
-    css = '',
-    html = ''
-) {
+
+export async function updateScribblerSession({
+    id: scribblerSessionId,
+    js,
+    css,
+    html,
+}) {
     const log = logger(`updateScribblerSession`)
     try {
         const response = await axios({
             url: `http://localhost:3000/drive/folder/session/${scribblerSessionId}`,
             method: 'PUT',
-            headers: {
-                Authorization: `Bearer ${accessToken}test`,
-            },
+            withCredentials: true,
             data: {
                 scribblerSessionId,
                 js,
@@ -251,7 +219,7 @@ export async function updateScribblerSession(
         })
         log(`response`, response)
 
-        return response.data
+        return response
     } catch ({ response }) {
         return {
             message:
@@ -261,4 +229,9 @@ export async function updateScribblerSession(
             ...response,
         }
     }
+}
+
+export async function fetchCurrentUser(signal) {
+    const response =  axios.get('http://localhost:3000/api/v1/me', {signal, withCredentials: true})
+    return response
 }

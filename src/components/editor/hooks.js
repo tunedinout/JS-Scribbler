@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {HTMLHint} from 'htmlhint';
 
 export function useEditor({
@@ -58,50 +58,6 @@ export function useEditor({
                 setHighlightActiveLine(false)
             })
     }, [])
-
-    // receive code changes from APP
-    // useEffect(() => {
-    //     setCode(codeString)
-    // }, [codeString])
-
-    // compiles user code
-    // TODO: remove since we are using workers
-    // useEffect(() => {
-    //     //console.log('code is changing', code)
-    //     if (code && type === 'js') {
-    //         const err = compileJavaScript(code)
-    //         //console.log(`error after compilation - ${err}`)
-    //         if (err) {
-    //             if (err?.loc) {
-    //                 const { line, column } = err.loc
-    //                 // check if it already exists or not
-    //                 if (
-    //                     !annotations.find(
-    //                         ({ row, column: col, text, type }) =>
-    //                             row == line - 1 &&
-    //                             col == column &&
-    //                             (text === err?.message ||
-    //                                 (`Error occurred at (${line}:${column})` &&
-    //                                     type == 'error'))
-    //                     )
-    //                 )
-    //                     setAnnotations([
-    //                         ...annotations,
-    //                         {
-    //                             row: line - 1,
-    //                             column,
-    //                             text:
-    //                                 err?.message ||
-    //                                 `Error occurred at (${line}:${column})`,
-    //                             type: 'error',
-    //                         },
-    //                     ])
-    //             }
-    //         } else {
-    //             setAnnotations([])
-    //         }
-    //     }
-    // }, [code,type])
 
     // captures run time error
     useEffect(() => {

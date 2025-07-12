@@ -1,7 +1,5 @@
 import axios from 'axios';
-import DOMPurify from 'dompurify'
 import { getAuthURL } from './api'
-import { getExistingSesionObjects } from './indexedDB.util'
 const logger = getLogger(`util.js`)
 export function getLogger() {
     // ideally excul
@@ -76,57 +74,6 @@ export function debounce(func = () => {}, wait = 0, isImmediate = false) {
     return debouncedFunction
 }
 
-export function sanitizeHTML(inputHTML = '') {
-    const log = logger(`sanitizeHTML`)
-    if (!inputHTML) return ''
-
-    const sanitizedHTML = DOMPurify.sanitize(inputHTML)
-    log(`Sanitized HTML`, sanitizeHTML)
-    return sanitizedHTML
-}
-
-const isExpired = (expiryDate) => {
-    const log = logger(`isExpired`)
-    const expiryDateTime = new Date(expiryDate).getTime()
-    log(`expiryDateTime`, expiryDateTime)
-    const currentTime = Date.now()
-    log(`currentTime`, currentTime)
-    log(`result of compare`, expiryDateTime < currentTime)
-    return expiryDateTime < currentTime
-}
-/**
- *  if the accessToken is expired it is refreshed, if accessToken or refreshtoken
- *  is not defined user is redirect for authentication via oauth2.0
- * @returns {
- *              accessToken,
- *              expiryDate,
- *              refreshToken,
- *              email,
- *              name
- *           }
- */
-export async function getLoginDetails() {
-    const log = logger(`getLoginDetails`)
-    const result = await getExistingSesionObjects()
-    if (result.length) {
-        log('handleSession - result', result)
-        // session obj at 0
-        const {
-            accessToken,
-            refreshToken: existingRefreshToken,
-            expiryDate: existingTokenExpiration,
-        } = result[0]
-
-        if (!(accessToken || existingRefreshToken)) {
-            log(`access token / refresh token not found`)
-            // await redirectToAuth()
-            return null
-        }
-        return result[0]
-    } else {
-        return null
-    }
-}
 
 export async function redirectToAuth() {
     const { authURL } = await getAuthURL()
@@ -188,7 +135,6 @@ export async function fetchRetry({ url, method, body, headers }, retries = 3) {
 }
 
 export async function axiosRetry({ url, method, data, headers }, retries = 3) {
-    const log = logger(`axiosRetry`)
     try {
         const response = await axios({
             method,

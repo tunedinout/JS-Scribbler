@@ -1,43 +1,39 @@
-import React, { useEffect } from 'react'
 import { ButtonBarContainer, StyledPlayIcon } from './styles'
 import { IoCloudOffline } from 'react-icons/io5'
 import { IoCloudDone } from 'react-icons/io5'
 import { Tooltip, IconButton } from '@mui/material'
 import { FcGoogle } from 'react-icons/fc'
-import { FaSignInAlt, FaUserCircle } from 'react-icons/fa'
+import { FaUserCircle } from 'react-icons/fa'
 import { useAuth } from '../../auth/AuthProvider'
-import { getLogger } from '../../util'
+import { redirectToAuth } from '../../util'
 // TODO: get his kind of relative path shit out
-const logger = getLogger(`ButtonBAR`)
 export default function ButtonBar({
     onRunButton = () => {},
     // TODO: re-evaluate the use of this
     disableRun = false,
 }) {
-    const { mode, userInfo, handleSignIn } = useAuth();
+    const { isLoggedIn, userInfo } = useAuth();
+    const handleSignIn = async () => redirectToAuth()
 
-    useEffect(() => {
-        logger(`mode effect`)(`mode => `, mode);
-    }, [mode])
     return (
         <ButtonBarContainer>
             <Tooltip title="Run selected scribbler">
                 <IconButton>
-                    <StyledPlayIcon onClick={onRunButton} />
+                    <StyledPlayIcon size={24} onClick={onRunButton} />
                 </IconButton>
             </Tooltip>
-            {mode === 'offline' && (
+            {!isLoggedIn && (
                 <Tooltip title="Scribblers are saved offline and persist across restart in this browser profile.">
                     <IconButton>
-                        <IoCloudOffline size={16} color="red" />
+                        <IoCloudOffline size={24} color="red" />
                     </IconButton>
                 </Tooltip>
             )}
 
-            {mode === 'online' && (
+            {isLoggedIn && (
                 <Tooltip title="Scribblers are saved in your google drive in folder 'scribbler'">
                     <IconButton>
-                        <IoCloudDone size={16} color="#6CEBB6" />
+                        <IoCloudDone size={24} color="#6CEBB6" />
                     </IconButton>
                 </Tooltip>
             )}
@@ -45,15 +41,15 @@ export default function ButtonBar({
             {userInfo && userInfo.email && (
                 <Tooltip title={`Signed in as ${userInfo.email}  `}>
                     <IconButton>
-                        <FaUserCircle color="green" size={16} />
+                        <FaUserCircle color="green" size={24} />
                     </IconButton>
                 </Tooltip>
             )}
 
-            {!userInfo?.email && (
+            {!isLoggedIn && (
                 <Tooltip title="Sign in with google.">
                     <IconButton onClick={handleSignIn}>
-                        <FcGoogle size={16} />
+                        <FcGoogle size={24} />
                         
                     </IconButton>
                 </Tooltip>
