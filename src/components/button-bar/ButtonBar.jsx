@@ -21,13 +21,13 @@ export default function ButtonBar({
         <ButtonBarContainer>
             <Tooltip title="Run selected scribbler">
                 <IconButton>
-                    <StyledPlayIcon onClick={onRunButton} />
+                    <StyledPlayIcon size={24} onClick={onRunButton} />
                 </IconButton>
             </Tooltip>
             {!isLoggedIn && (
                 <Tooltip title="Scribblers are saved offline and persist across restart in this browser profile.">
                     <IconButton>
-                        <IoCloudOffline size={16} color="red" />
+                        <IoCloudOffline size={24} color="red" />
                     </IconButton>
                 </Tooltip>
             )}
@@ -35,7 +35,7 @@ export default function ButtonBar({
             {isLoggedIn && (
                 <Tooltip title="Scribblers are saved in your google drive in folder 'scribbler'">
                     <IconButton>
-                        <IoCloudDone size={16} color="#6CEBB6" />
+                        <IoCloudDone size={24} color="#6CEBB6" />
                     </IconButton>
                 </Tooltip>
             )}
@@ -43,7 +43,7 @@ export default function ButtonBar({
             {userInfo && userInfo.email && (
                 <Tooltip title={`Signed in as ${userInfo.email}  `}>
                     <IconButton>
-                        <FaUserCircle color="green" size={16} />
+                        <FaUserCircle color="green" size={24} />
                     </IconButton>
                 </Tooltip>
             )}
@@ -51,7 +51,7 @@ export default function ButtonBar({
             {!isLoggedIn && (
                 <Tooltip title="Sign in with google.">
                     <IconButton onClick={handleSignIn}>
-                        <FcGoogle size={16} />
+                        <FcGoogle size={24} />
                         
                     </IconButton>
                 </Tooltip>

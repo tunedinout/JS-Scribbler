@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import ButtonBar from '../components/button-bar/ButtonBar'
 import CodingGround from '../components/content/coding-ground/CodingGround'
 import { CircularProgress, LinearProgress } from '@mui/material'
+import { useAuth } from '../auth/AuthProvider'
 
 // create session management component that works at app level
 
@@ -15,7 +16,7 @@ export default function HomePage() {
         <>
             {/* Use this for showing loading for non-intrusive events like autoSaving */}
             <div style={{ width: '100%', height: '12px' }}>
-                {autoSaving &&  (
+                {autoSaving && (
                     <LinearProgress style={{ backgroundColor: 'none' }} />
                 )}
             </div>
@@ -34,10 +35,10 @@ export default function HomePage() {
                         top: 0,
                         left: 0,
                         background: '#fcfcfc',
-                        opacity: '0.4'
+                        opacity: '0.4',
                     }}
                 >
-                    <CircularProgress about='fsdfsdfs'  />
+                    <CircularProgress about="fsdfsdfs" />
                     <div>Please wait loading scribblers....</div>
                 </div>
             )}
@@ -49,17 +50,19 @@ export default function HomePage() {
                         onRunButton: () => setIsRun(true),
                     }}
                 />
-                <>Hey new login buddy</>
-                {/* <CodingGround
-                    {...{
-                        isRun,
-                        setIsRun,
-                        setDisableRun,
-                        setLoading,
-                        setAutoSaving,
-                        autoSaving,
-                    }}
-                /> */}
+                {/* <>Hey new login buddy</> */}
+                {
+                    <CodingGround
+                        {...{
+                            isRun,
+                            setIsRun,
+                            setDisableRun,
+                            setLoading,
+                            setAutoSaving,
+                            autoSaving,
+                        }}
+                    />
+                }
             </div>
         </>
     )

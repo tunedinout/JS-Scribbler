@@ -57,10 +57,10 @@ export default function CodingGround({
     autoSaving,
 }) {
     const [driveFolderId, setDriveFolderId] = useState(null)
-    const { accessToken, invalidateAccessToken } = useAuth()
     const [disableCreateSession, setDisableCreateSession] = useState(false)
     const [sessions, setSessions] = useState([])
     const initRef = useRef(null)
+    const {isLoggedIn} = useAuth()
 
     const [currentSession, setCurrentSession] = useState(null)
 
@@ -118,134 +118,72 @@ export default function CodingGround({
 
     useEffect(() => {
         // this should only run once i.e the first time accessToken is set
-        if (!driveFolderId && accessToken) {
-            // create a folder called scribbler in google drive
-            const createAppFolder = async () => {
-                const log = logger(`createAppFolder`)
-                const folderCreateResponse =
-                    await createDriveAppFolder(accessToken)
-                log(`folderCreateResponse -> `, folderCreateResponse)
-                if (!folderCreateResponse?.message) {
-                    log(`received scribbler folderid`, folderCreateResponse?.id)
-                    setDriveFolderId(folderCreateResponse?.id)
-                } else {
-                    const status = folderCreateResponse.status
-                    log(
-                        `folderCreateResponse status`,
-                        folderCreateResponse.status
-                    )
-                    if (status === 401) {
-                        invalidateAccessToken()
-                    }
-                    return
-                }
-            }
-            createAppFolder()
+        if (!driveFolderId && isLoggedIn ) {
+            createDriveAppFolder()
+            .then(({data}) => setDriveFolderId(data?.id))
         }
-    }, [driveFolderId, accessToken])
+    }, [driveFolderId,isLoggedIn])
 
     useEffect(() => {
-        const commitOfflineScribblersToDrive = async () => {
-            setLoading(true)
-            const log = logger(`commitOfflineScribblersToDrive`)
-            let offlineScribblerSessions = await loadAllScribblerSessions()
-            if (!offlineScribblerSessions.length) {
-                setLoading(false)
-                setIfOfflineScribblersSaved(true)
-                return
-            }
-
-            log(`offlineScribblerSessions`, offlineScribblerSessions)
-
-            try {
-                const saveScribblersResponse = await Promise.all(
-                    offlineScribblerSessions.map(({ name, js, css, html }) => {
-                        return createScribblerSession(
-                            accessToken,
-                            driveFolderId,
-                            name,
-                            js,
-                            css,
-                            html
-                        )
-                    })
-                )
-                await clearAllScribblerSessions()
-            } catch (error) {
-                const { response = {} } = error
-                if (response?.status === 401) {
-                    invalidateAccessToken()
-                }
-            }
-            setLoading(false)
-            setIfOfflineScribblersSaved(true)
-        }
-        if (accessToken && driveFolderId) {
-            commitOfflineScribblersToDrive()
-        }
-    }, [accessToken, driveFolderId])
-
-    useEffect(() => {
-        const loadAllScribblerSessions = async () => {
-            const log = logger(`loadAllScribblerSessions`)
-            let abort = false;
-            setLoading(true)
-            let scribblersResponse = await fetchExistingScribblerSessions(
-                accessToken,
-                driveFolderId
-            )
-            if (scribblersResponse?.message) {
-                log(`failed while fetching scribblers from drive`)
-                setLoading(false)
-                if (scribblersResponse?.status === 401) {
-                    invalidateAccessToken()
-                    return
-                }
-            }
-            log(`scribblersResponse`, scribblersResponse)
-
-            const allScribblersInDrive = await Promise.all(
-                scribblersResponse?.map(({ id, name }) => {
-                    // each is an array of 3 files
-                    return fetchExistingScribblerSession(accessToken, id).then(
-                        (arrayOfFileData) => {
-                            log(`allScribblersInDrive element `, arrayOfFileData)
-                            const codeObj = getCodStrings(arrayOfFileData)
-                            return { id, name, ...codeObj }
-                        }
-                    ).catch((error) => {
-                        log(`error while fetching exiting scribblers`, error);
-                        const { response = {} } = error;
-                        if(response?.status === 401){
-                            invalidateAccessToken();
-                            abort = true;
-                            throw error;
-                        }
-                    })
-                })
-            )
-            if(abort)
-            return;
-
-            log(`allScribblersInDrive`, allScribblersInDrive)
-            setSessions(allScribblersInDrive)
-
-            const newCurrenSession = allScribblersInDrive[0]
-            setCurrentSession(newCurrenSession)
-            setCurrentJSCode(newCurrenSession.js)
-            setCurrentHTMLCode(newCurrenSession.html)
-            setCurrentCSSCode(newCurrenSession.css)
-
-            setHideExplorer(false)
-            // TODO: set first one as the current session
-            setLoading(false)
-        }
-        logger(`effect load scribbler`)(ifOfflineScribblersSaved)
-        if (accessToken && driveFolderId && ifOfflineScribblersSaved) {
+        if (driveFolderId) {
             loadAllScribblerSessions()
-            setIfOfflineScribblersSaved(false)
+                .then((offlineScribbles) => {
+                    if (!offlineScribbles.length) {
+                        setLoading(false)
+                        setIfOfflineScribblersSaved(true)
+                    } else {
+                        return Promise.all(
+                            offlineScribbles.map((scribble) =>
+                                createScribblerSession(driveFolderId, scribble)
+                            )
+                        )
+                    }
+                })
+                .then(() => {
+                    setLoading(false)
+                    setIfOfflineScribblersSaved(true)
+                })
+                .catch(() => {
+                    // EAT
+                })
         }
-    }, [accessToken, driveFolderId, ifOfflineScribblersSaved])
+    }, [driveFolderId])
+
+    useEffect(() => {
+        const log = logger(`effect load scribbler`)
+        if ( driveFolderId && ifOfflineScribblersSaved) {
+            fetchExistingScribblerSessions(driveFolderId)
+                .then(({ data: scribbles }) =>
+                    Promise.all(
+                        scribbles?.map(({ id, name }) =>
+                            fetchExistingScribblerSession(id).then(
+                                ({data: fileData}) => ({
+                                    id,
+                                    name,
+                                    ...getCodStrings(fileData),
+                                })
+                            )
+                        )
+                    )
+                )
+                .then((allScribbles) => {
+                    log(`allScribbles`, allScribbles)
+                    setSessions(allScribbles)
+
+                    const newCurrenSession = allScribbles[0]
+                    setCurrentSession(newCurrenSession)
+                    setCurrentJSCode(newCurrenSession.js)
+                    setCurrentHTMLCode(newCurrenSession.html)
+                    setCurrentCSSCode(newCurrenSession.css)
+
+                    setHideExplorer(false)
+                    // TODO: set first one as the current session
+                    setLoading(false)
+                    setIfOfflineScribblersSaved(false)
+                })
+            
+        }
+    }, [ driveFolderId, ifOfflineScribblersSaved])
 
     useEffect(() => {
         const loadFromIndexedDB = async () => {
@@ -262,12 +200,12 @@ export default function CodingGround({
             setCurrentCSSCode(newSession.css)
             log(`offlineScribblerSessions`, offlineScribblerSessions)
         }
-        if (!accessToken) {
+        if (!isLoggedIn) {
             // user is in offline mode
             loadFromIndexedDB()
         }
         // else case handled by a seperate effect
-    }, [accessToken])
+    }, [isLoggedIn])
 
     useEffect(() => {
         const messageInterceptorHandler = function (event) {
@@ -286,49 +224,28 @@ export default function CodingGround({
     }, [])
 
     useEffect(() => {
-        const saveCurrentSessionToIndexDB = async () => {
-            await storeCurrentScribblerSesion(currentSession)
-        }
-
-        const saveCurrentSessionToDrive = async ({ id, js, css, html }) => {
-            if (!autoSaving) {
-                setAutoSaving(true)
-                // above object could contain name if we want to support renaming
-                const log = logger(`saveCurrentSessionToDrive`)
-                const response = await updateScribblerSession(
-                    accessToken,
-                    id,
-                    js,
-                    css,
-                    html
-                )
-                log(`response`, response)
-                if(response.status === 401){
-                    invalidateAccessToken()
-                }
-                setAutoSaving(false)
-            }
-        }
-        // access token is not there
-        // user in offline mode
         if (currentSession) {
-            if (!accessToken) {
-                // offline mode
-                setAutoSaving(true)
-                saveCurrentSessionToIndexDB(currentSession)
-                setAutoSaving(false)
+            setAutoSaving(true)
+            if (!isLoggedIn) {
+                storeCurrentScribblerSesion(currentSession).then(() =>
+                    setAutoSaving(false)
+                )
             } else {
-                // signed in user
-                debounce(saveCurrentSessionToDrive(currentSession), 1000)
+                debounce(
+                    updateScribblerSession(currentSession).then(() =>
+                        setAutoSaving(false)
+                    ),
+                    1000
+                )
             }
         }
-    }, [currentSession, accessToken])
+    }, [currentSession, isLoggedIn])
 
     const createSessionHandler = async ({ name }, cb) => {
         const log = logger(`createSessionHandler`)
         log('called with new session', name)
 
-        if (!accessToken) {
+        if (!isLoggedIn) {
             // offline mode
             const newSessionObj = {
                 name,
@@ -347,12 +264,8 @@ export default function CodingGround({
             // online mode
             try {
                 const newScribbler = await createScribblerSession(
-                    accessToken,
                     driveFolderId,
-                    name,
-                    '',
-                    '',
-                    ''
+                  {name, css: '',js: '',html: ''}
                 )
                 setSessions([...sessions, newScribbler])
                 setCurrentSession(newScribbler)
@@ -362,9 +275,6 @@ export default function CodingGround({
             } catch (error) {
                 console.error(`failed while creating scribbler -> `, error)
                 const { response = {} } = error
-                if (response?.status === 401) {
-                    invalidateAccessToken()
-                }
             }
         }
 
@@ -389,7 +299,7 @@ export default function CodingGround({
             // only file has change
             setSelectedCode(selectedFile)
         } else {
-            if (!accessToken) {
+            if (!isLoggedIn) {
                 const scribblerSession = await loadScribblerSession(session.name)
                 log(`scribblerSessionLoaded`, scribblerSession)
                 setSessions(
@@ -412,8 +322,8 @@ export default function CodingGround({
                 log(`loading scribbler session`, session)
                 let abort = false
                 setLoading(true)
-                await fetchExistingScribblerSession(accessToken, session.id)
-                    .then((arrayOfFileData) => {
+                await fetchExistingScribblerSession(session.id)
+                    .then(({data: arrayOfFileData}) => {
                         const codeObj = getCodStrings(arrayOfFileData)
                         return { ...session, ...codeObj }
                     })
@@ -428,10 +338,6 @@ export default function CodingGround({
                     })
                     .catch((error) => {
                         const { response = {} } = error
-                        if (response?.status === 401) {
-                            log(`invalidating access token`)
-                            invalidateAccessToken()
-                        }
                     })
             }
         }
