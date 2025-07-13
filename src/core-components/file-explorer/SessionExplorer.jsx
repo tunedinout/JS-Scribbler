@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import { useState } from 'react'
 import {
     CollapseExpandIconContainer,
     CollapseIcon,
     ExpandIcon,
-   SessionsContainer,
-   SessionsHeadingWrapper,
+    SessionsContainer,
+    SessionsHeadingWrapper,
     SessionsListWrapper,
     StyledPlusIcon,
 } from './styles'
@@ -16,7 +16,6 @@ export default function SessionExplorer({
     label,
     renameSessionHandler,
     deleteSessionHandler,
-    // TODO: file creation not in users hand, remove
     createSessionHandler,
     selectSessionHandler,
     currentSession,
@@ -26,16 +25,15 @@ export default function SessionExplorer({
 }) {
     const [isCollapsed, setIsCollapsed] = useState(false)
 
-    // useEffect(() => console.log(`isCreateMode = ${isCreateMode}`), [isCreateMode])
-
     return (
-        // TODO: call this session container
         <SessionsContainer>
             <SessionsHeadingWrapper>
                 <div>{label}</div>
                 <StyledPlusIcon
                     size={16}
-                    onClick={() => !disableCreateSession && setIsCreateMode(true)}
+                    onClick={() =>
+                        !disableCreateSession && setIsCreateMode(true)
+                    }
                     disabled={disableCreateSession}
                 />
 
@@ -52,28 +50,21 @@ export default function SessionExplorer({
             {!isCollapsed && (
                 <SessionsListWrapper>
                     {sessions.map((session, index) => {
-
                         return (
                             <CustomListItemWrapper
                                 {...{
                                     session,
-                                    // TODO: renaming not allowed by user
-                                    //  BUT we can use this to rename a session
                                     renameSessionHandler,
-                                     // TODO: deleting not allowed by user
                                     deleteSessionHandler,
-                                    // TODO: no selection is needed
-                                    // the default js , css and html is already selected
                                     selectSessionHandler,
                                     index,
                                     key: session.name,
-                                    // TODO: remove all file selection 
-                                    isSelected: currentSession.name === session.name,
+                                    isSelected:
+                                        currentSession?.name === session?.name,
                                 }}
                             />
                         )
                     })}
-                    {/* TODO: create scribbler session logic goes here */}
                     {isCreateMode && (
                         <CustomListItemInput
                             handler={(name) => {

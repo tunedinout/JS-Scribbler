@@ -52,45 +52,8 @@ export async function getAuthURL() {
     }
 }
 
-/**
- * R
- * @param {String} existingRefreshToken
- * @returns response object
- */
-export async function refreshAccessToken(existingRefreshToken) {
-    try {
-        const response = await axiosRetry({
-            url: `http://localhost:3000/auth/google/refresh`,
-            method: 'POST',
-            withCredentials: true,
-            data: {
-                refreshToken: existingRefreshToken,
-            },
-        })
 
-        const { accessToken, refreshToken, expiryDate, name, email } = response.data
-        return {
-            accessToken,
-            refreshToken,
-            expiryDate,
-            name,
-            email,
-        }
-    } catch (error) {
-        const { response } = error
-        // TODO: carefully evaluate why we do this
-        return {
-            message:
-                response?.data?.message ||
-                response?.data ||
-                'Unable to refresh accessToken',
-            ...response,
-        }
-    }
-}
-
-
-export async function createDriveAppFolder(accessToken) {
+export async function createDriveAppFolder() {
     const log = logger(`createDriveAppFolder`)
     try {
         const response = await axios({
