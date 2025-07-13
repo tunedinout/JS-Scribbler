@@ -6,28 +6,6 @@ import axios from 'axios'
 
 // and handle that directly in the calling code
 const logger = getLogger(`API.JS`)
-export async function sendAuthCode(authCode) {
-    try {
-        const response = await fetch('http://localhost:3000/auth/google', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ authCode }),
-        })
-        const res = await response.json()
-        console.log(res)
-        return res
-    } catch ({ response }) {
-        // TODO: carefully evaluate why we do this
-        return {
-            message:
-                response?.data?.message ||
-                response?.data ||
-                'Unable to send access token',
-        }
-    }
-}
 
 export async function getAuthURL() {
     try {
