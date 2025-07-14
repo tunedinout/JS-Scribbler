@@ -1,24 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { FaPlus } from 'react-icons/fa'
-import {
-    createDriveAppFolder,
-    createScribblerSession,
-    fetchExistingScribblerSession,
-    fetchExistingScribblerSessions,
-    updateScribblerSession,
-} from '../../../api'
-import { useAuth } from '../../../auth/AuthProvider'
 import SessionExplorer from '../../../core-components/file-explorer/SessionExplorer'
-import {
-    loadAllScribblerSessions,
-    storeCurrentScribblerSesion,
-} from '../../../indexedDB.util'
-import { debounce, getCodStrings, getLogger } from '../../../util'
+import { storeCurrentScribblerSesion } from '../../../indexedDB.util'
+import { getLogger } from '../../../util'
 import EditorCSS from '../../editor/CSS/Editor-CSS'
 import EditorHTML from '../../editor/HTML/Editor-HTML'
 import EditorJS from '../../editor/JS/Editor-JS'
 import Preview from '../../preview/Preview'
 import './CodingGround.css'
+import { useLoadWorker } from '../../../hooks/useLoadWorker'
+import { useSyncWorker } from '../../../hooks/useSyncWorker'
+import { useAuth } from '../../../auth/AuthProvider'
 
 const logger = getLogger(`CodingGround`)
 export default function CodingGround({
@@ -28,10 +20,8 @@ export default function CodingGround({
     setAutoSaving,
     // autoSaving,
 }) {
-    const [driveFolderId, setDriveFolderId] = useState(null)
     const [disableCreateSession] = useState(false)
     const [sessions, setSessions] = useState([])
-    const { isLoggedIn } = useAuth()
 
     const [currentSession, setCurrentSession] = useState(null)
     // by default a js file should be selected
@@ -45,31 +35,30 @@ export default function CodingGround({
 
     const [hideExplorer, setHideExplorer] = useState(true)
     const [isCreateMode, setIsCreateMode] = useState(false)
+    const { isLoggedIn } = useAuth()
+    const { loadedScribbles, driveId } = useLoadWorker(isLoggedIn)
+    const { syncToDrive } = useSyncWorker(isLoggedIn)
 
-    const [ifOfflineScribblersSaved, setIfOfflineScribblersSaved] =
-        useState(false)
+    useEffect(() => {
+       if(currentSession)
+        setHideExplorer(false)
+    }, [currentSession])
 
     // only when a new session is created focus is stolen
     // from the editor
     const doUnfocus = () => setFocusEditor(false)
 
-    const onCodeChange = (newSessionObj) => {
-        setIsRun(false)
-        setCurrentSession(newSessionObj)
-        setAutoSaving(true)
-        if (!isLoggedIn) {
-            storeCurrentScribblerSesion(newSessionObj).then(() =>
-                setAutoSaving(false)
-            )
-        } else {
-            debounce(
-                updateScribblerSession(newSessionObj).then(() =>
-                    setAutoSaving(false)
-                ),
-                1000
-            )
-        }
-    }
+    const onCodeChange = useCallback(
+        async (newSessionObj) => {
+            setIsRun(false)
+            setCurrentSession(newSessionObj)
+            setAutoSaving(true)
+            await storeCurrentScribblerSesion(newSessionObj)
+            setAutoSaving(false)
+            driveId && syncToDrive(newSessionObj, driveId)
+        },
+        [driveId, setAutoSaving, setIsRun, syncToDrive]
+    )
 
     const onHtmlError = (errors) => {
         // use this cb to not add the html to preview
@@ -92,89 +81,13 @@ export default function CodingGround({
     }, [])
 
     useEffect(() => {
-        // this should only run once i.e the first time accessToken is set
-        if (!driveFolderId && isLoggedIn) {
-            createDriveAppFolder().then(({ data }) =>
-                setDriveFolderId(data?.id)
-            )
-        }
-    }, [driveFolderId, isLoggedIn])
+        const newScribbles = [...loadedScribbles]
+        setSessions(newScribbles)
+    }, [loadedScribbles])
 
     useEffect(() => {
-        if (driveFolderId) {
-            loadAllScribblerSessions()
-                .then((offlineScribbles) => {
-                    if (!offlineScribbles.length) {
-                        setLoading(false)
-                        setIfOfflineScribblersSaved(true)
-                    } else {
-                        return Promise.all(
-                            offlineScribbles.map((scribble) =>
-                                createScribblerSession(driveFolderId, scribble)
-                            )
-                        )
-                    }
-                })
-                .then(() => {
-                    setLoading(false)
-                    setIfOfflineScribblersSaved(true)
-                })
-                .catch(() => {
-                    // EAT
-                })
-        }
-    }, [driveFolderId, setLoading])
-
-    useEffect(() => {
-        const log = logger(`effect load scribbler`)
-        if (driveFolderId && ifOfflineScribblersSaved) {
-            fetchExistingScribblerSessions(driveFolderId)
-                .then(({ data: scribbles }) =>
-                    Promise.all(
-                        scribbles?.map(({ id, name }) =>
-                            fetchExistingScribblerSession(id).then(
-                                ({ data: fileData }) => ({
-                                    id,
-                                    name,
-                                    ...getCodStrings(fileData),
-                                })
-                            )
-                        )
-                    )
-                )
-                .then((allScribbles) => {
-                    log(`allScribbles`, allScribbles)
-                    setSessions(allScribbles)
-
-                    const newCurrenSession = allScribbles[0]
-                    setCurrentSession(newCurrenSession)
-
-                    setHideExplorer(false)
-                    // TODO: set first one as the current session
-                    setLoading(false)
-                    setIfOfflineScribblersSaved(false)
-                })
-        }
-    }, [driveFolderId, ifOfflineScribblersSaved, setLoading])
-
-    useEffect(() => {
-        const loadFromIndexedDB = async () => {
-            const log = logger(`loadFromIndexedDB Offline scribblers`)
-            const offlineScribblerSessions = await loadAllScribblerSessions()
-            if (!offlineScribblerSessions.length) return
-            setSessions(offlineScribblerSessions)
-            // set the first of all the sessions as the currrent one
-            setHideExplorer(false)
-            const newSession = offlineScribblerSessions[0]
-            setCurrentSession(newSession)
-            log(`offlineScribblerSessions`, offlineScribblerSessions)
-        }
-        if (!isLoggedIn) {
-            // user is in offline mode
-            loadFromIndexedDB()
-        }
-        // else case handled by a seperate effect
-    }, [isLoggedIn])
+        if (sessions.length && !currentSession) setCurrentSession(sessions[0])
+    }, [currentSession, sessions])
 
     const createSessionHandler = async ({ name }, cb) => {
         const log = logger(`createSessionHandler`)
@@ -187,20 +100,7 @@ export default function CodingGround({
         }
         setSessions([...sessions, newSessionObj])
         setCurrentSession(newSessionObj)
-
-        if (!isLoggedIn) {
-            // offline mode
-            storeCurrentScribblerSesion(newSessionObj)
-        } else {
-            // online mode
-            createScribblerSession(driveFolderId, newSessionObj).catch(
-                (error) => {
-                    log(`failed while creating scribbler -> `, error)
-                    // EAT
-                }
-            )
-        }
-
+        storeCurrentScribblerSesion(newSessionObj)
         cb()
     }
 
@@ -229,10 +129,6 @@ export default function CodingGround({
 
     return (
         <div className="scribbler-js-tab-container">
-            {/* 
-                At this level having a flex-box space between the session explorer and Editors space 
-            */}
-            {/* TODO: Change this to scribbler session explore */}
             {!hideExplorer && (
                 <div className="scribbler-js-tab-container__file-explorer">
                     <SessionExplorer

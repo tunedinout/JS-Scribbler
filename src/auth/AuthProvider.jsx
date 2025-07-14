@@ -1,13 +1,11 @@
-import React, {
+import {
     createContext,
-    useCallback,
     useContext,
     useEffect,
     useState,
 } from 'react'
-import { fetchCurrentUser, refreshAccessToken } from '../api'
-import { clearExistingSessionObject, storeSessionObject } from '../indexedDB.util'
-import { getLogger, getLoginDetails, redirectToAuth } from '../util'
+import { fetchCurrentUser } from '../api'
+import { getLogger } from '../util'
 
 const AuthContext = createContext(null)
 
