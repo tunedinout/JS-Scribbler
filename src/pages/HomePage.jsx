@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import ButtonBar from '../components/button-bar/ButtonBar'
-import CodingGround from '../components/content/coding-ground/CodingGround'
 import { CircularProgress, LinearProgress } from '@mui/material'
+import CodingPad from '../components/content/coding-pad/CodingPad'
 
 export default function HomePage() {
     const [isRun, setIsRun] = useState(false)
@@ -47,7 +47,7 @@ export default function HomePage() {
                     }}
                 />
                 {
-                    <CodingGround
+                    <CodingPad
                         {...{
                             isRun,
                             setIsRun,

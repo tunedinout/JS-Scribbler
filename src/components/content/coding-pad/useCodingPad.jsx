@@ -5,8 +5,8 @@ import { useSyncWorker } from "../../../hooks/useSyncWorker"
 import { saveScribble } from "../../../indexedDB.util"
 import { debounce, getLogger } from "../../../util"
 
-const logger = getLogger(`useCodingGround`)
-function useCodingGround(isRun, setIsRun, setLoading, setAutoSaving) {
+const logger = getLogger(`useCodingPad`)
+function useCodingPad(isRun, setIsRun, setLoading, setAutoSaving) {
     const { isLoggedIn } = useAuth()
     const { loadedScribbles, driveId } = useLoadWorker(isLoggedIn)
     const [scribbles, setScribbles] = useState([])
@@ -104,4 +104,4 @@ function useCodingGround(isRun, setIsRun, setLoading, setAutoSaving) {
     }
 }
 
-export default useCodingGround;
+export default useCodingPad;

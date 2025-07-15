@@ -5,12 +5,12 @@ import EditorCSS from '../../editor/CSS/Editor-CSS'
 import EditorHTML from '../../editor/HTML/Editor-HTML'
 import EditorJS from '../../editor/JS/Editor-JS'
 import Preview from '../../preview/Preview'
-import './CodingGround.css'
-import useCodingGround from './useCodingGround'
+import './CodingPad.css'
+import useCodingPad from './useCodingPad'
 import { getLogger } from '../../../util'
 
-const logger = getLogger(`CodingGround`)
-export default function CodingGround({
+const logger = getLogger(`CodingPad`)
+export default function CodingPad({
     isRun,
     setIsRun,
     setLoading,
@@ -31,7 +31,7 @@ export default function CodingGround({
         onDelete,
         onRename,
         onSelect,
-    } = useCodingGround(isRun,setIsRun,setLoading,setAutoSaving)
+    } = useCodingPad(isRun,setIsRun,setLoading,setAutoSaving)
 
     const [focusEditor, setFocusEditor] = useState(true)
     const [jsRuntimeError, setJSRuntimeError] = useState(null)
