@@ -1,5 +1,5 @@
 import React, {  useEffect, useRef, useState } from 'react'
-import { ContentEditableSessionName } from './styles'
+import { ContentEditableScribbleName } from './styles'
 import { CustomListItem, CustomListItemIcon } from './CustomListItemWrapper'
 import { RiFolder2Fill } from 'react-icons/ri'
 import { useCustomCursorSelection, useOutsideClick } from './hooks'
@@ -12,7 +12,7 @@ export default function CustomListItemInput({ handler }) {
             <CustomListItemIcon>
                 <RiFolder2Fill size={20} color='yellow' />
             </CustomListItemIcon>
-            <ContentEditableSessionName
+            <ContentEditableScribbleName
                 {...{
                     ref,
                     value: newSessionName,
@@ -21,7 +21,7 @@ export default function CustomListItemInput({ handler }) {
                 }}
             >
                 {newSessionName}
-            </ContentEditableSessionName>
+            </ContentEditableScribbleName>
         </CustomListItem>
     )
 }

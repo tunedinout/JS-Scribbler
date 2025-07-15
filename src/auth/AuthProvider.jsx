@@ -4,7 +4,7 @@ import {
     useEffect,
     useState,
 } from 'react'
-import { fetchCurrentUser } from '../api'
+import { fetchMe } from '../api'
 import { getLogger } from '../util'
 
 const AuthContext = createContext(null)
@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
         //TODO: add the call to fetch me
         const log = logger(`fetching me...`)
         const controller = new AbortController();
-        fetchCurrentUser(controller.signal)
+        fetchMe(controller.signal)
         .then(({data: user}) => {
             log(`user`, user)
             setUserInfo(user)

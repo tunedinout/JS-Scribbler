@@ -1,6 +1,7 @@
 // NOTE: GENERAL format of error response handling
 // will help us by checking the res.message for errors
 
+import { API_HOST, endpoints } from './constants'
 import { axiosRetry, fetchRetry, getLogger } from './util'
 import axios from 'axios'
 
@@ -9,7 +10,7 @@ const logger = getLogger(`API.JS`)
 
 export async function getAuthURL() {
     try {
-        const response = await fetch('http://localhost:3000/auth/google', {
+        const response = await fetch(`${API_HOST}/${endpoints.auth}`, {
             method: 'GET',
             headers: {
                 // TODO: do we need this
@@ -31,11 +32,11 @@ export async function getAuthURL() {
 }
 
 
-export async function createDriveAppFolder() {
-    const log = logger(`createDriveAppFolder`)
+export async function createDriveFolder() {
+    const log = logger(`createDriveFolder`)
     try {
         const response = await axios({
-            url: `http://localhost:3000/drive/create/folder`,
+            url: `${API_HOST}/${endpoints.drive}`,
             method: 'POST',
             withCredentials: true,
         })
@@ -57,16 +58,16 @@ export async function createDriveAppFolder() {
 /**
  *
  * @param {String} accessToken
- * @param {String} scribblerFolderId
- * @returns an array of {id,name} - of existing js-scribbler sessions
+ * @param {String} driveFolderId
+ * @returns an array of {id,name} - of existing scribbles
  */
-export async function fetchExistingScribblerSessions(
-    scribblerFolderId
+export async function fetchScribbles(
+    driveFolderId
 ) {
-    const log = logger(`fetchExistingScribblerSessions`);
+    const log = logger(`fetchScribbles`);
     try {
         const response = await axios({
-            url: `http://localhost:3000/drive/folder/sessions?scribblerFolderId=${scribblerFolderId}`,
+            url: `${API_HOST}/${endpoints.scribbles}?driveFolderId=${driveFolderId}`,
             method: 'GET',
             withCredentials: true,
         })
@@ -77,7 +78,7 @@ export async function fetchExistingScribblerSessions(
             message:
                 response?.data?.message ||
                 response?.data ||
-                'Unable to get existing js-scribbler sessions.',
+                'Unable to get existing scribbles.',
             ...response,
         }
     }
@@ -86,13 +87,13 @@ export async function fetchExistingScribblerSessions(
 /**
  *
  * @param {String} accessToken
- * @param {String} scribblerFolderId
+ * @param {String} scribbleId
  * @returns an array of {mimeType,id,data} - of each css, js and html file
  */
-export async function fetchExistingScribblerSession( scribblerSessionId) {
+export async function fetchScribble( scribbleId) {
     try {
         const response = await axios({
-            url: `http://localhost:3000/drive/folder/sessions/${scribblerSessionId}`,
+            url: `${API_HOST}/${endpoints.scribbles}/${scribbleId}`,
             method: 'GET',
             withCredentials: true,
         })
@@ -102,14 +103,14 @@ export async function fetchExistingScribblerSession( scribblerSessionId) {
             message:
                 response?.data?.message ||
                 response?.data ||
-                'Unable to get existing js-scribbler sessions.',
+                'Unable to get existing scribbles.',
             ...response,
         }
     }
 }
 
 
-export async function createScribblerSession(
+export async function createScribble(
     driveFolderId,
     {
         name = '', js = '', css = '', html = ''
@@ -117,12 +118,12 @@ export async function createScribblerSession(
 ) {
     try {
         const response = await axios({
-            url: `http://localhost:3000/drive/folder/session`,
+            url: `${API_HOST}/${endpoints.scribbles}`,
             method: 'POST',
             withCredentials: true,
             data: {
-                scribblerFolderId: driveFolderId,
-                scribblerSessionName: name,
+                driveFolderId,
+                name,
                 js,
                 css,
                 html,
@@ -139,20 +140,20 @@ export async function createScribblerSession(
 }
 
 
-export async function updateScribblerSession({
-    id: scribblerSessionId,
+export async function updateScribble({
+    id: scribbleId,
     js,
     css,
     html,
 }) {
-    const log = logger(`updateScribblerSession`)
+    const log = logger(`updateScribble`)
     try {
         const response = await axios({
-            url: `http://localhost:3000/drive/folder/session/${scribblerSessionId}`,
+            url: `${API_HOST}/${endpoints.scribbles}/${scribbleId}`,
             method: 'PUT',
             withCredentials: true,
             data: {
-                scribblerSessionId,
+                scribbleId,
                 js,
                 css,
                 html,
@@ -166,13 +167,13 @@ export async function updateScribblerSession({
             message:
                 response?.data?.message ||
                 response?.data ||
-                `unable to update scribbler session with id ${scribblerSessionId}`,
+                `unable to update scribble with id ${scribbleId}`,
             ...response,
         }
     }
 }
 
-export async function fetchCurrentUser(signal) {
-    const response =  axios.get('http://localhost:3000/api/v1/me', {signal, withCredentials: true})
+export async function fetchMe(signal) {
+    const response =  axios.get(`${API_HOST}/${endpoints.me}`, {signal, withCredentials: true})
     return response
 }

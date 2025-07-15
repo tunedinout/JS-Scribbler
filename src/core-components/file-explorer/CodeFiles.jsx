@@ -1,15 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { CustomListItem, CustomListItemIcon } from './CustomListItemWrapper'
-import { SessionsListWrapper } from './styles'
-import { RiJavascriptFill } from 'react-icons/ri'
+import { ScribblesListWrapper } from './styles'
 import { MdCss, MdHtml, MdJavascript } from 'react-icons/md'
 
 export default function CodeFiles({
-    // TODO: remove this, parent does not have this prop
-    sessionId,
-    js = '',
-    html = '',
-    css = '',
     isParentSelected,
     onFileSelectionChange,
 }) {
@@ -20,7 +14,7 @@ export default function CodeFiles({
     }, [selectedFile])
     return (
         <>
-            <SessionsListWrapper
+            <ScribblesListWrapper
                 style={{
                     marginLeft: '32px',
                     width: '90%',
@@ -63,7 +57,7 @@ export default function CodeFiles({
                     </CustomListItemIcon>
                     <div>{'index.html'}</div>
                 </CustomListItem>
-            </SessionsListWrapper>
+            </ScribblesListWrapper>
         </>
     )
 }

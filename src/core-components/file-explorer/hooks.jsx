@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 
-function useCustomListItemWrapper({ session, renameSessionHandler }) {
+function useCustomListItemWrapper({ scribble, onRename }) {
     const [isHover, setIsHover] = useState(false)
     const [isInputMode, setIsInputMode] = useState(false)
-    const [newSessionName, setNewSessionName] = useState(session.name)
-    const [isCollapsed, setIsCollapsed] = useState(true);
-    const sessionRef = useRef()
-    const {  updateCursor } = useCustomCursorSelection({
-        inputRef: sessionRef,
+    const [newScribbleName, setNewScribbleName] = useState(scribble.name)
+    const [isCollapsed, setIsCollapsed] = useState(true)
+    const scribbleRef = useRef()
+    const { updateCursor } = useCustomCursorSelection({
+        inputRef: scribbleRef,
     })
 
     useEffect(() => {
@@ -15,39 +15,34 @@ function useCustomListItemWrapper({ session, renameSessionHandler }) {
     }, [isInputMode])
 
     function onInputHandler(e) {
-        setNewSessionName(e.target.textContent)
+        setNewScribbleName(e.target.textContent)
         updateCursor()
     }
 
-    const outsideClickHandler = useCallback(
-        () => {
-
-            if(isInputMode){
-                const oldSessionName = session.name;
-                const newSessionName = sessionRef.current.textContent
-                console.log(
-                    `The old session name = ${oldSessionName}, new = ${newSessionName} `
-                )
-                renameSessionHandler(session, newSessionName)
-                setIsInputMode(false);
-            }
-            
-        },
-        [ session, isInputMode, sessionRef]
-    )
-    useOutsideClick({ handler: outsideClickHandler, ref: sessionRef })
+    const outsideClickHandler = useCallback(() => {
+        if (isInputMode) {
+            const oldScribleName = scribble.name
+            const newScribbleName = scribbleRef.current.textContent
+            console.log(
+                `The old scribble name = ${oldScribleName}, new = ${newScribbleName} `
+            )
+            onRename(scribble, newScribbleName)
+            setIsInputMode(false)
+        }
+    }, [scribble, isInputMode, scribbleRef])
+    useOutsideClick({ handler: outsideClickHandler, ref: scribbleRef })
 
     return {
         isHover,
         setIsHover,
         isInputMode,
         setIsInputMode,
-        newSessionName,
-        setNewSessionName,
-        sessionRef,
+        newScribbleName,
+        setNewScribbleName,
+        scribbleRef,
         onInputHandler,
         isCollapsed,
-        setIsCollapsed
+        setIsCollapsed,
     }
 }
 /**
@@ -64,10 +59,10 @@ function useCustomCursorSelection({ inputRef }) {
             const range = document.createRange()
             const sel = document.getSelection()
 
-            // if the text is empty string 
-            if(!inputRef.current.childNodes[0]?.length){
-                const textNode = document.createTextNode('');
-                inputRef.current.appendChild(textNode);
+            // if the text is empty string
+            if (!inputRef.current.childNodes[0]?.length) {
+                const textNode = document.createTextNode('')
+                inputRef.current.appendChild(textNode)
             }
             // give the node on which cursor
             // position needs to set and give
@@ -85,35 +80,35 @@ function useCustomCursorSelection({ inputRef }) {
     }, [cursorPosition])
 
     return {
-       updateCursor: () => {
-        const range = document.getSelection().getRangeAt(0)
-        setCursorPosition(range.startOffset)
-       }
+        updateCursor: () => {
+            const range = document.getSelection().getRangeAt(0)
+            setCursorPosition(range.startOffset)
+        },
     }
 }
 
 function useOutsideClick({ handler, ref }) {
     useEffect(() => {
         // add event listener on document
-        // when target not equal to session ref
+        // when target not equal to scribble ref
         const handleOutsideClick = (e) => {
             console.log('useOutsideClick')
             // ref.current.blur()
-            if(ref?.current && !ref.current.contains(e.target)){
-                handler(e);
+            if (ref?.current && !ref.current.contains(e.target)) {
+                handler(e)
             }
         }
 
         const onKeyDown = (e) => {
-            if(e.keyCode === 13){
+            if (e.keyCode === 13) {
                 console.log(e.key)
                 e.preventDefault()
-                ref.current.blur();
+                ref.current.blur()
                 handler(e)
             }
         }
-        if(ref.current){
-            ref.current.addEventListener('keydown', onKeyDown);
+        if (ref.current) {
+            ref.current.addEventListener('keydown', onKeyDown)
         }
 
         console.log(`running outside click effect.....`)
@@ -122,7 +117,8 @@ function useOutsideClick({ handler, ref }) {
 
         return () => {
             ref?.current?.removeEventListener('keydown', onKeyDown)
-            document.removeEventListener('click', handleOutsideClick)}
+            document.removeEventListener('click', handleOutsideClick)
+        }
     }, [handler, ref])
 }
 export { useCustomListItemWrapper, useCustomCursorSelection, useOutsideClick }
