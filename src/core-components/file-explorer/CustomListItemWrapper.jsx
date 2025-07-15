@@ -3,7 +3,7 @@ import { MdDelete } from 'react-icons/md'
 import {
     CollapseExpandIconContainer,
     CollapseIcon,
-    ContentEditableSessionName,
+    ContentEditableScribbleName,
     DeleteButtonContainer,
     ExpandIcon,
 } from './styles'
@@ -14,10 +14,10 @@ import CodeFiles from './CodeFiles'
 import { getLogger } from '../../util'
 const logger = getLogger(`CustomListItemWrapper`)
 export default function CustomListItemWrapper({
-    session,
-    renameSessionHandler,
-    deleteSessionHandler,
-    selectSessionHandler,
+    scribble,
+    onRename,
+    onDelete,
+    onSelect,
     isSelected,
 }) {
     // can be either css, html and JS
@@ -27,29 +27,28 @@ export default function CustomListItemWrapper({
         setIsHover,
         isInputMode,
         setIsInputMode,
-        newSessionName,
-        setNewSessionName,
-        sessionRef,
+        newScribbleName,
+        scribbleRef,
         onInputHandler,
         setIsCollapsed,
         isCollapsed,
-    } = useCustomListItemWrapper({ session, renameSessionHandler })
+    } = useCustomListItemWrapper({ scribble, onRename })
 
     useEffect(() => {
-        logger(`selectedFile effect`)(`selectedFile`, selectedFile, session)
+        logger(`selectedFile effect`)(`selectedFile`, selectedFile, scribble)
         if (isSelected) {
-            selectSessionHandler(session, selectedFile)
+            onSelect(scribble, selectedFile)
         }
-    }, [selectedFile, isSelected, session])
+    }, [selectedFile, isSelected, scribble])
 
     return (
         <>
             <CustomListItem
                 {...{
                     disableRipple: true,
-                    key: session.id,
+                    key: scribble.id,
                     button: true,
-                    onClick: (e) => selectSessionHandler(session, selectedFile),
+                    onClick: (e) => onSelect(scribble, selectedFile),
                     onMouseMove: () => setIsHover(true),
                     onMouseLeave: () => setIsHover(false),
                     // for css
@@ -68,9 +67,9 @@ export default function CustomListItemWrapper({
                     <RiFolder2Fill size={20} fill="#F9F871" />
                 </CustomListItemIcon>
 
-                <ContentEditableSessionName
+                <ContentEditableScribbleName
                     {...{
-                        ref: sessionRef,
+                        ref: scribbleRef,
                         contentEditable: isInputMode,
                         onClick: (e) => {
                             e.stopPropagation()
@@ -79,17 +78,17 @@ export default function CustomListItemWrapper({
                         onInput: onInputHandler,
                     }}
                 >
-                    {newSessionName}
-                </ContentEditableSessionName>
+                    {newScribbleName}
+                </ContentEditableScribbleName>
 
                 {isHover && (
                     <DeleteButtonContainer
-                        {...{ onClick: (e) => deleteSessionHandler(session) }}
+                        {...{ onClick: (e) => onDelete(scribble) }}
                     >
                         <MdDelete
                             {...{
                                 size: 12,
-                                title: 'Delete session',
+                                title: 'Delete scribble',
                             }}
                         />
                     </DeleteButtonContainer>
@@ -99,12 +98,6 @@ export default function CustomListItemWrapper({
                 <CodeFiles
                     onFileSelectionChange={(file) => setSelectedFile(file)}
                     isParentSelected={isSelected}
-                    // TODO: remove below props, i dont think they are needed
-
-                    sessionId={session.id}
-                    js={session.js}
-                    css={session.css}
-                    html={session.html}
                 />
             )}
         </>

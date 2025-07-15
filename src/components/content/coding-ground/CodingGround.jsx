@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { FaPlus } from 'react-icons/fa'
-import SessionExplorer from '../../../core-components/file-explorer/SessionExplorer'
-import { storeCurrentScribblerSesion } from '../../../indexedDB.util'
-import { getLogger } from '../../../util'
+import ScribblesExplorer from '../../../core-components/file-explorer/ScribblesExplorer'
+import { saveScribble } from '../../../indexedDB.util'
+import { debounce, getLogger } from '../../../util'
 import EditorCSS from '../../editor/CSS/Editor-CSS'
 import EditorHTML from '../../editor/HTML/Editor-HTML'
 import EditorJS from '../../editor/JS/Editor-JS'
@@ -20,10 +20,9 @@ export default function CodingGround({
     setAutoSaving,
     // autoSaving,
 }) {
-    const [disableCreateSession] = useState(false)
-    const [sessions, setSessions] = useState([])
+    const [scribbles, setScribbles] = useState([])
 
-    const [currentSession, setCurrentSession] = useState(null)
+    const [currentScribble, setCurrentScribble] = useState(null)
     // by default a js file should be selected
     const [selectedCode, setSelectedCode] = useState('js')
 
@@ -37,25 +36,31 @@ export default function CodingGround({
     const [isCreateMode, setIsCreateMode] = useState(false)
     const { isLoggedIn } = useAuth()
     const { loadedScribbles, driveId } = useLoadWorker(isLoggedIn)
-    const { syncToDrive } = useSyncWorker(isLoggedIn)
+    const { syncToDrive,currentScribbleId: syncedScribbleId } = useSyncWorker(isLoggedIn)
 
     useEffect(() => {
-       if(currentSession)
+       if(currentScribble)
         setHideExplorer(false)
-    }, [currentSession])
+    }, [currentScribble])
 
-    // only when a new session is created focus is stolen
+    useEffect(() => {
+        if(currentScribble?.id !== syncedScribbleId){
+            setCurrentScribble({...currentScribble,id: syncedScribbleId})
+        }
+    },[syncedScribbleId])
+
+    // only when a new scribble is created focus is stolen
     // from the editor
     const doUnfocus = () => setFocusEditor(false)
 
     const onCodeChange = useCallback(
-        async (newSessionObj) => {
+        async (newScribble) => {
             setIsRun(false)
-            setCurrentSession(newSessionObj)
+            setCurrentScribble(newScribble)
             setAutoSaving(true)
-            await storeCurrentScribblerSesion(newSessionObj)
+            await saveScribble(newScribble)
             setAutoSaving(false)
-            driveId && syncToDrive(newSessionObj, driveId)
+            driveId && debounce(syncToDrive(newScribble, driveId),500)
         },
         [driveId, setAutoSaving, setIsRun, syncToDrive]
     )
@@ -82,47 +87,47 @@ export default function CodingGround({
 
     useEffect(() => {
         const newScribbles = [...loadedScribbles]
-        setSessions(newScribbles)
+        setScribbles(newScribbles)
     }, [loadedScribbles])
 
     useEffect(() => {
-        if (sessions.length && !currentSession) setCurrentSession(sessions[0])
-    }, [currentSession, sessions])
+        if (scribbles.length && !currentScribble) setCurrentScribble(scribbles[0])
+    }, [currentScribble, scribbles])
 
-    const createSessionHandler = async ({ name }, cb) => {
-        const log = logger(`createSessionHandler`)
-        log('called with new session', name)
-        const newSessionObj = {
+    const onCreate = async ({ name }, cb) => {
+        const log = logger(`onCreate`)
+        log('called with new scribble', name)
+        const newScribble = {
             name,
             js: '',
             css: '',
             html: '',
         }
-        setSessions([...sessions, newSessionObj])
-        setCurrentSession(newSessionObj)
-        storeCurrentScribblerSesion(newSessionObj)
-        cb()
+        setScribbles([...scribbles, newScribble])
+        setCurrentScribble(newScribble)
+        await saveScribble(newScribble)
+        setIsCreateMode(false)
     }
 
-    const deleteSessionHandler = () => {
-        const log = logger(`deleteSessionHandler`)
+    const onDelete = () => {
+        const log = logger(`onDelete`)
         log('called')
     }
 
-    const renameSessionHandler = () => {
-        const log = logger(`renameSessionHandler`)
+    const onRename = () => {
+        const log = logger(`onRename`)
         log('called')
     }
 
-    const selectSessionHandler = async (session, selectedFile = 'js') => {
-        const log = logger(`selectSessionHandler`)
-        log('called', session, selectedFile)
-        if (session.name === currentSession.name) {
-            log(`current session was equal to the selected session`)
+    const onSelect = async (scribble, selectedFile = 'js') => {
+        const log = logger(`onSelect`)
+        log('called', scribble, selectedFile)
+        if (scribble.name === currentScribble.name) {
+            log(`current scribble was equal to the selected scribble`)
             // only file has change
             setSelectedCode(selectedFile)
         } else {
-            setCurrentSession(session)
+            setCurrentScribble(scribble)
             setSelectedCode(selectedFile)
         }
     }
@@ -131,16 +136,15 @@ export default function CodingGround({
         <div className="scribbler-js-tab-container">
             {!hideExplorer && (
                 <div className="scribbler-js-tab-container__file-explorer">
-                    <SessionExplorer
+                    <ScribblesExplorer
                         {...{
-                            currentSession,
-                            createSessionHandler,
-                            deleteSessionHandler,
-                            renameSessionHandler,
-                            selectSessionHandler,
-                            label: 'Scribblers',
-                            sessions,
-                            disableCreateSession,
+                            currentScribble,
+                            onCreate,
+                            onDelete,
+                            onRename,
+                            onSelect,
+                            label: 'Scribbles',
+                            scribbles,
                             isCreateMode,
                             setIsCreateMode,
                         }}
@@ -148,43 +152,43 @@ export default function CodingGround({
                 </div>
             )}
 
-            {selectedCode === 'js' && currentSession && (
+            {selectedCode === 'js' && currentScribble && (
                 <EditorJS
                     {...{
                         focus: focusEditor,
                         doUnfocus,
                         onChange: (js) => {
                             setJSRuntimeError(null)
-                            onCodeChange({ ...currentSession, js })
+                            onCodeChange({ ...currentScribble, js })
                         },
-                        code: currentSession.js,
+                        code: currentScribble.js,
                         runtimeError: jsRuntimeError,
                     }}
                 />
             )}
 
-            {selectedCode === 'css' && currentSession && (
+            {selectedCode === 'css' && currentScribble && (
                 <EditorCSS
                     {...{
                         focus: focusEditor,
                         doUnfocus,
                         onChange: (css) =>
-                            onCodeChange({ ...currentSession, css }),
-                        code: currentSession.css,
+                            onCodeChange({ ...currentScribble, css }),
+                        code: currentScribble.css,
                         runtimeError: null,
                     }}
                 />
             )}
 
-            {selectedCode === 'html' && currentSession && (
+            {selectedCode === 'html' && currentScribble && (
                 <EditorHTML
                     {...{
                         focus: focusEditor,
                         doUnfocus,
                         onChange: (html) =>
-                            onCodeChange({ ...currentSession, html }),
+                            onCodeChange({ ...currentScribble, html }),
                         runtimeError: null,
-                        code: currentSession.html,
+                        code: currentScribble.html,
                         onHtmlError,
                     }}
                 />
@@ -192,18 +196,18 @@ export default function CodingGround({
 
             {/*TODO:  Add a preview  */}
 
-            {currentSession && (
+            {currentScribble && (
                 <Preview
-                    htmlContent={currentSession.html}
-                    css={currentSession.css}
-                    js={currentSession.js}
+                    htmlContent={currentScribble.html}
+                    css={currentScribble.css}
+                    js={currentScribble.js}
                     isRun={isRun}
                     isHtmlError={isHtmlError}
                 />
             )}
 
             {/* Show default screen */}
-            {!currentSession && hideExplorer && (
+            {!currentScribble && hideExplorer && (
                 <div className="scribbler-initial-screen-container">
                     <div
                         className="scribbler-initial-create-scribbler-button"
@@ -213,7 +217,7 @@ export default function CodingGround({
                         }}
                     >
                         <FaPlus size={25} color="#3c3c3c" />
-                        <span>Create a scribbler</span>
+                        <span>Create a scribble</span>
                     </div>
                 </div>
             )}

@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 
-function useCustomListItemWrapper({ session, renameSessionHandler }) {
+function useCustomListItemWrapper({ scribble, onRename }) {
     const [isHover, setIsHover] = useState(false)
     const [isInputMode, setIsInputMode] = useState(false)
-    const [newSessionName, setNewSessionName] = useState(session.name)
+    const [newScribbleName, setNewScribbleName] = useState(scribble.name)
     const [isCollapsed, setIsCollapsed] = useState(true);
-    const sessionRef = useRef()
+    const scribbleRef = useRef()
     const {  updateCursor } = useCustomCursorSelection({
-        inputRef: sessionRef,
+        inputRef: scribbleRef,
     })
 
     useEffect(() => {
@@ -15,7 +15,7 @@ function useCustomListItemWrapper({ session, renameSessionHandler }) {
     }, [isInputMode])
 
     function onInputHandler(e) {
-        setNewSessionName(e.target.textContent)
+        setNewScribbleName(e.target.textContent)
         updateCursor()
     }
 
@@ -23,28 +23,28 @@ function useCustomListItemWrapper({ session, renameSessionHandler }) {
         () => {
 
             if(isInputMode){
-                const oldSessionName = session.name;
-                const newSessionName = sessionRef.current.textContent
+                const oldScribleName = scribble.name;
+                const newScribbleName = scribbleRef.current.textContent
                 console.log(
-                    `The old session name = ${oldSessionName}, new = ${newSessionName} `
+                    `The old scribble name = ${oldScribleName}, new = ${newScribbleName} `
                 )
-                renameSessionHandler(session, newSessionName)
+                onRename(scribble, newScribbleName)
                 setIsInputMode(false);
             }
             
         },
-        [ session, isInputMode, sessionRef]
+        [ scribble, isInputMode, scribbleRef]
     )
-    useOutsideClick({ handler: outsideClickHandler, ref: sessionRef })
+    useOutsideClick({ handler: outsideClickHandler, ref: scribbleRef })
 
     return {
         isHover,
         setIsHover,
         isInputMode,
         setIsInputMode,
-        newSessionName,
-        setNewSessionName,
-        sessionRef,
+        newScribbleName,
+        setNewScribbleName,
+        scribbleRef,
         onInputHandler,
         isCollapsed,
         setIsCollapsed
@@ -95,7 +95,7 @@ function useCustomCursorSelection({ inputRef }) {
 function useOutsideClick({ handler, ref }) {
     useEffect(() => {
         // add event listener on document
-        // when target not equal to session ref
+        // when target not equal to scribble ref
         const handleOutsideClick = (e) => {
             console.log('useOutsideClick')
             // ref.current.blur()

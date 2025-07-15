@@ -1,10 +1,7 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import ButtonBar from '../components/button-bar/ButtonBar'
 import CodingGround from '../components/content/coding-ground/CodingGround'
 import { CircularProgress, LinearProgress } from '@mui/material'
-import { useAuth } from '../auth/AuthProvider'
-
-// create session management component that works at app level
 
 export default function HomePage() {
     const [isRun, setIsRun] = useState(false)
@@ -14,7 +11,6 @@ export default function HomePage() {
 
     return (
         <>
-            {/* Use this for showing loading for non-intrusive events like autoSaving */}
             <div style={{ width: '100%', height: '12px' }}>
                 {autoSaving && (
                     <LinearProgress style={{ backgroundColor: 'none' }} />
@@ -50,7 +46,6 @@ export default function HomePage() {
                         onRunButton: () => setIsRun(true),
                     }}
                 />
-                {/* <>Hey new login buddy</> */}
                 {
                     <CodingGround
                         {...{

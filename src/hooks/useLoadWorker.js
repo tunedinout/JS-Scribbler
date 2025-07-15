@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import {
-    loadAllScribblerSessions,
-    storeCurrentScribblerSesion,
+    loadScribbles,
+    saveScribble,
 } from '../indexedDB.util'
 import { getLogger } from '../util'
 const logger = getLogger(`useLoadWorker`)
@@ -14,7 +14,7 @@ export const useLoadWorker = (isLoggedIn) => {
         const worker = new Worker(
             new URL('../workers/loadWorker.js', import.meta.url)
         )
-        loadAllScribblerSessions().then((scribbles) => {
+        loadScribbles().then((scribbles) => {
             if(isLoggedIn){
                 worker.postMessage({ type: 'load', scribbles })
             }else{
@@ -32,12 +32,12 @@ export const useLoadWorker = (isLoggedIn) => {
             if (isLoggedIn) {
                 await Promise.all(
                     driveScribbles?.map((scribble) =>
-                        storeCurrentScribblerSesion(scribble)
+                        saveScribble(scribble)
                     )
                 )
             }
 
-            const scribbles = await loadAllScribblerSessions()
+            const scribbles = await loadScribbles()
             log(`loading from indexed db..`, scribbles)
 
             setLoadedScribbles(scribbles)

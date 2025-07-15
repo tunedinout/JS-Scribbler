@@ -3,38 +3,34 @@ import {
     CollapseExpandIconContainer,
     CollapseIcon,
     ExpandIcon,
-    SessionsContainer,
-    SessionsHeadingWrapper,
-    SessionsListWrapper,
+    ScribblesContainer,
+    ScribblesHeadingWrapper,
+    ScribblesListWrapper,
     StyledPlusIcon,
 } from './styles'
 import CustomListItemWrapper from './CustomListItemWrapper'
 import CustomListItemInput from './CustomListItemInput'
 
-export default function SessionExplorer({
-    sessions,
+export default function ScribblesExplorer({
+    scribbles,
     label,
-    renameSessionHandler,
-    deleteSessionHandler,
-    createSessionHandler,
-    selectSessionHandler,
-    currentSession,
-    disableCreateSession,
+    onRename,
+    onDelete,
+    onCreate,
+    onSelect,
+    currentScribble,
     isCreateMode,
     setIsCreateMode,
 }) {
     const [isCollapsed, setIsCollapsed] = useState(false)
 
     return (
-        <SessionsContainer>
-            <SessionsHeadingWrapper>
+        <ScribblesContainer>
+            <ScribblesHeadingWrapper>
                 <div>{label}</div>
                 <StyledPlusIcon
                     size={16}
-                    onClick={() =>
-                        !disableCreateSession && setIsCreateMode(true)
-                    }
-                    disabled={disableCreateSession}
+                    onClick={() => setIsCreateMode(true)}
                 />
 
                 <CollapseExpandIconContainer
@@ -45,22 +41,23 @@ export default function SessionExplorer({
                     )}
                     {isCollapsed && <ExpandIcon size={16} title="Expand" />}
                 </CollapseExpandIconContainer>
-            </SessionsHeadingWrapper>
+            </ScribblesHeadingWrapper>
 
             {!isCollapsed && (
-                <SessionsListWrapper>
-                    {sessions.map((session, index) => {
+                <ScribblesListWrapper>
+                    {scribbles.map((scribble, index) => {
                         return (
                             <CustomListItemWrapper
                                 {...{
-                                    session,
-                                    renameSessionHandler,
-                                    deleteSessionHandler,
-                                    selectSessionHandler,
+                                    scribble,
+                                    onRename,
+                                    onDelete,
+                                    onSelect,
                                     index,
-                                    key: session.name,
+                                    key: scribble.name,
                                     isSelected:
-                                        currentSession?.name === session?.name,
+                                        currentScribble?.name ===
+                                        scribble?.name,
                                 }}
                             />
                         )
@@ -68,14 +65,12 @@ export default function SessionExplorer({
                     {isCreateMode && (
                         <CustomListItemInput
                             handler={(name) => {
-                                createSessionHandler({ name }, () =>
-                                    setIsCreateMode(false)
-                                )
+                                onCreate({ name })
                             }}
                         />
                     )}
-                </SessionsListWrapper>
+                </ScribblesListWrapper>
             )}
-        </SessionsContainer>
+        </ScribblesContainer>
     )
 }

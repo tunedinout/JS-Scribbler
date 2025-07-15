@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 export const useSyncWorker = (isLoggedIn) => {
     const [worker, setWorker] = useState(null)
+    const [currentScribbleId, setCurrentScribbleId] = useState(null)
     const syncToDrive = (scribble, driveId) => {
         worker?.postMessage({ type: 'sync', scribble, driveId })
     }
@@ -15,13 +16,20 @@ export const useSyncWorker = (isLoggedIn) => {
 
             worker.onmessage = (event) => {
                 console.log(`worker is done saving`, event)
+                const {scribble} = event.data
+                const {id = null} = scribble
+                setCurrentScribbleId(id)
             }
         }
 
-        return () => worker?.terminate()
+        return () => {
+            worker?.terminate()
+            setWorker(null)
+        }
     }, [isLoggedIn])
 
     return {
         syncToDrive,
+        currentScribbleId,
     }
 }
