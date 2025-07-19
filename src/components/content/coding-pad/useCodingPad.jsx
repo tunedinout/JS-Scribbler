@@ -6,7 +6,7 @@ import { saveScribble } from "../../../indexedDB.util"
 import { debounce, getLogger } from "../../../util"
 
 const logger = getLogger(`useCodingPad`)
-function useCodingPad(isRun, setIsRun, setLoading, setAutoSaving) {
+function useCodingPad(isRun, setIsRun, setLoading, setAutoSaving,setChatCode) {
     const { isLoggedIn } = useAuth()
     const { loadedScribbles, driveId } = useLoadWorker(isLoggedIn)
     const [scribbles, setScribbles] = useState([])
@@ -16,12 +16,15 @@ function useCodingPad(isRun, setIsRun, setLoading, setAutoSaving) {
     const [isCreateMode, setIsCreateMode] = useState(false)
     const [selectedCode, setSelectedCode] = useState('js')
     const [hideExplorer, setHideExplorer] = useState(true)
-
+    
     const { syncToDrive, currentScribbleId: syncedScribbleId } =
         useSyncWorker(isLoggedIn)
 
     useEffect(() => {
-        if (currentScribble) setHideExplorer(false)
+        if (currentScribble) {
+            setHideExplorer(false)
+            setChatCode(JSON.stringify(currentScribble))
+        }
     }, [currentScribble])
 
     useEffect(() => {

@@ -1,7 +1,7 @@
 import { ButtonBarContainer, StyledPlayIcon } from './styles'
 import { IoCloudOffline } from 'react-icons/io5'
 import { IoCloudDone } from 'react-icons/io5'
-import { Tooltip, IconButton } from '@mui/material'
+import { Tooltip, IconButton, Button } from '@mui/material'
 import { FcGoogle } from 'react-icons/fc'
 import { FaUserCircle } from 'react-icons/fa'
 import { useAuth } from '../../auth/AuthProvider'
@@ -9,10 +9,11 @@ import { redirectToAuth } from '../../util'
 // TODO: get his kind of relative path shit out
 export default function ButtonBar({
     onRunButton = () => {},
+    onPromptAI = () => {},
     // TODO: re-evaluate the use of this
     disableRun = false,
 }) {
-    const { isLoggedIn, userInfo } = useAuth();
+    const { isLoggedIn, userInfo } = useAuth()
     const handleSignIn = async () => redirectToAuth()
 
     return (
@@ -50,10 +51,11 @@ export default function ButtonBar({
                 <Tooltip title="Sign in with google.">
                     <IconButton onClick={handleSignIn}>
                         <FcGoogle size={24} />
-                        
                     </IconButton>
                 </Tooltip>
             )}
+
+            {<Button onClick={onPromptAI}>Get AI Opinion</Button>}
         </ButtonBarContainer>
     )
 }

@@ -2,13 +2,22 @@ import { useState } from 'react'
 import ButtonBar from '../components/button-bar/ButtonBar'
 import { CircularProgress, LinearProgress } from '@mui/material'
 import CodingPad from '../components/content/coding-pad/CodingPad'
+import { ChatAI } from '../components/chat-ai/ChatAi'
 
 export default function HomePage() {
     const [isRun, setIsRun] = useState(false)
     const [disableRun, setDisableRun] = useState(false)
     const [loading, setLoading] = useState(false)
     const [autoSaving, setAutoSaving] = useState(false)
-
+    const [chatOpen, setChatOpen] = useState(false)
+    const [chatCode, setChatCode] = useState('')
+    const onPromptAI = () => {
+        setChatOpen(true)
+    }
+    const onPromptAIClose = () => {
+        setChatOpen(false)
+        setChatCode('')
+    }
     return (
         <>
             <div style={{ width: '100%', height: '12px' }}>
@@ -44,20 +53,32 @@ export default function HomePage() {
                     {...{
                         disableRun,
                         onRunButton: () => setIsRun(true),
+                        onPromptAI,
                     }}
                 />
                 {
                     <CodingPad
                         {...{
+                            onPromptAI,
                             isRun,
                             setIsRun,
                             setDisableRun,
                             setLoading,
                             setAutoSaving,
                             autoSaving,
+                            setChatCode,
                         }}
                     />
                 }
+                {chatOpen &&
+                //  chatCode &&
+                  (
+                    <ChatAI
+                        isOpen={chatOpen}
+                        onClose={onPromptAIClose}
+                        inputCode={chatCode}
+                    />
+                )}
             </div>
         </>
     )

@@ -15,6 +15,7 @@ export default function CodingPad({
     setIsRun,
     setLoading,
     setAutoSaving,
+    setChatCode,
     // autoSaving,
 }) {
 
@@ -31,7 +32,7 @@ export default function CodingPad({
         onDelete,
         onRename,
         onSelect,
-    } = useCodingPad(isRun,setIsRun,setLoading,setAutoSaving)
+    } = useCodingPad(isRun,setIsRun,setLoading,setAutoSaving,setChatCode)
 
     const [focusEditor, setFocusEditor] = useState(true)
     const [jsRuntimeError, setJSRuntimeError] = useState(null)

@@ -177,3 +177,56 @@ export async function fetchMe(signal) {
     const response =  axios.get(`${API_HOST}/${endpoints.me}`, {signal, withCredentials: true})
     return response
 }
+
+export async function getLLMOpinion(code) {
+    const content = `
+        User is testing small snippets of js,css and html code for testing and prototypeing.
+        Your answer should only comment on the code about: 
+        1. what they are acheiving with that snippet
+        2. Check the concepts what they are applying and tell them that.
+        3. do not give improvement on structuring the code but only improvements in understanding the core
+        concept they implement. So no code reading improvement, no semantics improvement, no accessibility only 
+        comment on js,css and html concepts. The users goal is not to produce a industry code but hack around with core 
+        web concepts. 
+
+        Your answer should be in an html format right from the start as your ans will directly go into a react component. you would not 
+        mention anything out of this prompt other then just giving your answer based on above points and only about the js, css and html code. Format it well. 
+
+        Please do not add any started phrases or anything directly go to answering. You have no personality other than give code feedback. 
+
+        ALWAYS HTML, your answer will be rendered inside a  <div> element, you are free to choose any child elements for formatting, please format it real nice. You can also demonstrate thing using html if you want.. 
+        ALWAYS HTML, your answer will be rendered inside a <div> element, the whole answer in a div . 
+
+        DONT ADD things like "Here is my answer or reflect back on this prompt in the ans" please.
+
+        HERE is there code object: 
+
+        ${code}
+    `
+
+    const content1 = `
+    ${code}.
+      ( I want you to give your answer, entire answer in html right from the first word to the last word.
+         Your ans will be rendered inside a div element, please do not add background colors. )
+
+    `
+
+    
+    const log = logger(`getLLLMOpinion`)
+    // try {
+        const response = await axios({
+            url: 'http://localhost:11434/v1/chat/completions',
+            method: 'POST',
+            data:{
+                model: 'llama3',
+                messages: [{role: "user", content: content1}]
+            }
+        })
+        // const firstAIRespoonse = response.data?.choices[0]?.message?.content
+        log(`LLM opinion arrived`, response);
+        return response
+    // } catch (error) {
+    //     log(`error occurred while asking LLM: `, error)
+    //     return ''
+    // }
+}
