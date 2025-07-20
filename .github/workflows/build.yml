@@ -16,7 +16,7 @@ jobs:
       - run: npm run lint
       - run: npm run build
       - name: Deploy to GitHub Pages
-      - run: |
+        run: |
           git config --global user.name 'tunedinout',
           git config --global user.email 'narottam2911@gmail.com'
           npm run deploy
