@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import {resolve} from "path"
 
 export default defineConfig({
-    base: '/JS-Scribbler',
+    base: '/JS-Scribbler/',
     plugins: [react()],
     server: {
         port: 3001,
