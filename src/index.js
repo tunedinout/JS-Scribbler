@@ -15,8 +15,9 @@ import 'ace-builds/src-min-noconflict/worker-html'
 // TODO: find a better solution
 import 'ace-builds/src-noconflict/worker-javascript'
 import ace from 'ace-builds/src-noconflict/ace';
-ace.config.setModuleUrl('ace/mode/css_worker', `${process.env.PUBLIC_URL}/workers/worker-css.js`)
-ace.config.setModuleUrl('ace/mode/javascript_worker', `${process.env.PUBLIC_URL}/workers/worker-javascript.js`)
+const PUBLIC_URL = process.env.PUBLIC_URL || ''
+ace.config.setModuleUrl('ace/mode/css_worker', `${PUBLIC_URL}/workers/worker-css.js`)
+ace.config.setModuleUrl('ace/mode/javascript_worker', `${PUBLIC_URL}/workers/worker-javascript.js`)
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
 root.render(
