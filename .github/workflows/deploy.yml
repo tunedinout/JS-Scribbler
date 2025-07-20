@@ -2,7 +2,7 @@ name: Build deploy scribbler
 
 on:
   push:
-    branches: [fix-process.env-to-import.meta]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
