@@ -1,7 +1,7 @@
 name: Scribbler
 "on":
   push: 
-    branches: [main]
+    branches: [fix-process.env-to-import.meta]
 jobs:
   build:
     runs-on: ubuntu-latest
