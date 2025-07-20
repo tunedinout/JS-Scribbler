@@ -9,6 +9,9 @@ export default defineConfig({
         port: 3001,
         strictPort: true,
     },
+    build: {
+        outDir: 'build'
+    },
     resolve: {
         alias: {
             '@src': resolve(import.meta.dirname, 'src'),
