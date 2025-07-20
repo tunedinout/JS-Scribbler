@@ -2,16 +2,14 @@ import React, { useEffect, useState } from 'react'
 import { CustomListItem, CustomListItemIcon } from './CustomListItemWrapper'
 import { ScribblesListWrapper } from './styles'
 import { MdCss, MdHtml, MdJavascript } from 'react-icons/md'
+import PropTypes from 'prop-types'
 
-export default function CodeFiles({
-    isParentSelected,
-    onFileSelectionChange,
-}) {
+export default function CodeFiles({ isParentSelected, onFileSelectionChange }) {
     const [selectedFile, setSelectedFile] = useState('js')
 
     useEffect(() => {
-        onFileSelectionChange(selectedFile);
-    }, [selectedFile])
+        onFileSelectionChange(selectedFile)
+    }, [onFileSelectionChange, selectedFile])
     return (
         <>
             <ScribblesListWrapper
@@ -60,4 +58,9 @@ export default function CodeFiles({
             </ScribblesListWrapper>
         </>
     )
+}
+
+CodeFiles.propTypes = {
+    isParentSelected: PropTypes.bool,
+    onFileSelectionChange: PropTypes.func,
 }

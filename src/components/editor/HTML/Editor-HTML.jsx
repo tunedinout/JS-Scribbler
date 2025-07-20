@@ -57,7 +57,7 @@ function EditorHTML({
         fontSize,
         highlightActiveLine,
     } = useEditor({
-        type : 'html',
+        type: 'html',
         code: codeString,
         focus,
         doUnfocus,
@@ -65,12 +65,11 @@ function EditorHTML({
         onChange,
     })
 
-    const errors = useHtmlLint(codeString);
+    const errors = useHtmlLint(codeString)
 
     useEffect(() => {
-       onHtmlError(errors);
-    },[errors])
-    
+        onHtmlError(errors)
+    }, [errors, onHtmlError])
 
     // handler that updates renamed file in db
 
@@ -79,7 +78,7 @@ function EditorHTML({
             <AceEditor
                 ref={editorRef}
                 // error annotations
-                style={{width: 'inherit', height: 'inherit'}}
+                style={{ width: 'inherit', height: 'inherit' }}
                 annotations={[...annotations, ...errors]}
                 value={codeString}
                 mode={'html'}
@@ -102,7 +101,11 @@ function EditorHTML({
     )
 }
 EditorHTML.propTypes = {
-    onChange: PropTypes.func.isRequired,
-    code: PropTypes.string.isRequired,
+    onChange: PropTypes.func,
+    code: PropTypes.string,
+    focus: PropTypes.func,
+    doUnfocus: PropTypes.func,
+    runtimeError: PropTypes.string,
+    onHtmlError: PropTypes.object
 }
 export default EditorHTML

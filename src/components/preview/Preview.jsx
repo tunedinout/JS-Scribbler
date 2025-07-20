@@ -60,7 +60,11 @@ function Preview({ htmlContent, css, js, isRun }) {
         </div>
     )
 }
+
 Preview.propTypes = {
-    htmlContent: PropTypes.string.isRequired,
+    htmlContent: PropTypes.string,
+    css: PropTypes.string,
+    js: PropTypes.string,
+    isRun: PropTypes.bool,
 }
 export default Preview

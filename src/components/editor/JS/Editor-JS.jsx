@@ -1,12 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
-import './Editor-JS.css'
+import { useEffect } from 'react'
 import AceEditor from 'react-ace'
-import { compileJavaScript } from '../../../indexedDB.util'
-import { TextField } from '@mui/material'
-import { styled } from '@mui/material/styles'
-import { useEditor } from '../hooks'
 import { getLogger } from '../../../util'
+import { useEditor } from '../hooks'
+import './Editor-JS.css'
 
 /** An Ace Editor intergrated component
  * updates calling component by calling onChange.
@@ -22,10 +19,10 @@ import { getLogger } from '../../../util'
  * @param {String} code -  code in the editor
  * @param {Boolean} focus -  triggers focus in editor
  * @param {Function} doUnfocus - call back to setting parent focus state
- * @param {Error} runtimeError - any error that is thrown when code is executed
+ * @param {String} runtimeError - any error that is thrown when code is executed
  * @returns {JSX.Element}
  */
-const logger = getLogger( `EditorJS`);
+const logger = getLogger(`EditorJS`)
 function EditorJS({
     onChange,
     // APP.js maintains code for execution and other things
@@ -49,8 +46,8 @@ function EditorJS({
     })
 
     useEffect(() => {
-        logger(`annotations`)(annotations);
-    },[annotations])
+        logger(`annotations`)(annotations)
+    }, [annotations])
 
     // handler that updates renamed file in db
 
@@ -59,7 +56,7 @@ function EditorJS({
             <AceEditor
                 ref={editorRef}
                 // error annotations
-                style={{width: 'inherit', height: 'inherit'}}
+                style={{ width: 'inherit', height: 'inherit' }}
                 annotations={[...annotations]}
                 value={codeString}
                 mode={'javascript'}
@@ -83,6 +80,10 @@ function EditorJS({
     )
 }
 EditorJS.propTypes = {
-    onChange: PropTypes.func.isRequired,
+    onChange: PropTypes.func,
+    code: PropTypes.string,
+    focus: PropTypes.bool,
+    doUnfocus: PropTypes.func,
+    runtimeError: PropTypes.string,
 }
-export default EditorJS;
+export default EditorJS

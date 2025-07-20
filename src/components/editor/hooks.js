@@ -1,20 +1,21 @@
-import { useEffect, useRef, useState } from 'react';
-import {HTMLHint} from 'htmlhint';
+import { useEffect, useRef, useState } from 'react'
+import { HTMLHint } from 'htmlhint'
 
 export function useEditor({
-    type,
     onChange,
-    code: codeString,
     focus: isFocus,
     doUnfocus,
     runtimeError,
 }) {
     // applied settings state
+    // eslint-disable-next-line no-unused-vars
     const [tabWidth, setTabWidth] = useState(2)
     const [highlightActiveLine, setHighlightActiveLine] = useState(false)
+    // eslint-disable-next-line no-unused-vars
     const [showLineNumbers, setShowLineNumbers] = useState(true)
+    // eslint-disable-next-line no-unused-vars
     const [showGutter, setShowGutter] = useState(true)
-    const [fontSize, setFontSize] = useState(10);
+    const [fontSize, setFontSize] = useState(10)
 
     // annotations for errors
     const [annotations, setAnnotations] = useState([])
@@ -28,11 +29,11 @@ export function useEditor({
             editorRef?.current?.editor?.focus()
             doUnfocus()
         }
-    }, [isFocus, editorRef])
+    }, [isFocus, editorRef, doUnfocus])
 
     // fetch settings.json`
     useEffect(() => {
-        fetch('settings.json')
+        fetch(`${process.env.PUBLIC_URL}/settings.json`)
             .then((response) => response.json())
             .then(
                 ({
@@ -70,10 +71,9 @@ export function useEditor({
                     row: 0,
                     column: 0,
                     text:
-                    // runtime error is only received as the error string 
-                    // via postmessage from the iframe
-                        runtimeError ||
-                        `Error occurred at (${1}:${1})`,
+                        // runtime error is only received as the error string
+                        // via postmessage from the iframe
+                        runtimeError || `Error occurred at (${1}:${1})`,
                     type: 'error',
                     isRuntime: true,
                 },
@@ -82,17 +82,13 @@ export function useEditor({
             // remove all marked run time
             // errors
             const newAnnotations = annotations.filter(
-                ({ isRuntime }) => !Boolean(isRuntime)
+                ({ isRuntime }) => !isRuntime
             )
             setAnnotations([...newAnnotations])
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [runtimeError])
 
-    // useEffect(() => {
-    //     if (editorRef?.current) console.log(editorRef?.current)
-    // }, [editorRef])
-
-    // lift state for this
     const handleChange = (newCode) => {
         // const newCode = e.target.value;
         onChange(newCode, Boolean(annotations.length))
@@ -112,22 +108,21 @@ const customHTMLRules = {
     'doctype-first': false,
 }
 
-
 export function useHtmlLint(code) {
     // collect html errors
-    const [annotations, setAnnotations] = useState([]);
+    const [annotations, setAnnotations] = useState([])
 
     useEffect(() => {
-        const errors = HTMLHint.verify(code, customHTMLRules );
-        const mappedErrors = errors.map(error => ({
+        const errors = HTMLHint.verify(code, customHTMLRules)
+        const mappedErrors = errors.map((error) => ({
             row: error.line - 1,
             column: error.col,
             text: error.message,
-            type: 'error'
-        }));
+            type: 'error',
+        }))
 
-        setAnnotations(mappedErrors);
+        setAnnotations(mappedErrors)
     }, [code])
 
-    return annotations;
+    return annotations
 }

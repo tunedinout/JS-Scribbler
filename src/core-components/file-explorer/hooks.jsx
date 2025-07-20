@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 function useCustomListItemWrapper({ scribble, onRename }) {
     const [isHover, setIsHover] = useState(false)
@@ -29,7 +29,7 @@ function useCustomListItemWrapper({ scribble, onRename }) {
             onRename(scribble, newScribbleName)
             setIsInputMode(false)
         }
-    }, [scribble, isInputMode, scribbleRef])
+    }, [scribble, isInputMode, scribbleRef, onRename])
     useOutsideClick({ handler: outsideClickHandler, ref: scribbleRef })
 
     return {
@@ -77,6 +77,7 @@ function useCustomCursorSelection({ inputRef }) {
     }
     useEffect(() => {
         handleCursor()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [cursorPosition])
 
     return {
@@ -89,6 +90,7 @@ function useCustomCursorSelection({ inputRef }) {
 
 function useOutsideClick({ handler, ref }) {
     useEffect(() => {
+        const curentRef = ref.curent
         // add event listener on document
         // when target not equal to scribble ref
         const handleOutsideClick = (e) => {
@@ -116,9 +118,10 @@ function useOutsideClick({ handler, ref }) {
         document.addEventListener('click', handleOutsideClick)
 
         return () => {
-            ref?.current?.removeEventListener('keydown', onKeyDown)
+            curentRef?.removeEventListener('keydown', onKeyDown)
             document.removeEventListener('click', handleOutsideClick)
         }
     }, [handler, ref])
 }
-export { useCustomListItemWrapper, useCustomCursorSelection, useOutsideClick }
+export { useCustomCursorSelection, useCustomListItemWrapper, useOutsideClick }
+

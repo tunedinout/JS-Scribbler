@@ -1,8 +1,5 @@
-// NOTE: GENERAL format of error response handling
-// will help us by checking the res.message for errors
-
 import { API_HOST, endpoints } from './constants'
-import { axiosRetry, fetchRetry, getLogger } from './util'
+import { getLogger } from './util'
 import axios from 'axios'
 
 // and handle that directly in the calling code
@@ -31,9 +28,8 @@ export async function getAuthURL() {
     }
 }
 
-
 export async function createDriveFolder() {
-    const log = logger(`createDriveFolder`)
+    // const log = logger(`createDriveFolder`)
     try {
         const response = await axios({
             url: `${API_HOST}/${endpoints.drive}`,
@@ -61,10 +57,8 @@ export async function createDriveFolder() {
  * @param {String} driveFolderId
  * @returns an array of {id,name} - of existing scribbles
  */
-export async function fetchScribbles(
-    driveFolderId
-) {
-    const log = logger(`fetchScribbles`);
+export async function fetchScribbles(driveFolderId) {
+    const log = logger(`fetchScribbles`)
     try {
         const response = await axios({
             url: `${API_HOST}/${endpoints.scribbles}?driveFolderId=${driveFolderId}`,
@@ -90,7 +84,7 @@ export async function fetchScribbles(
  * @param {String} scribbleId
  * @returns an array of {mimeType,id,data} - of each css, js and html file
  */
-export async function fetchScribble( scribbleId) {
+export async function fetchScribble(scribbleId) {
     try {
         const response = await axios({
             url: `${API_HOST}/${endpoints.scribbles}/${scribbleId}`,
@@ -109,43 +103,27 @@ export async function fetchScribble( scribbleId) {
     }
 }
 
-
 export async function createScribble(
     driveFolderId,
-    {
-        name = '', js = '', css = '', html = ''
-    }
+    { name = '', js = '', css = '', html = '' }
 ) {
-    try {
-        const response = await axios({
-            url: `${API_HOST}/${endpoints.scribbles}`,
-            method: 'POST',
-            withCredentials: true,
-            data: {
-                driveFolderId,
-                name,
-                js,
-                css,
-                html,
-            },
-        })
+    const response = await axios({
+        url: `${API_HOST}/${endpoints.scribbles}`,
+        method: 'POST',
+        withCredentials: true,
+        data: {
+            driveFolderId,
+            name,
+            js,
+            css,
+            html,
+        },
+    })
 
-        return response
-    } catch (error) {
-        // throw this error since this method will be used for both 
-        // creating individual scribbler and bulk 
-        // we loet the calling code decide
-        throw error;
-    }
+    return response
 }
 
-
-export async function updateScribble({
-    id: scribbleId,
-    js,
-    css,
-    html,
-}) {
+export async function updateScribble({ id: scribbleId, js, css, html }) {
     const log = logger(`updateScribble`)
     try {
         const response = await axios({
@@ -174,6 +152,9 @@ export async function updateScribble({
 }
 
 export async function fetchMe(signal) {
-    const response =  axios.get(`${API_HOST}/${endpoints.me}`, {signal, withCredentials: true})
+    const response = axios.get(`${API_HOST}/${endpoints.me}`, {
+        signal,
+        withCredentials: true,
+    })
     return response
 }

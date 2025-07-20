@@ -50,7 +50,7 @@ function EditorCSS({
             <AceEditor
                 ref={editorRef}
                 // error annotations
-                style={{width: 'inherit', height: 'inherit'}}
+                style={{ width: 'inherit', height: 'inherit' }}
                 annotations={annotations}
                 value={codeString}
                 mode={'css'}
@@ -74,5 +74,13 @@ function EditorCSS({
 EditorCSS.propTypes = {
     onChange: PropTypes.func.isRequired,
     code: PropTypes.string.isRequired,
+}
+
+EditorCSS.propTypes = {
+    onChange: PropTypes.func,
+    code: PropTypes.string,
+    focus: PropTypes.func,
+    doUnfocus: PropTypes.func,
+    runtimeError: PropTypes.object,
 }
 export default EditorCSS
