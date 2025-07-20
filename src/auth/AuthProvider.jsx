@@ -4,8 +4,8 @@ import React, {
     useEffect,
     useState,
 } from 'react'
-import { fetchMe } from '../api'
-import { getLogger } from '../util'
+import { fetchMe } from '@src/api'
+import { getLogger } from '@src/util'
 import PropTypes from 'prop-types'
 
 const AuthContext = createContext(null)
