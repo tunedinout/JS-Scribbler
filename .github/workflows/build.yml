@@ -1,0 +1,22 @@
+name: Scribbler
+"on":
+  push: 
+    branches: [main]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: npm
+      - run: npm install
+      - run: npm run lint:fix
+      - run: npm run lint
+      - run: npm run build
+      - name: Deploy to GitHub Pages
+      - run: |
+          git config --global user.name 'tunedinout',
+          git config --global user.email 'narottam2911@gmail.com'
+          npm run deploy

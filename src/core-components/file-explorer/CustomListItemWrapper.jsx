@@ -1,5 +1,11 @@
-import React, { useEffect, useState } from 'react'
+import { ListItem, styled } from '@mui/material'
+import PropTypes from 'prop-types'
+import { useEffect, useState } from 'react'
 import { MdDelete } from 'react-icons/md'
+import { RiFolder2Fill } from 'react-icons/ri'
+import { getLogger } from '../../util'
+import CodeFiles from './CodeFiles'
+import { useCustomListItemWrapper } from './hooks'
 import {
     CollapseExpandIconContainer,
     CollapseIcon,
@@ -7,11 +13,6 @@ import {
     DeleteButtonContainer,
     ExpandIcon,
 } from './styles'
-import { useCustomListItemWrapper } from './hooks'
-import { ListItem, styled } from '@mui/material'
-import { RiFolder2Fill } from 'react-icons/ri'
-import CodeFiles from './CodeFiles'
-import { getLogger } from '../../util'
 const logger = getLogger(`CustomListItemWrapper`)
 export default function CustomListItemWrapper({
     scribble,
@@ -35,11 +36,11 @@ export default function CustomListItemWrapper({
     } = useCustomListItemWrapper({ scribble, onRename })
 
     useEffect(() => {
-        logger(`selectedFile effect`)(`selectedFile`, selectedFile, scribble)
+        logger(`selectedFile effect`)(`selectedFile ${isSelected}`, selectedFile, scribble)
         if (isSelected) {
             onSelect(scribble, selectedFile)
         }
-    }, [selectedFile, isSelected, scribble])
+    }, [selectedFile, isSelected, scribble, onSelect])
 
     return (
         <>
@@ -48,7 +49,7 @@ export default function CustomListItemWrapper({
                     disableRipple: true,
                     key: scribble.id,
                     button: true,
-                    onClick: (e) => onSelect(scribble, selectedFile),
+                    onClick: () => onSelect(scribble, selectedFile),
                     onMouseMove: () => setIsHover(true),
                     onMouseLeave: () => setIsHover(false),
                     // for css
@@ -83,7 +84,7 @@ export default function CustomListItemWrapper({
 
                 {isHover && (
                     <DeleteButtonContainer
-                        {...{ onClick: (e) => onDelete(scribble) }}
+                        {...{ onClick: () => onDelete(scribble) }}
                     >
                         <MdDelete
                             {...{
@@ -109,7 +110,9 @@ export const CustomListItemIcon = styled('div')({
     display: 'flex',
 })
 
-export const CustomListItem = styled(ListItem)(({ isSelected }) => ({
+export const CustomListItem = styled(ListItem, {
+    shouldForwardProp: (prop) => prop!== 'isSelected'
+})(({ isSelected }) => ({
     fontFamily: 'Noto Sans',
     fontSize: '12px',
     minWidth: '200px',
@@ -129,3 +132,16 @@ export const CustomListItem = styled(ListItem)(({ isSelected }) => ({
         backgroundColor: 'none',
     },
 }))
+CustomListItemWrapper.propTypes = {
+    scribble: PropTypes.shape({
+        id: PropTypes.string,
+        name: PropTypes.string,
+        css: PropTypes.string,
+        js: PropTypes.string,
+        html: PropTypes.string,
+    }),
+    onRename: PropTypes.func,
+    onDelete: PropTypes.func,
+    onSelect: PropTypes.func,
+    isSelected: PropTypes.bool,
+}

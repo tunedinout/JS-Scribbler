@@ -8,6 +8,7 @@ import Preview from '../../preview/Preview'
 import './CodingPad.css'
 import useCodingPad from './useCodingPad'
 import { getLogger } from '../../../util'
+import PropTypes from 'prop-types'
 
 const logger = getLogger(`CodingPad`)
 export default function CodingPad({
@@ -159,4 +160,12 @@ export default function CodingPad({
             )}
         </div>
     )
+}
+
+
+CodingPad.propTypes = {
+     isRun: PropTypes.bool,
+    setIsRun: PropTypes.func,
+    setLoading: PropTypes.func,
+    setAutoSaving: PropTypes.func,
 }

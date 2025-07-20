@@ -21,14 +21,16 @@ function useCodingPad(isRun, setIsRun, setLoading, setAutoSaving) {
         useSyncWorker(isLoggedIn)
 
     useEffect(() => {
+        const log = logger(`currentScribble`)
+        log(currentScribble)
         if (currentScribble) setHideExplorer(false)
     }, [currentScribble])
 
     useEffect(() => {
-        if (currentScribble?.id !== syncedScribbleId) {
+        if (currentScribble?.id !== syncedScribbleId && currentScribble) {
             setCurrentScribble({ ...currentScribble, id: syncedScribbleId })
         }
-    }, [syncedScribbleId])
+    }, [currentScribble, syncedScribbleId])
 
     useEffect(() => {
         const newScribbles = [...loadedScribbles]
@@ -51,7 +53,7 @@ function useCodingPad(isRun, setIsRun, setLoading, setAutoSaving) {
         },
         [driveId, setAutoSaving, setIsRun, syncToDrive]
     )
-    const onCreate = async ({ name }, cb) => {
+    const onCreate = async ({ name }) => {
         const log = logger(`onCreate`)
         log('called with new scribble', name)
         const newScribble = {

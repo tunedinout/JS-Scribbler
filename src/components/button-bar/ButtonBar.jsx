@@ -6,11 +6,10 @@ import { FcGoogle } from 'react-icons/fc'
 import { FaUserCircle } from 'react-icons/fa'
 import { useAuth } from '../../auth/AuthProvider'
 import { redirectToAuth } from '../../util'
+import PropTypes from 'prop-types'
 // TODO: get his kind of relative path shit out
 export default function ButtonBar({
     onRunButton = () => {},
-    // TODO: re-evaluate the use of this
-    disableRun = false,
 }) {
     const { isLoggedIn, userInfo } = useAuth();
     const handleSignIn = async () => redirectToAuth()
@@ -18,8 +17,8 @@ export default function ButtonBar({
     return (
         <ButtonBarContainer>
             <Tooltip title="Run selected scribbler">
-                <IconButton>
-                    <StyledPlayIcon size={24} onClick={onRunButton} />
+                <IconButton onClick={onRunButton}>
+                    <StyledPlayIcon size={24}/>
                 </IconButton>
             </Tooltip>
             {!isLoggedIn && (
@@ -56,4 +55,9 @@ export default function ButtonBar({
             )}
         </ButtonBarContainer>
     )
+}
+
+
+ButtonBar.propTypes = {
+    onRunButton: PropTypes.func,
 }

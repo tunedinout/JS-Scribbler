@@ -10,6 +10,7 @@ import {
 } from './styles'
 import CustomListItemWrapper from './CustomListItemWrapper'
 import CustomListItemInput from './CustomListItemInput'
+import PropTypes from 'prop-types'
 
 export default function ScribblesExplorer({
     scribbles,
@@ -48,13 +49,14 @@ export default function ScribblesExplorer({
                     {scribbles.map((scribble, index) => {
                         return (
                             <CustomListItemWrapper
+                                key={scribble.name}
                                 {...{
                                     scribble,
                                     onRename,
                                     onDelete,
                                     onSelect,
                                     index,
-                                    key: scribble.name,
+
                                     isSelected:
                                         currentScribble?.name ===
                                         scribble?.name,
@@ -73,4 +75,31 @@ export default function ScribblesExplorer({
             )}
         </ScribblesContainer>
     )
+}
+
+ScribblesExplorer.propTypes = {
+    scribbles: PropTypes.arrayOf(
+        PropTypes.shape({
+            id: PropTypes.string,
+            name: PropTypes.string,
+            css: PropTypes.string,
+            js: PropTypes.string,
+            html: PropTypes.string,
+        })
+    ),
+    label: PropTypes.string,
+    onRename: PropTypes.func,
+    onDelete: PropTypes.func,
+    onCreate: PropTypes.func,
+    onSelect: PropTypes.func,
+    currentScribble:
+        PropTypes.shape({
+            id: PropTypes.string,
+            name: PropTypes.string,
+            css: PropTypes.string,
+            js: PropTypes.string,
+            html: PropTypes.string,
+        }) || null,
+    isCreateMode: PropTypes.bool,
+    setIsCreateMode: PropTypes.func,
 }
