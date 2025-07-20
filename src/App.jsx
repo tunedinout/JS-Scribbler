@@ -2,7 +2,7 @@
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom'
 import './App.css'
 import HomePage from './pages/HomePage'
-import { AuthProvider } from './auth/AuthProvider'
+import { AuthProvider } from '@auth/AuthProvider'
 
 
 function App() {

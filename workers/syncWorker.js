@@ -1,5 +1,5 @@
-import { createScribble, updateScribble } from '../api'
-import { getLogger } from '../util'
+import { createScribble, updateScribble } from '../src/api'
+import { getLogger } from '../src/util'
 
 const logger = getLogger(`syncWorker.js`)
 onmessage = async function (event) {

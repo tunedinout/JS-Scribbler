@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 import {
     loadScribbles,
     saveScribble,
-} from '../indexedDB.util'
-import { getLogger } from '../util'
+} from '@src/indexedDB.util'
+import { getLogger } from '@src/util'
 const logger = getLogger(`useLoadWorker`)
 export const useLoadWorker = (isLoggedIn) => {
     const [loadedScribbles, setLoadedScribbles] = useState([])
@@ -12,7 +12,7 @@ export const useLoadWorker = (isLoggedIn) => {
     useEffect(() => {
         const log = logger(`effect`)
         const worker = new Worker(
-            new URL('../workers/loadWorker.js', import.meta.url, {type: "module"})
+            new URL('/workers/loadWorker.js', import.meta.url, {type: "module"})
         )
         loadScribbles().then((scribbles) => {
             if(isLoggedIn){

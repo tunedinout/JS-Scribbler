@@ -4,8 +4,8 @@ import {
     fetchScribble,
     fetchScribbles,
     updateScribble,
-} from '../api'
-import { getCodStrings, getLogger } from '../util'
+} from '../src/api'
+import { getCodStrings, getLogger } from '../src/api'
 
 const logger = getLogger(`loaderWorker.js`)
 onmessage = async function (event) {

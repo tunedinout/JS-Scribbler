@@ -4,8 +4,8 @@ import { IoCloudDone } from 'react-icons/io5'
 import { Tooltip, IconButton } from '@mui/material'
 import { FcGoogle } from 'react-icons/fc'
 import { FaUserCircle } from 'react-icons/fa'
-import { useAuth } from '../../auth/AuthProvider'
-import { redirectToAuth } from '../../util'
+import { useAuth } from '@auth/AuthProvider'
+import { redirectToAuth } from '@src/util'
 import PropTypes from 'prop-types'
 // TODO: get his kind of relative path shit out
 export default function ButtonBar({

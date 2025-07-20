@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 import { HTMLHint } from 'htmlhint'
-const PUBLIC_URL = import.meta.url
 export function useEditor({
     onChange,
     focus: isFocus,
@@ -33,7 +32,7 @@ export function useEditor({
 
     // fetch settings.json`
     useEffect(() => {
-        fetch(`${PUBLIC_URL}/settings.json`)
+        fetch(`/JS-Scribbler/scribbler-settings.json`)
             .then((response) => response.json())
             .then(
                 ({

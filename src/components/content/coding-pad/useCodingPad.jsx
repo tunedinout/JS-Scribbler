@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react"
-import { useAuth } from "../../../auth/AuthProvider"
-import { useLoadWorker } from "../../../hooks/useLoadWorker"
-import { useSyncWorker } from "../../../hooks/useSyncWorker"
-import { saveScribble } from "../../../indexedDB.util"
-import { debounce, getLogger } from "../../../util"
+import { useAuth } from "@auth/AuthProvider"
+import { useLoadWorker } from "@hooks/useLoadWorker"
+import { useSyncWorker } from "@hooks/useSyncWorker"
+import { saveScribble } from "@src/indexedDB.util"
+import { debounce, getLogger } from "@src/util"
 
 const logger = getLogger(`useCodingPad`)
 function useCodingPad(isRun, setIsRun, setLoading, setAutoSaving) {

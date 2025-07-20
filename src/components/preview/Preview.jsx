@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import './Preview.css'
-import { getLogger } from '../../util'
+import { getLogger } from '@src/util'
 import DOMPurify from 'dompurify'
 // initially just run html and css
 const origContentSrcDoc = `<!DOCTYPE html>
