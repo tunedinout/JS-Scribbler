@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { HTMLHint } from 'htmlhint'
-const PUBLIC_URL = process.env.PUBLIC_URL
+const PUBLIC_URL = import.meta.url
 export function useEditor({
     onChange,
     focus: isFocus,

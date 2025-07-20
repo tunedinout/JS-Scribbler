@@ -7,10 +7,11 @@ export const useSyncWorker = (isLoggedIn) => {
         worker?.postMessage({ type: 'sync', scribble, driveId })
     }
     useEffect(() => {
+        console.log(`import.meta.url`,import.meta.url)
         let worker
         if (isLoggedIn) {
             worker = new Worker(
-                new URL('../workers/syncWorker.js', import.meta.url)
+                new URL('../../workers/syncWorker.js', import.meta.url, {type: "module"})
             )
             setWorker(worker)
 

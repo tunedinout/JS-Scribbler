@@ -12,7 +12,7 @@ export const useLoadWorker = (isLoggedIn) => {
     useEffect(() => {
         const log = logger(`effect`)
         const worker = new Worker(
-            new URL('../workers/loadWorker.js', import.meta.url)
+            new URL('../workers/loadWorker.js', import.meta.url, {type: "module"})
         )
         loadScribbles().then((scribbles) => {
             if(isLoggedIn){
