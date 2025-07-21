@@ -10,12 +10,13 @@ export const useLoadWorker = (isLoggedIn) => {
     const [driveId, setDriveId] = useState(null)
 
     useEffect(() => {
-        const log = logger(`effect`)
+        const log = logger(`effect`, import.meta.url)
         const worker = new Worker(
-            new URL('/workers/loadWorker.js', import.meta.url, {type: "module"})
+            new URL('../workers/loadWorker.js', import.meta.url), {type: "module"}
         )
         loadScribbles().then((scribbles) => {
             if(isLoggedIn){
+                console.log(`worker shoud post message`)
                 worker.postMessage({ type: 'load', scribbles })
             }else{
                 setLoadedScribbles(scribbles)
