@@ -1,3 +1,4 @@
+/* eslint-disable */
 "no use strict";
 !(function(window) {
 if (typeof window.window != "undefined" && window.document)
