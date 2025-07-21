@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
-
+import { getLogger } from '../util'
+const logger = getLogger(`useSyncWorker.js`)
 export const useSyncWorker = (isLoggedIn) => {
     const [worker, setWorker] = useState(null)
     const [currentScribbleId, setCurrentScribbleId] = useState(null)
     const syncToDrive = (scribble, driveId) => {
+        const log = logger(`syncToDrive`)
+        log(`called`)
         worker?.postMessage({ type: 'sync', scribble, driveId })
     }
     useEffect(() => {
@@ -11,7 +14,7 @@ export const useSyncWorker = (isLoggedIn) => {
         let worker
         if (isLoggedIn) {
             worker = new Worker(
-                new URL('../../workers/syncWorker.js', import.meta.url, {type: "module"})
+                new URL('../workers/syncWorker.js', import.meta.url), {type: "module"}
             )
             setWorker(worker)
 

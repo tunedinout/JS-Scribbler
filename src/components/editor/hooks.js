@@ -63,7 +63,6 @@ export function useEditor({
     useEffect(() => {
         console.log('runtimeError', runtimeError)
         if (runtimeError) {
-            console.log(`in here`)
             setAnnotations([
                 ...annotations,
                 {

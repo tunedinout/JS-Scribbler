@@ -27,7 +27,7 @@ function useCodingPad(isRun, setIsRun, setLoading, setAutoSaving) {
     }, [currentScribble])
 
     useEffect(() => {
-        if (currentScribble?.id !== syncedScribbleId && currentScribble) {
+        if (currentScribble?.id !== syncedScribbleId && currentScribble && syncedScribbleId) {
             setCurrentScribble({ ...currentScribble, id: syncedScribbleId })
         }
     }, [currentScribble, syncedScribbleId])
@@ -44,6 +44,8 @@ function useCodingPad(isRun, setIsRun, setLoading, setAutoSaving) {
 
     const onCodeChange = useCallback(
         async (newScribble) => {
+            const log = logger(`onCodeChange`)
+            log(`newScribble`, newScribble)
             setIsRun(false)
             setCurrentScribble(newScribble)
             setAutoSaving(true)

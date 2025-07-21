@@ -9,11 +9,6 @@ function useCustomListItemWrapper({ scribble, onRename }) {
     const { updateCursor } = useCustomCursorSelection({
         inputRef: scribbleRef,
     })
-
-    useEffect(() => {
-        console.log(`checking is rename in hook`, isInputMode)
-    }, [isInputMode])
-
     function onInputHandler(e) {
         setNewScribbleName(e.target.textContent)
         updateCursor()
