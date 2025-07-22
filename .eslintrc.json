@@ -21,5 +21,8 @@
     ],
     "rules": {
         "react/react-in-jsx-scope": "off"
-    }
+    },
+    "ignorePatterns": [
+        "build/","src/workers/worker-css.js","src/workers/worker-javascript.js"
+    ]
 }
