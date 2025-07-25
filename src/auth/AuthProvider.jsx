@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, {
     createContext,
     useContext,
@@ -16,23 +17,23 @@ const logger = getLogger(`AUTH-PROVIDER`)
 export const AuthProvider = ({ children }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false)
     const [userInfo, setUserInfo] = useState(null);
-    useEffect(() => {
-        //TODO: add the call to fetch me
-        const log = logger(`fetching me...`)
-        const controller = new AbortController();
-        fetchMe(controller.signal)
-        .then(({data: user}) => {
-            log(`user`, user)
-            setUserInfo(user)
-        })
-        .then(() => setIsLoggedIn(true))
-        .catch( error => {
-            log(`error:`, error)
-            setIsLoggedIn(false);
-            setUserInfo(null)
-        })
-        return () => controller.abort();
-    },[])
+    // useEffect(() => {
+    //     //TODO: add the call to fetch me
+    //     const log = logger(`fetching me...`)
+    //     const controller = new AbortController();
+    //     fetchMe(controller.signal)
+    //     .then(({data: user}) => {
+    //         log(`user`, user)
+    //         setUserInfo(user)
+    //     })
+    //     .then(() => setIsLoggedIn(true))
+    //     .catch( error => {
+    //         log(`error:`, error)
+    //         setIsLoggedIn(false);
+    //         setUserInfo(null)
+    //     })
+    //     return () => controller.abort();
+    // },[])
 
     return (
         <AuthContext.Provider
