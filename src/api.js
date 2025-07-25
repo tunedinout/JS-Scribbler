@@ -9,10 +9,6 @@ export async function getAuthURL() {
     try {
         const response = await fetch(`${API_HOST}/${endpoints.auth}`, {
             method: 'GET',
-            headers: {
-                // TODO: do we need this
-                'Access-Control-Allow-Origin': '*',
-            },
         })
         const authObj = await response.json()
         return authObj
