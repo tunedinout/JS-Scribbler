@@ -1,4 +1,5 @@
-export const API_HOST = 'http://localhost:3000'
+
+export const API_HOST =import.meta.env.VITE_API_HOST || 'http://localhost:3000'
 
 export const endpoints = {
     auth: 'api/v1/auth',
