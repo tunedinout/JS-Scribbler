@@ -2,7 +2,7 @@ name: Build deploy scribbler
 
 on:
   push:
-    branches: [Fix-cookie-issue-in-prod]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
