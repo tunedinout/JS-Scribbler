@@ -9,7 +9,8 @@
       "@core-components/*": ["src/core-components/*"],
       "@hooks/*": ["src/hooks/*"],
       "@workers/*": ["src/workers/*"],
-      "@pages/*": ["src/pages/*"]
+      "@pages/*": ["src/pages/*"],
+      "@constants": ["src/constants.js"]
     }
   },
   "include": ["src"]

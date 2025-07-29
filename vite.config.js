@@ -20,7 +20,8 @@ export default defineConfig({
             '@core-components': resolve(import.meta.dirname, 'src/core-components'),
             '@hooks': resolve(import.meta.dirname, 'src/hooks'),
             '@workers': resolve(import.meta.dirname, 'src/workers'),
-            '@pages': resolve(import.meta.dirname, 'src/pages')
+            '@pages': resolve(import.meta.dirname, 'src/pages'),
+            '@constants': resolve(import.meta.dirname, 'src/constants.js')
         }
     }
 })
