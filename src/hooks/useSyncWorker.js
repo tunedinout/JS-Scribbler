@@ -1,14 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { getLogger } from '../util'
 const logger = getLogger(`useSyncWorker.js`)
 export const useSyncWorker = (isLoggedIn) => {
     const [worker, setWorker] = useState(null)
     const [currentScribbleId, setCurrentScribbleId] = useState(null)
-    const syncToDrive = (scribble, driveId) => {
+    const syncToDrive = useCallback((scribble, driveId) => {
         const log = logger(`syncToDrive`)
         log(`called`)
         worker?.postMessage({ type: 'sync', scribble, driveId })
-    }
+    },[worker])
     useEffect(() => {
         console.log(`import.meta.url`,import.meta.url)
         let worker

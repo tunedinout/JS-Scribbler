@@ -20,6 +20,9 @@ function useCodingPad(isRun, setIsRun, setLoading, setAutoSaving) {
     const { syncToDrive, currentScribbleId: syncedScribbleId } =
         useSyncWorker(isLoggedIn)
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const debouncedSyncToDrive = useCallback(debounce(syncToDrive, 500),[syncToDrive])
+
     useEffect(() => {
         const log = logger(`currentScribble`)
         log(currentScribble)
@@ -51,9 +54,9 @@ function useCodingPad(isRun, setIsRun, setLoading, setAutoSaving) {
             setAutoSaving(true)
             await saveScribble(newScribble)
             setAutoSaving(false)
-            driveId && debounce(syncToDrive(newScribble, driveId), 500)
+            driveId && debouncedSyncToDrive(newScribble,driveId)
         },
-        [driveId, setAutoSaving, setIsRun, syncToDrive]
+        [debouncedSyncToDrive, driveId, setAutoSaving, setIsRun]
     )
     const onCreate = async ({ name }) => {
         const log = logger(`onCreate`)
