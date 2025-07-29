@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { getAuthURL } from './api'
+import { isLogEnabled } from './constants';
 const logger = getLogger(`util.js`)
 export function getLogger() {
     // ideally excul
@@ -18,7 +19,7 @@ export function getLogger() {
         )
         allprefixes = allprefixes.filter((prefix) => Boolean(prefix))
         return function (...args) {
-            console.log(
+            isLogEnabled && console.log(
                 '\x1b[36m',
                 `${[...allprefixes].map((pref) => `[ ${pref} ]`).join(' ')}`,
                 '\x1b[0m',

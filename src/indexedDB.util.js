@@ -93,6 +93,7 @@ export async function loadScribbles() {
 
 // Function to clear all scribbles
 export async function clearAllScribbles() {
+    const log = logger(`clearAllScribbles`)
     const db = await openIndexedDBForScribbles();
     const transaction = db.transaction([IndexedDbScribbleStore], 'readwrite');
     const scribblersObjectStore = transaction.objectStore(IndexedDbScribbleStore);
@@ -101,12 +102,12 @@ export async function clearAllScribbles() {
         const request = scribblersObjectStore.clear();
 
         request.onsuccess = () => {
-            console.log('All scribbles cleared successfully.');
+            log('All scribbles cleared successfully.');
             resolve('All scribbles cleared successfully.');
         };
 
         request.onerror = (err) => {
-            console.error('Error clearing scribbles:', err);
+            log('Error clearing scribbles:', err);
             reject('Error clearing scribbles: ' + err);
         };
     });

@@ -19,6 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       VITE_API_HOST: ${{ secrets.API_HOST }}
+      VITE_ENV: production
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
