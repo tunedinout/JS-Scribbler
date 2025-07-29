@@ -4,9 +4,10 @@ import { CustomListItem, CustomListItemIcon } from './CustomListItemWrapper'
 import { RiFolder2Fill } from 'react-icons/ri'
 import { useCustomCursorSelection, useOutsideClick } from './hooks'
 import PropTypes from 'prop-types'
+import { getLogger } from '@src/util'
 
+const logger = getLogger(`CustomListItemInput`)
 export default function CustomListItemInput({ handler }) {
-    console.log('CustomListItemInput')
     const {
         onSessionNameInput,
         value: newSessionName,
@@ -41,7 +42,8 @@ function useNewSessionInput({ handler }) {
         updateCursor()
     }
     const handleOutSideClick = () => {
-        console.log(document.activeElement)
+        const log = logger(`handleOutsideClick`)
+        log(document.activeElement)
         if (!(document.activeElement === ref?.current)) {
             handler(ref.current.textContent)
         }

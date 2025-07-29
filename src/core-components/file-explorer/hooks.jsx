@@ -1,5 +1,7 @@
+import { getLogger } from '@src/util'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+const logger = getLogger(`hooks`)
 function useCustomListItemWrapper({ scribble, onRename }) {
     const [isHover, setIsHover] = useState(false)
     const [isInputMode, setIsInputMode] = useState(false)
@@ -15,10 +17,11 @@ function useCustomListItemWrapper({ scribble, onRename }) {
     }
 
     const outsideClickHandler = useCallback(() => {
+        const log = logger(`useCustomListWrapper - outsideClickHandler`)
         if (isInputMode) {
             const oldScribleName = scribble.name
             const newScribbleName = scribbleRef.current.textContent
-            console.log(
+            log(
                 `The old scribble name = ${oldScribleName}, new = ${newScribbleName} `
             )
             onRename(scribble, newScribbleName)
@@ -85,11 +88,12 @@ function useCustomCursorSelection({ inputRef }) {
 
 function useOutsideClick({ handler, ref }) {
     useEffect(() => {
+        const log = logger(`useOutsideClick - effect`)
         const curentRef = ref.curent
         // add event listener on document
         // when target not equal to scribble ref
         const handleOutsideClick = (e) => {
-            console.log('useOutsideClick')
+            log('useOutsideClick')
             // ref.current.blur()
             if (ref?.current && !ref.current.contains(e.target)) {
                 handler(e)
@@ -98,7 +102,7 @@ function useOutsideClick({ handler, ref }) {
 
         const onKeyDown = (e) => {
             if (e.keyCode === 13) {
-                console.log(e.key)
+                log(e.key)
                 e.preventDefault()
                 ref.current.blur()
                 handler(e)
@@ -108,7 +112,7 @@ function useOutsideClick({ handler, ref }) {
             ref.current.addEventListener('keydown', onKeyDown)
         }
 
-        console.log(`running outside click effect.....`)
+        log(`running outside click effect.....`)
 
         document.addEventListener('click', handleOutsideClick)
 

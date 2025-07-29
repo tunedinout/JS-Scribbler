@@ -1,5 +1,6 @@
 
 export const API_HOST =import.meta.env.VITE_API_HOST || 'http://localhost:3000'
+export const isLogEnabled = import.meta.env.VITE_ENV !== 'production'
 
 export const endpoints = {
     auth: 'api/v1/auth',

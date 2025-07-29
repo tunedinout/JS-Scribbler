@@ -16,7 +16,7 @@ export const useLoadWorker = (isLoggedIn) => {
         )
         loadScribbles().then((scribbles) => {
             if(isLoggedIn){
-                console.log(`worker shoud post message`)
+                log(`worker shoud post message`)
                 worker.postMessage({ type: 'load', scribbles })
             }else{
                 setLoadedScribbles(scribbles)
@@ -25,7 +25,7 @@ export const useLoadWorker = (isLoggedIn) => {
         })
 
         worker.onmessage = async (event) => {
-            console.log(`worker is talking back`, event)
+            log(`worker is talking back`, event)
             const { driveScribbles, driveId } = event.data
 
             log(`received driveId`, driveId)

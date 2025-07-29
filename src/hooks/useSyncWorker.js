@@ -10,7 +10,7 @@ export const useSyncWorker = (isLoggedIn) => {
         worker?.postMessage({ type: 'sync', scribble, driveId })
     },[worker])
     useEffect(() => {
-        console.log(`import.meta.url`,import.meta.url)
+        const log = logger(`useSyncWorker - effect`)
         let worker
         if (isLoggedIn) {
             worker = new Worker(
@@ -19,7 +19,7 @@ export const useSyncWorker = (isLoggedIn) => {
             setWorker(worker)
 
             worker.onmessage = (event) => {
-                console.log(`worker is done saving`, event)
+                log(`worker is done saving`, event)
                 const {scribble} = event.data
                 const {id = null} = scribble
                 setCurrentScribbleId(id)

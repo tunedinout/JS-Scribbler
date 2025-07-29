@@ -36,7 +36,6 @@ export async function createDriveFolder() {
         return response
     } catch ({ response }) {
         // TODO: carefully evaluate why we do this
-        console.log(`error response while creating app folder`, response)
         return {
             message:
                 response?.data?.message ||

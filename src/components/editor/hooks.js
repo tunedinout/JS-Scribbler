@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { HTMLHint } from 'htmlhint'
+import { getLogger } from '@src/util'
+const logger = getLogger(`editor/hooks`)
 export function useEditor({
     onChange,
     focus: isFocus,
@@ -23,8 +25,9 @@ export function useEditor({
     const editorRef = useRef(null)
 
     useEffect(() => {
+        const log = logger(`useEditor - effect - 1`)
         if (isFocus && editorRef?.current) {
-            console.log(editorRef.current)
+            log(editorRef.current)
             editorRef?.current?.editor?.focus()
             doUnfocus()
         }
@@ -32,6 +35,7 @@ export function useEditor({
 
     // fetch settings.json`
     useEffect(() => {
+        const log = logger(`useEditor - effect - 2`)
         fetch(`/JS-Scribbler/scribbler-settings.json`)
             .then((response) => response.json())
             .then(
@@ -50,7 +54,7 @@ export function useEditor({
                 }
             )
             .catch((err) => {
-                console.error('Error fetching tab setting...', err)
+                log('Error fetching tab setting...', err)
                 setTabWidth(2)
                 setShowLineNumbers(true)
                 setShowGutter(true)
@@ -61,7 +65,8 @@ export function useEditor({
 
     // captures run time error
     useEffect(() => {
-        console.log('runtimeError', runtimeError)
+        const log = logger(`useEditor - effect - 3`)
+        log('runtimeError', runtimeError)
         if (runtimeError) {
             setAnnotations([
                 ...annotations,
