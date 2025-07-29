@@ -1,0 +1,16 @@
+// vscode needs this to make the goToDefinition work with aliases
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@src/*": ["src/*"],
+      "@auth/*": ["src/auth/*"],
+      "@components/*": ["src/components/*"],
+      "@core-components/*": ["src/core-components/*"],
+      "@hooks/*": ["src/hooks/*"],
+      "@workers/*": ["src/workers/*"],
+      "@pages/*": ["src/pages/*"]
+    }
+  },
+  "include": ["src"]
+}
