@@ -56,6 +56,7 @@ function Preview({ htmlContent, css, js, isRun }) {
                 title="Preveiw"
                 style={{ width: '100%', height: '100%', background: '#24292e' }}
                 srcDoc={srcDoc}
+                sandbox='allow-scripts'
                 // eslint-disable-next-line react/no-unknown-property
                 credentialless
             />
