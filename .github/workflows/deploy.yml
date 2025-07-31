@@ -2,7 +2,7 @@ name: Build deploy scribbler
 
 on:
   push:
-    branches: [main]
+    branches: [security-checks]
   workflow_dispatch:
 
 permissions:
