@@ -47,7 +47,7 @@ export default function CustomListItemWrapper({
             <CustomListItem
                 {...{
                     disableRipple: true,
-                    key: scribble.id,
+                    key: scribble.sid,
                     button: true,
                     onClick: () => onSelect(scribble, selectedFile),
                     onMouseMove: () => setIsHover(true),
@@ -134,7 +134,7 @@ export const CustomListItem = styled(ListItem, {
 }))
 CustomListItemWrapper.propTypes = {
     scribble: PropTypes.shape({
-        id: PropTypes.string,
+        sid: PropTypes.string,
         name: PropTypes.string,
         css: PropTypes.string,
         js: PropTypes.string,

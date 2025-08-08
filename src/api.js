@@ -46,17 +46,12 @@ export async function createDriveFolder() {
     }
 }
 
-/**
- *
- * @param {String} accessToken
- * @param {String} driveFolderId
- * @returns an array of {id,name} - of existing scribbles
- */
-export async function fetchScribbles(driveFolderId) {
+
+export async function fetchScribbles() {
     const log = logger(`fetchScribbles`)
     try {
         const response = await axios({
-            url: `${API_HOST}/${endpoints.scribbles}?driveFolderId=${driveFolderId}`,
+            url: `${API_HOST}/${endpoints.load}`,
             method: 'GET',
             withCredentials: true,
         })
@@ -73,16 +68,11 @@ export async function fetchScribbles(driveFolderId) {
     }
 }
 
-/**
- *
- * @param {String} accessToken
- * @param {String} scribbleId
- * @returns an array of {mimeType,id,data} - of each css, js and html file
- */
+
 export async function fetchScribble(scribbleId) {
     try {
         const response = await axios({
-            url: `${API_HOST}/${endpoints.scribbles}/${scribbleId}`,
+            url: `${API_HOST}/${endpoints.load}/${scribbleId}`,
             method: 'GET',
             withCredentials: true,
         })
@@ -99,37 +89,41 @@ export async function fetchScribble(scribbleId) {
 }
 
 export async function createScribble(
-    driveFolderId,
     { name = '', js = '', css = '', html = '' }
 ) {
     const response = await axios({
-        url: `${API_HOST}/${endpoints.scribbles}`,
+        url: `${API_HOST}/${endpoints.syncCreate}`,
         method: 'POST',
         withCredentials: true,
         data: {
-            driveFolderId,
-            name,
-            js,
-            css,
-            html,
+            scribble: {
+                name,
+                js,
+                css,
+                html,
+            }
         },
     })
 
     return response
 }
 
-export async function updateScribble({ id: scribbleId, js, css, html }) {
+export async function updateScribble({sid,name,js,css,html,version}) {
     const log = logger(`updateScribble`)
     try {
         const response = await axios({
-            url: `${API_HOST}/${endpoints.scribbles}/${scribbleId}`,
+            url: `${API_HOST}/${endpoints.syncUpdate}`,
             method: 'PUT',
             withCredentials: true,
             data: {
-                scribbleId,
-                js,
-                css,
-                html,
+               scribble: {
+                    sid,
+                    name,
+                    js,
+                    css,
+                    html,
+                    version
+               }
             },
         })
         log(`response`, response)
@@ -140,7 +134,7 @@ export async function updateScribble({ id: scribbleId, js, css, html }) {
             message:
                 response?.data?.message ||
                 response?.data ||
-                `unable to update scribble with id ${scribbleId}`,
+                `unable to update scribble with id ${sid}`,
             ...response,
         }
     }
@@ -152,4 +146,27 @@ export async function fetchMe(signal) {
         withCredentials: true,
     })
     return response
+}
+
+
+export async function sync(scribbles) {
+    try {
+        // eslint-disable-next-line no-unused-vars
+        const response = await axios( {
+            url: `${API_HOST}/${endpoints.sync}`,
+            method: 'POST',
+            data: {
+                scribbles,
+            },
+            withCredentials: true
+        })
+    } catch ({response}) {
+         return {
+            message:
+                response?.data?.message ||
+                response?.data ||
+                `unable to sync`,
+            ...response,
+        }
+    }
 }

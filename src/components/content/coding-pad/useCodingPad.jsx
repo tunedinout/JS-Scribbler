@@ -8,7 +8,7 @@ import { debounce, getLogger } from "@src/util"
 const logger = getLogger(`useCodingPad`)
 function useCodingPad(isRun, setIsRun, setLoading, setAutoSaving) {
     const { isLoggedIn } = useAuth()
-    const { loadedScribbles, driveId } = useLoadWorker(isLoggedIn)
+    const { loadedScribbles } = useLoadWorker(isLoggedIn)
     const [scribbles, setScribbles] = useState([])
 
     const [currentScribble, setCurrentScribble] = useState(null)
@@ -17,8 +17,8 @@ function useCodingPad(isRun, setIsRun, setLoading, setAutoSaving) {
     const [selectedCode, setSelectedCode] = useState('js')
     const [hideExplorer, setHideExplorer] = useState(true)
 
-    const { syncToDrive, currentScribbleId: syncedScribbleId } =
-        useSyncWorker(isLoggedIn)
+    const { syncToDrive, currentScribbleSid: syncedScribbleSid } =
+        useSyncWorker(isLoggedIn, setCurrentScribble)
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const debouncedSyncToDrive = useCallback(debounce(syncToDrive, 500),[syncToDrive])
@@ -30,10 +30,11 @@ function useCodingPad(isRun, setIsRun, setLoading, setAutoSaving) {
     }, [currentScribble])
 
     useEffect(() => {
-        if (currentScribble?.id !== syncedScribbleId && currentScribble && syncedScribbleId) {
-            setCurrentScribble({ ...currentScribble, id: syncedScribbleId })
+        if (currentScribble?.sid !== syncedScribbleSid && currentScribble && syncedScribbleSid) {
+            setCurrentScribble({ ...currentScribble, sid: syncedScribbleSid })
+            saveScribble({ ...currentScribble, sid: syncedScribbleSid })
         }
-    }, [currentScribble, syncedScribbleId])
+    }, [currentScribble, syncedScribbleSid])
 
     useEffect(() => {
         const newScribbles = [...loadedScribbles]
@@ -54,9 +55,9 @@ function useCodingPad(isRun, setIsRun, setLoading, setAutoSaving) {
             setAutoSaving(true)
             await saveScribble(newScribble)
             setAutoSaving(false)
-            driveId && debouncedSyncToDrive(newScribble,driveId)
+            debouncedSyncToDrive(newScribble)
         },
-        [debouncedSyncToDrive, driveId, setAutoSaving, setIsRun]
+        [debouncedSyncToDrive, setAutoSaving, setIsRun]
     )
     const onCreate = async ({ name }) => {
         const log = logger(`onCreate`)
@@ -70,6 +71,7 @@ function useCodingPad(isRun, setIsRun, setLoading, setAutoSaving) {
         setScribbles([...scribbles, newScribble])
         setCurrentScribble(newScribble)
         await saveScribble(newScribble)
+        debouncedSyncToDrive(newScribble)
         setIsCreateMode(false)
     }
 

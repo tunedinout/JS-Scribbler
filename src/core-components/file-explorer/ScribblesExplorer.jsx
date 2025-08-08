@@ -80,7 +80,7 @@ export default function ScribblesExplorer({
 ScribblesExplorer.propTypes = {
     scribbles: PropTypes.arrayOf(
         PropTypes.shape({
-            id: PropTypes.string,
+            sid: PropTypes.string,
             name: PropTypes.string,
             css: PropTypes.string,
             js: PropTypes.string,
@@ -94,7 +94,7 @@ ScribblesExplorer.propTypes = {
     onSelect: PropTypes.func,
     currentScribble:
         PropTypes.shape({
-            id: PropTypes.string,
+            sid: PropTypes.string,
             name: PropTypes.string,
             css: PropTypes.string,
             js: PropTypes.string,

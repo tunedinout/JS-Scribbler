@@ -7,7 +7,6 @@ import { getLogger } from '@src/util'
 const logger = getLogger(`useLoadWorker`)
 export const useLoadWorker = (isLoggedIn) => {
     const [loadedScribbles, setLoadedScribbles] = useState([])
-    const [driveId, setDriveId] = useState(null)
 
     useEffect(() => {
         const log = logger(`effect`, import.meta.url)
@@ -26,28 +25,25 @@ export const useLoadWorker = (isLoggedIn) => {
 
         worker.onmessage = async (event) => {
             log(`worker is talking back`, event)
-            const { driveScribbles, driveId } = event.data
-
-            log(`received driveId`, driveId)
-            setDriveId(driveId)
+            const { scribbles } = event.data
             if (isLoggedIn) {
                 await Promise.all(
-                    driveScribbles?.map((scribble) =>
+                    scribbles?.map((scribble) =>
                         saveScribble(scribble)
                     )
                 )
             }
 
-            const scribbles = await loadScribbles()
-            log(`loading from indexed db..`, scribbles)
+            const scribblesOffline = await loadScribbles()
+            log(`loading from indexed db..`, scribblesOffline)
 
-            setLoadedScribbles(scribbles)
+            setLoadedScribbles(scribblesOffline)
+            
         }
         return () => worker.terminate()
     }, [isLoggedIn])
 
     return {
         loadedScribbles,
-        driveId,
     }
 }

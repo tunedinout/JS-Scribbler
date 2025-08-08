@@ -5,17 +5,21 @@ const logger = getLogger(`syncWorker.js`)
 onmessage = async function (event) {
     const log = logger(`onmessage`)
     log(`received event: `, event)
-    const { scribble, driveId } = event.data
+    const { scribble } = event.data
 
     try {
-        if (scribble.id) {
-            await updateScribble(scribble)
+        let updatedScribble;
+        if (scribble.sid) {
+            const response = await updateScribble(scribble)
+            log(`updateResponse`, response)
+            updatedScribble = response.data.scribble
         } else {
-            const response= await createScribble(driveId, scribble)
+            const response= await createScribble(scribble)
             log(`createResponse`, response)
-            const {data: createdScribble} = response
-            this.postMessage({ event: 'sync', scribble: createdScribble })
+            updatedScribble = response.data.scribble
         }
+        log(`updatedScribble`, updatedScribble)
+        this.postMessage({ event: 'sync', scribble: updatedScribble })
     } catch (error) {
         // EAT
         console.error(`error occurred`, error)

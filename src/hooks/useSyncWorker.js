@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 import { getLogger } from '../util'
+import { saveScribble } from '@src/indexedDB.util'
 const logger = getLogger(`useSyncWorker.js`)
-export const useSyncWorker = (isLoggedIn) => {
+export const useSyncWorker = (isLoggedIn,setCurrentScribble) => {
     const [worker, setWorker] = useState(null)
-    const [currentScribbleId, setCurrentScribbleId] = useState(null)
-    const syncToDrive = useCallback((scribble, driveId) => {
+    const syncToDrive = useCallback((scribble) => {
         const log = logger(`syncToDrive`)
         log(`called`)
-        worker?.postMessage({ type: 'sync', scribble, driveId })
+        worker?.postMessage({ type: 'sync', scribble })
     },[worker])
     useEffect(() => {
         const log = logger(`useSyncWorker - effect`)
@@ -18,11 +18,12 @@ export const useSyncWorker = (isLoggedIn) => {
             )
             setWorker(worker)
 
-            worker.onmessage = (event) => {
+            worker.onmessage = async (event) => {
                 log(`worker is done saving`, event)
                 const {scribble} = event.data
-                const {id = null} = scribble
-                setCurrentScribbleId(id)
+                // save change to indexedDB
+                await saveScribble(scribble)
+                setCurrentScribble(scribble)
             }
         }
 
@@ -30,10 +31,9 @@ export const useSyncWorker = (isLoggedIn) => {
             worker?.terminate()
             setWorker(null)
         }
-    }, [isLoggedIn])
+    }, [isLoggedIn, setCurrentScribble])
 
     return {
-        syncToDrive,
-        currentScribbleId,
+        syncToDrive
     }
 }
