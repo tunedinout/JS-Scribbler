@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import './Preview.css'
 import { getLogger } from '@src/util'
 import DOMPurify from 'dompurify'
+import { IFrame, IFrameContainer } from './styles'
 // initially just run html and css
 const origContentSrcDoc = `<!DOCTYPE html>
 <html>
@@ -12,59 +12,59 @@ const origContentSrcDoc = `<!DOCTYPE html>
   <body>
   </body>
 </html>`
-const errorTracker = `
-window.onerror = function(message, url, lineNo, columnNo, error) {
+const errorTracker = `window.onerror = function(message, url, lineNo, columnNo, error) {
   parent.postMessage({type: 'error', message, error: error.toString(), lineNo, columnNo}, '*');
   // prevent firing of default event handler
-  return true;
-}`
+  return true;}`
 
 const logger = getLogger(`Preview`)
 function Preview({ htmlContent, css, js, isRun }) {
-    const [srcDoc, setSrcDoc] = useState(origContentSrcDoc)
+  const [srcDoc, setSrcDoc] = useState(origContentSrcDoc)
 
-    useEffect(() => {
-        logger(`htmlContent`)(htmlContent)
-    }, [htmlContent])
+  useEffect(() => {
+    logger(`htmlContent`)(htmlContent)
+  }, [htmlContent])
 
-    useEffect(() => {
-        if (isRun)
-            setSrcDoc(`<!DOCTYPE html>
+  useEffect(() => {
+    if (isRun)
+      setSrcDoc(`<!DOCTYPE html>
       <html>
         <head>
-          <title>Preview</title>
-          <style> ${css} </style>
-        </head>
-        <body>
-          ${DOMPurify.sanitize(htmlContent)}
           <script>
           ${errorTracker}
           </script>
           <script>
               ${js}
           </script>
+          <title>Preview</title>
+          <style> ${css} </style>
+        </head>
+        <body>       
+          ${DOMPurify.sanitize(htmlContent)}
         </body>
       </html>`)
-        else {
-            setSrcDoc(origContentSrcDoc)
-        }
-    }, [isRun, htmlContent, css, js])
+    else {
+      setSrcDoc(origContentSrcDoc)
+    }
+  }, [isRun, htmlContent, css, js])
 
-    return (
-        <div className="preview">
-            <iframe
-                title="Preveiw"
-                style={{ width: '100%', height: '100%', background: '#24292e' }}
-                srcDoc={srcDoc}
-            />
-        </div>
-    )
+  return (
+    <IFrameContainer>
+      <IFrame
+        onError={(error) => console.error(error)}
+        title="Preveiw"
+        srcDoc={srcDoc}
+      />
+    </IFrameContainer>
+
+    // </div>
+  )
 }
 
 Preview.propTypes = {
-    htmlContent: PropTypes.string,
-    css: PropTypes.string,
-    js: PropTypes.string,
-    isRun: PropTypes.bool,
+  htmlContent: PropTypes.string,
+  css: PropTypes.string,
+  js: PropTypes.string,
+  isRun: PropTypes.bool,
 }
 export default Preview

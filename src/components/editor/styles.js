@@ -1,0 +1,44 @@
+import styled from 'styled-components'
+
+export const EditorContainer = styled.div`
+  width: 100%;
+  height: 100%;
+
+  textarea {
+    width: 100%;
+    height: 100%;
+    padding: 8px;
+    font-size: 14px;
+    border: none;
+    resize: none;
+    margin-bottom: 8px;
+    outline: none;
+    color: white;
+    background-color: #211f1f;
+  }
+
+  button {
+    padding: 10px 20px; /* Adjust padding as needed */
+    font-size: 16px; /* Increase font size for better readability */
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s; /* Smooth transition on hover */
+  }
+
+  button:hover {
+    background-color: #0056b3;
+  }
+
+  .highlighted-keyword {
+    color: #bc70fd;
+  }
+  .ace_gutter {
+    background: none;
+  }
+  .ace-github-dark {
+    background-color: #212020;
+  }
+`

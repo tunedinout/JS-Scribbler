@@ -9,33 +9,30 @@
     
 */
 
-
 // what is type of foo.prototype ?
 
 /**
- * Type of foo.prototype is object 
+ * Type of foo.prototype is object
  * {constructor: foo, [__proto__]: Object}
  */
-function foo(){
-    console.log(`foo was called`);
+function foo() {
+  console.log(`foo was called`)
 }
 
-
-console.log(foo.prototype);
+console.log(foo.prototype)
 function FooConstructor() {
-    this.name = 'Narottam';
-    console.log(`Foo constructor was called`)
+  this.name = 'Narottam'
+  console.log(`Foo constructor was called`)
 }
-const obj = new FooConstructor();
+const obj = new FooConstructor()
 
 // In the above, returned obj what is the .prototype ??
 // obj.prototype = foo.prototype I think
 
-
-console.log(Object.getPrototypeOf(obj)== FooConstructor.prototype);
+console.log(Object.getPrototypeOf(obj) == FooConstructor.prototype)
 
 //console.log(Object.getPrototypeOf(FooConstructor) == FooConstructor.prototype);
-// above line equates false why ? 
+// above line equates false why ?
 
 /**
  Object.getPrototypeOf(obj) --
@@ -77,22 +74,5 @@ console.log(Object.getPrototypeOf(obj)== FooConstructor.prototype);
 
 These questions should help deepen your understanding of prototype-related concepts in JavaScript. Feel free to ask for clarification on any of them!
  */
- 
- 
- 
- 
- console.log(Object.getPrototypeOf(FooConstructor) === Function.prototype)
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+
+console.log(Object.getPrototypeOf(FooConstructor) === Function.prototype)

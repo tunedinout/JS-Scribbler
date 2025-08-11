@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import AceEditor from 'react-ace'
 import { getLogger } from '../../../util'
 import { useEditor } from '../hooks'
-import './Editor-JS.css'
+import { EditorContainer } from '../styles'
 
 /** An Ace Editor intergrated component
  * updates calling component by calling onChange.
@@ -24,66 +24,68 @@ import './Editor-JS.css'
  */
 const logger = getLogger(`EditorJS`)
 function EditorJS({
-    onChange,
-    // APP.js maintains code for execution and other things
+  onChange,
+  // APP.js maintains code for execution and other things
+  code: codeString,
+  focus,
+  doUnfocus,
+  runtimeError,
+}) {
+  const {
+    editorRef,
+    annotations,
+    handleChange,
+    fontSize,
+    highlightActiveLine,
+    showGutter,
+    showLineNumbers,
+  } = useEditor({
     code: codeString,
     focus,
     doUnfocus,
     runtimeError,
-}) {
-    const {
-        editorRef,
-        annotations,
-        handleChange,
-        fontSize,
-        highlightActiveLine,
-    } = useEditor({
-        code: codeString,
-        focus,
-        doUnfocus,
-        runtimeError,
-        onChange,
-    })
+    onChange,
+  })
 
-    useEffect(() => {
-        logger(`annotations`)(annotations)
-    }, [annotations])
+  useEffect(() => {
+    logger(`annotations`)(annotations)
+  }, [annotations])
 
-    // handler that updates renamed file in db
+  // handler that updates renamed file in db
 
-    return (
-        <div className="scribbler-editor-container">
-            <AceEditor
-                ref={editorRef}
-                // error annotations
-                style={{ width: 'inherit', height: 'inherit' }}
-                annotations={[...annotations]}
-                value={codeString}
-                mode={'javascript'}
-                theme="github_dark"
-                onChange={handleChange}
-                // width="inherit"
-                // height="inherit"
-                fontSize={fontSize}
-                showPrintMargin={false}
-                highlightActiveLine={highlightActiveLine}
-                wrapEnabled={true}
-                setOptions={{
-                    // scrollPastEnd: true,
-                    useWorker: !runtimeError,
-                    fontSize: '12px',
-                    fontFamily: "'Source Code Pro'",
-                }}
-                className="scribbler-js-editor"
-            />
-        </div>
-    )
+  return (
+    <EditorContainer>
+      <AceEditor
+        ref={editorRef}
+        // error annotations
+        annotations={[...annotations]}
+        value={codeString}
+        mode={'javascript'}
+        theme="github_dark"
+        onChange={handleChange}
+        width="inherit"
+        height="inherit"
+        fontSize={fontSize}
+        showPrintMargin={false}
+        highlightActiveLine={highlightActiveLine}
+        wrapEnabled={true}
+        setOptions={{
+          // scrollPastEnd: true,
+          useWorker: !runtimeError,
+          fontSize: '12px',
+          fontFamily: "'Source Code Pro'",
+          showGutter: showGutter,
+          showLineNumbers: showLineNumbers,
+        }}
+      />
+    </EditorContainer>
+  )
 }
 EditorJS.propTypes = {
-    onChange: PropTypes.func,
-    code: PropTypes.string,
-    focus: PropTypes.bool,
-    doUnfocus: PropTypes.func,
-    runtimeError: PropTypes.string,
+  onChange: PropTypes.func,
+  code: PropTypes.string,
+  focus: PropTypes.bool,
+  doUnfocus: PropTypes.func,
+  runtimeError: PropTypes.string,
 }
 export default EditorJS

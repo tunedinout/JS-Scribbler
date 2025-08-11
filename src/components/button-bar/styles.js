@@ -1,31 +1,43 @@
-import styled, { css } from 'styled-components';
-import { FiPlay } from 'react-icons/fi';
-import { CommonButtonStyles } from '../styled.global';
+import styled, { css } from 'styled-components'
+import { PiPlayDuotone } from 'react-icons/pi'
 
-const StyledPlayIcon = styled(FiPlay)`
-    ${CommonButtonStyles}
-    color: #009CF8;
-    font-size: 16px;
-    cursor: pointer;
-    fill: #009CF8;
+const StyledPlayIcon = styled(PiPlayDuotone)`
+  color: #007d57;
+  font-size: 18px;
+  cursor: pointer;
+  fill: #007d57;
 
-    ${({ disabled }) => disabled && css`
-        opacity: 0.5;
-        cursor: not-allowed;
+  ${({ disabled }) =>
+    disabled &&
+    css`
+      opacity: 0.5;
+      cursor: not-allowed;
     `}
-`;
-
+`
+const Button = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  box-shadow: 0;
+  width: 6rem;
+  height: 2.5rem;
+  box-sizing: border-box;
+  outline: none;
+  background: #27345e;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  appearance: button;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  &:active {
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
+    transform: translateY(2px);
+  }
+`
 const ButtonBarContainer = styled.div`
-    color: white;
-    position: fixed;
-    height: 40px;
-    width: fit-content;
-    top: 0;
-    left: 0;
-    display: flex;
-    align-items: center;
-    padding-left: 8px;
-    z-index: 10;
-`;
+  box-sizing: border-box;
+  display: flex;
+  justify-self: end;
+  gap: 1rem;
+`
 
-export {StyledPlayIcon, ButtonBarContainer}
+export { StyledPlayIcon, ButtonBarContainer, Button }
