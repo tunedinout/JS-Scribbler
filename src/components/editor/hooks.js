@@ -69,11 +69,11 @@ export function useEditor({
     const log = logger(`useEditor - effect - 3`)
     log('runtimeError', runtimeError)
     if (runtimeError) {
-      const { message, columnNo, lineNo } = runtimeError
+      const { message, columnNo, lineNo, offsetLineNo } = runtimeError
       setAnnotations([
         ...annotations,
         {
-          row: lineNo - 11,
+          row: lineNo - offsetLineNo - 1,
           column: columnNo,
           text:
             // runtime error is only received as the error string

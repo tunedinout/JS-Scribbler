@@ -41,7 +41,7 @@ export const IndexedDbScribbleStore = 'scribbles'
 
 export const Theme = {
   primaryColor: '#1b1d25ff',
-  secondaryColor: '#363c52ff',
+  secondaryColor: '#1c1f22ff',
   fontColor: '#d5ecf5',
   secondaryFontColor: '#b9b9beff',
   HighlightColor: '#454343ff',

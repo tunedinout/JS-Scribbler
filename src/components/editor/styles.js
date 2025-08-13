@@ -3,7 +3,8 @@ import styled from 'styled-components'
 export const EditorContainer = styled.div`
   width: 100%;
   height: 100%;
-
+  padding-top: 2rem;
+  background-color: #211f1f;
   textarea {
     width: 100%;
     height: 100%;
@@ -14,7 +15,6 @@ export const EditorContainer = styled.div`
     margin-bottom: 8px;
     outline: none;
     color: white;
-    background-color: #211f1f;
   }
 
   button {

@@ -18,7 +18,7 @@ const errorTracker = `window.onerror = function(message, url, lineNo, columnNo, 
   return true;}`
 
 const logger = getLogger(`Preview`)
-function Preview({ htmlContent, css, js, isRun }) {
+function Preview({ htmlContent, css, js, isRun, iframeRef }) {
   const [srcDoc, setSrcDoc] = useState(origContentSrcDoc)
 
   useEffect(() => {
@@ -30,17 +30,19 @@ function Preview({ htmlContent, css, js, isRun }) {
       setSrcDoc(`<!DOCTYPE html>
       <html>
         <head>
-          <script>
-          ${errorTracker}
-          </script>
-          <script>
-              ${js}
-          </script>
           <title>Preview</title>
           <style> ${css} </style>
+          <script>
+            ${errorTracker}
+          </script>
         </head>
-        <body>       
+        <body>  
+        <div id="user-html" style="background: content-box ${'white'};">     
           ${DOMPurify.sanitize(htmlContent)}
+        </div>
+        <script id="user-script">
+          ${js}
+        </script>
         </body>
       </html>`)
     else {
@@ -51,9 +53,10 @@ function Preview({ htmlContent, css, js, isRun }) {
   return (
     <IFrameContainer>
       <IFrame
-        onError={(error) => console.error(error)}
-        title="Preveiw"
+        ref={iframeRef}
+        // onError={(error) => console.error(error)}
         srcDoc={srcDoc}
+        id="preview"
       />
     </IFrameContainer>
 

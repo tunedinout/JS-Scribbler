@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import EditorCSS from '@components/editor/CSS/Editor-CSS'
 import EditorHTML from '@components/editor/HTML/Editor-HTML'
 import EditorJS from '@components/editor/JS/Editor-JS'
-import Preview from '@components/preview/Preview'
 // import './CodingPad.css'
 import useCodingPad from './useCodingPad'
 import { getLogger } from '@src/util'
 import PropTypes from 'prop-types'
 import { CodingPadContainer } from './styles'
+import Preview from '../preview/Preview'
 
 const logger = getLogger(`CodingPad`)
 export default function CodingPad({ isRun, currentEditDetails }) {
@@ -19,6 +19,7 @@ export default function CodingPad({ isRun, currentEditDetails }) {
   const [focusEditor, setFocusEditor] = useState(true)
   const [jsRuntimeError, setJSRuntimeError] = useState(null)
   const [isHtmlError, setIsHtmlError] = useState(false)
+  const iframeRef = useRef(null)
 
   // only when a new scribble is created focus is stolen
   // from the editor
@@ -34,17 +35,26 @@ export default function CodingPad({ isRun, currentEditDetails }) {
     const messageInterceptorHandler = function (event) {
       const log = logger(`messageInterceptorHandler`)
       if (
-        event.data.type === 'error'
+        event.data.type === 'error' &&
+        iframeRef.current
         // event.origin === 'http://localhost:3001/console'
       ) {
+        const srcDocStr = iframeRef.current.getAttribute('srcDoc')
+        const lines = srcDocStr.replace(/\r\n/g, '\n').split('\n')
+        const startLineOffset =
+          lines.findIndex((line) => line.includes('user-script')) + 1
+        console.log(`123`)
         log(event)
-        setJSRuntimeError(() => event.data)
+        setJSRuntimeError(() => ({
+          ...event.data,
+          offsetLineNo: startLineOffset,
+        }))
       }
     }
     window.addEventListener('message', messageInterceptorHandler)
     return () =>
       window.removeEventListener('message', messageInterceptorHandler)
-  }, [])
+  }, [iframeRef])
 
   return (
     <CodingPadContainer>
@@ -97,6 +107,7 @@ export default function CodingPad({ isRun, currentEditDetails }) {
           js={currentScribble.js}
           isRun={isRun}
           isHtmlError={isHtmlError}
+          iframeRef={iframeRef}
         />
       )}
 
