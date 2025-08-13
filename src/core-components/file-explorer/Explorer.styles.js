@@ -8,13 +8,12 @@ import { Theme } from '@src/constants'
 
 const ScribblesContainer = styled.div`
   overflow: auto;
-  width: 100%;
   position: relative;
   background: ${Theme.primaryColor};
   border-right: 1px solid #211f1f;
   color: ${Theme.secondaryFontColor};
   font-family: ${Theme.fontFamily};
-  padding: 0.5rem;
+  // padding: 0.5rem;
   // border-radius: 18px;
 `
 
