@@ -72,7 +72,7 @@ function EditorJS({
         setOptions={{
           // scrollPastEnd: true,
           useWorker: !runtimeError,
-          fontSize: '12px',
+          fontSize: `${fontSize}px`,
           fontFamily: "'Source Code Pro'",
           showGutter: showGutter,
           showLineNumbers: showLineNumbers,

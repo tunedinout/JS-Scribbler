@@ -13,6 +13,7 @@ import {
   ContentEditableScribbleName,
   DeleteButtonContainer,
 } from './Explorer.styles'
+import { Theme } from '@src/constants'
 const logger = getLogger(`CustomListItemWrapper`)
 export default function CustomListItemWrapper({
   scribble,
@@ -60,18 +61,12 @@ export default function CustomListItemWrapper({
           isSelected,
         }}
       >
-        {/* <CollapseExpandIconContainer
-          onClick={() => setIsCollapsed(!isCollapsed)}
-        >
-          {!isCollapsed && <CollapseIcon size={16} title="Collapse" />}
-          {isCollapsed && <ExpandIcon size={16} title="Expand" />}
-        </CollapseExpandIconContainer> */}
         <CustomListItemIcon onClick={() => setIsCollapsed(!isCollapsed)}>
-          {isCollapsed && (
-            <MdOutlineKeyboardArrowDown size={20} color="#fcba03" />
-          )}
           {!isCollapsed && (
-            <MdOutlineKeyboardArrowRight size={20} color="#fcba03" />
+            <MdOutlineKeyboardArrowDown size={20} color={Theme.fontColor} />
+          )}
+          {isCollapsed && (
+            <MdOutlineKeyboardArrowRight size={20} color={Theme.fontColor} />
           )}
         </CustomListItemIcon>
 
@@ -120,8 +115,7 @@ export const CustomListItemIcon = styled('div')({
 export const CustomListItem = styled(ListItem, {
   shouldForwardProp: (prop) => prop !== 'isSelected',
 })(({ isSelected }) => ({
-  fontFamily: 'Noto Sans',
-  fontSize: '12px',
+  fontSize: '14px',
   minWidth: '200px',
   width: '100%',
   display: 'flex',
@@ -131,9 +125,9 @@ export const CustomListItem = styled(ListItem, {
   boxShadow: '0 1px 1px rgba(0, 0, 0, 0.1)',
   marginBottom: '8px',
   borderRadius: '4px',
-  backgroundColor: isSelected ? '#211f1f' : 'transparent',
+  backgroundColor: isSelected ? Theme.HighlightColor : 'transparent',
   '&:hover': {
-    backgroundColor: '#24292e',
+    backgroundColor: Theme.hoverColor,
   },
   '&:active': {
     backgroundColor: 'none',

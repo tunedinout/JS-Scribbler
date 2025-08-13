@@ -1,7 +1,8 @@
 import { CustomListItem, CustomListItemIcon } from './CustomListItemWrapper'
-import { ScribblesListWrapper } from './Explorer.styles'
+import { CodeFilesWrapper } from './Explorer.styles'
 import { MdCss, MdHtml, MdJavascript } from 'react-icons/md'
 import PropTypes from 'prop-types'
+import { Theme } from '@src/constants'
 
 export default function CodeFiles({
   isParentSelected,
@@ -13,7 +14,7 @@ export default function CodeFiles({
   // }, [onFileSelectionChange, selectedFile])
   return (
     <>
-      <ScribblesListWrapper
+      <CodeFilesWrapper
         style={{
           marginLeft: '1rem',
           width: '90%',
@@ -28,7 +29,7 @@ export default function CodeFiles({
         >
           {/* The JS File */}
           <CustomListItemIcon>
-            <MdJavascript size={20} fill="orange" />
+            <MdJavascript size={24} fill={Theme.fontColor} />
           </CustomListItemIcon>
           <div>{'index.js'}</div>
         </CustomListItem>
@@ -40,7 +41,7 @@ export default function CodeFiles({
         >
           {/* The JS File */}
           <CustomListItemIcon>
-            <MdCss size={20} fill="orange" />
+            <MdCss size={24} fill={Theme.fontColor} />
           </CustomListItemIcon>
           <div>{'index.css'}</div>
         </CustomListItem>
@@ -52,11 +53,11 @@ export default function CodeFiles({
         >
           {/* The JS File */}
           <CustomListItemIcon>
-            <MdHtml size={20} fill="orange" />
+            <MdHtml size={24} fill={Theme.fontColor} />
           </CustomListItemIcon>
           <div>{'index.html'}</div>
         </CustomListItem>
-      </ScribblesListWrapper>
+      </CodeFilesWrapper>
     </>
   )
 }

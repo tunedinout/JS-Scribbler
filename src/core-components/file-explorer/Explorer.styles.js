@@ -4,16 +4,16 @@ import { IoIosArrowDown, IoIosArrowUp } from 'react-icons/io'
 import { CommonButtonStyles } from '../../components/styled.global'
 import { List } from '@mui/material'
 import { MdDelete } from 'react-icons/md'
+import { Theme } from '@src/constants'
 
 const ScribblesContainer = styled.div`
-  // margin-right: 16px;
-  // height: 88%;
   overflow: auto;
   width: 100%;
   position: relative;
-  background: #242a40;
+  background: ${Theme.primaryColor};
   border-right: 1px solid #211f1f;
-  color: white;
+  color: ${Theme.secondaryFontColor};
+  font-family: ${Theme.fontFamily};
   padding: 0.5rem;
   // border-radius: 18px;
 `
@@ -22,7 +22,6 @@ const ScribblesHeadingWrapper = styled.div`
   margin-bottom: 4px;
   width: 100%;
   font-size: 12px;
-  font-family: 'Noto Sans', sans-serif;
   text-align: left;
   padding-left: 8px;
   box-sizing: border-box;
@@ -34,6 +33,12 @@ const ScribblesHeadingWrapper = styled.div`
 `
 
 const ScribblesListWrapper = styled(List)`
+  height: 100%;
+  padding: 0.25rem;
+  border-radius: 4px;
+  width: 100%;
+`
+const CodeFilesWrapper = styled(List)`
   height: 100%;
   padding: 0.25rem;
   border-radius: 4px;
@@ -78,13 +83,6 @@ const StyledPlusIcon = styled(FaPlus)`
     `}
 `
 
-const CollapseExpandIconContainer = styled.div`
-display: flex,
-cursor: pointer,
-position: absolute,
-right: 32px
-`
-
 const CollapseIcon = styled(IoIosArrowDown)`
   ${CommonButtonStyles}
   color: grey;
@@ -110,6 +108,6 @@ export {
   StyledPlusIcon,
   CollapseIcon,
   ExpandIcon,
-  CollapseExpandIconContainer,
   DeleteButtonContainer,
+  CodeFilesWrapper,
 }

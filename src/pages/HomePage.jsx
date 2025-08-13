@@ -4,20 +4,23 @@ import {
   Header,
   HomePageContainer,
   HamburgerMenuOn,
-  Logo,
   LogoText,
   HamburgerMenuOff,
   Main,
+  Logo,
 } from './homepage.styles'
-import { PiScrollThin } from 'react-icons/pi'
 import ScribblesExplorer from '@src/core-components/file-explorer/Explorer'
 import CodingPad from '@src/components/coding-pad/CodingPad'
+import { useAuth } from '@src/auth/AuthProvider'
+import { IconButton, Tooltip } from '@mui/material'
+import { HiMiniInformationCircle } from 'react-icons/hi2'
 
 export default function HomePage() {
   const [isRun, setIsRun] = useState(false)
   const [currentEditDetails, setCurrentEditDetails] = useState(null)
   const [navOpen, setNavOpen] = useState(false)
   const [scribbles, setScribbles] = useState([])
+  const { isLoggedIn } = useAuth()
   return (
     <HomePageContainer>
       {/* <div style={{ width: '100%', height: '12px' }}>
@@ -53,8 +56,23 @@ export default function HomePage() {
           <HamburgerMenuOn size={24} onClick={() => setNavOpen(!navOpen)} />
         )}
         <Logo>
-          <PiScrollThin size={48} />
           <LogoText>Scribbler</LogoText>
+          {
+            <Tooltip
+              title={
+                isLoggedIn
+                  ? "Scribblers are saved in your google drive in folder 'scribbler'"
+                  : 'Scribblers are saved offline and persist across restart in this browser profile.'
+              }
+            >
+              <IconButton>
+                <HiMiniInformationCircle
+                  size={16}
+                  color={isLoggedIn ? '#5decbf' : '#e96976ff'}
+                />
+              </IconButton>
+            </Tooltip>
+          }
         </Logo>
 
         <ButtonBar

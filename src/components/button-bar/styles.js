@@ -1,11 +1,12 @@
 import styled, { css } from 'styled-components'
 import { PiPlayDuotone } from 'react-icons/pi'
+import { Theme } from '@src/constants'
 
 const StyledPlayIcon = styled(PiPlayDuotone)`
-  color: #007d57;
+  color: ${Theme.playColor};
   font-size: 18px;
   cursor: pointer;
-  fill: #007d57;
+  fill: ${Theme.playColor};
 
   ${({ disabled }) =>
     disabled &&
@@ -23,7 +24,8 @@ const Button = styled.div`
   height: 2.5rem;
   box-sizing: border-box;
   outline: none;
-  background: #27345e;
+  font-family: ${Theme.fontFamily};
+  background: ${Theme.primaryButtonColor};
   border-radius: 0.5rem;
   cursor: pointer;
   appearance: button;

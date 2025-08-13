@@ -5,7 +5,6 @@ import { FaUserCircle } from 'react-icons/fa'
 import { useAuth } from '@auth/AuthProvider'
 import { redirectToAuth } from '@src/util'
 import PropTypes from 'prop-types'
-import { HiMiniInformationCircle } from 'react-icons/hi2'
 // TODO: get his kind of relative path shit out
 export default function ButtonBar({ onRunButton = () => {} }) {
   const { isLoggedIn, userInfo } = useAuth()
@@ -39,28 +38,11 @@ export default function ButtonBar({ onRunButton = () => {} }) {
       {!isLoggedIn && (
         <Tooltip title="Sign in with google.">
           <Button onClick={handleSignIn}>
-            <FcGoogle size={24} />
+            <FcGoogle size={16} />
             <span>Log In</span>
           </Button>
         </Tooltip>
       )}
-
-      {
-        <Tooltip
-          title={
-            isLoggedIn
-              ? "Scribblers are saved in your google drive in folder 'scribbler'"
-              : 'Scribblers are saved offline and persist across restart in this browser profile.'
-          }
-        >
-          <IconButton>
-            <HiMiniInformationCircle
-              size={24}
-              color={isLoggedIn ? '#5decbf' : 'red'}
-            />
-          </IconButton>
-        </Tooltip>
-      }
     </ButtonBarContainer>
   )
 }

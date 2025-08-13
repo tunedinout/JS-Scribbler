@@ -38,3 +38,18 @@ export const Events = {
 export const IndexedDbName = 'Scribbler'
 
 export const IndexedDbScribbleStore = 'scribbles'
+
+export const Theme = {
+  primaryColor: '#1b1d25ff',
+  secondaryColor: '#363c52ff',
+  fontColor: '#d5ecf5',
+  secondaryFontColor: '#b9b9beff',
+  HighlightColor: '#454343ff',
+  hoverColor: '#24292e',
+  playColor: '#007d57',
+  primaryButtonColor: '#273d66ff',
+  fontFamily: '"Source Code Pro"',
+  codeEditor: {
+    previewBgColor: '',
+  },
+}
