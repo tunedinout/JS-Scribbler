@@ -71,8 +71,6 @@ const StyledPlusIcon = styled(FaPlus)`
   color: grey;
   font-size: 16px;
   cursor: pointer;
-  position: absolute;
-  right: 32px;
 
   ${({ disabled }) =>
     disabled &&

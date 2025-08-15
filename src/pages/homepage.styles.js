@@ -9,7 +9,7 @@ export const HomePageContainer = styled.div`
 `
 export const Main = styled.main`
   display: grid;
-  transition: grid-template-columns 0.5s ease;
+  transition: grid-template-columns 0.3s ease;
   grid-template-columns: ${(props) =>
     props?.navOpen ? '0px auto' : '18rem 1fr'};
   height: 100%;

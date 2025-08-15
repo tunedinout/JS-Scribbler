@@ -1,10 +1,11 @@
 import { ButtonBarContainer, Button, StyledPlayIcon } from './styles'
-import { Tooltip, IconButton } from '@mui/material'
+import { IconButton } from '@mui/material'
 import { FcGoogle } from 'react-icons/fc'
 import { FaUserCircle } from 'react-icons/fa'
 import { useAuth } from '@auth/AuthProvider'
 import { redirectToAuth } from '@src/util'
 import PropTypes from 'prop-types'
+import { Tooltip } from '@src/core-components/tooltip'
 // TODO: get his kind of relative path shit out
 export default function ButtonBar({ onRunButton = () => {} }) {
   const { isLoggedIn, userInfo } = useAuth()

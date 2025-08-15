@@ -12,8 +12,9 @@ import {
 import ScribblesExplorer from '@src/core-components/file-explorer/Explorer'
 import CodingPad from '@src/components/coding-pad/CodingPad'
 import { useAuth } from '@src/auth/AuthProvider'
-import { IconButton, Tooltip } from '@mui/material'
+import { IconButton } from '@mui/material'
 import { HiMiniInformationCircle } from 'react-icons/hi2'
+import { Tooltip } from '@src/core-components/tooltip'
 
 export default function HomePage() {
   const [isRun, setIsRun] = useState(false)

@@ -1,29 +1,28 @@
 // does not need a react component
+import { Theme } from '@src/constants'
 import styled from 'styled-components'
-const Tooltip = styled.div`
-  content: attr(title);
-  background-color: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  position: absolute;
-  z-index: 1;
-  bottom: 125%;
-  left: 50%;
-  transform: translateX(-50%);
-  white-space: nowrap;
-  visibility: hidden;
-  opacity: 0;
-
-  &::before {
-    content: attr(title);
-  }
-
-  /* Show the tooltip on hover */
-  &:hover {
-    visibility: visible;
-    opacity: 1;
-  }
+const TooltipElement = styled.div`
+  font-family: ${Theme.fontFamily};
+  font-size: 12px;
+  background-color: ${Theme.HighlightColor};
+  color: ${Theme.fontColor};
+  padding: ${(props) => (!props.isHover ? 0 : '4px 8px')};
+  border-radius: ${(props) => (!props.isHover ? 0 : ' 4px')};
+  position: fixed;
+  z-index: 1000000000;
+  max-width: ${(props) => (!props.isHover ? 0 : '350px')};
+  max-height: ${(props) => (!props.isHover ? 0 : 'fit-content')};
+  white-space: normal;
+  word-wrap: break-word;
+  box-sizing: border-box;
+  top: ${(props) => props?.location?.top || 0}px;
+  left: ${(props) => props?.location?.left || 0}px;
 `
 
-export { Tooltip }
+const TooltipChildrenContainer = styled.div`
+  // width: max-content;
+  // height: max-content;
+  padding: 4px;
+`
+
+export { TooltipElement, TooltipChildrenContainer }

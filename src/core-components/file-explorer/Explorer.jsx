@@ -11,6 +11,7 @@ import {
 import CustomListItemWrapper from './CustomListItemWrapper'
 import CustomListItemInput from './CustomListItemInput'
 import { getLogger } from '@src/util'
+import { Tooltip } from '../tooltip'
 
 const logger = getLogger('ScribblesExplorer')
 export default function ScribblesExplorer({
@@ -65,7 +66,9 @@ export default function ScribblesExplorer({
     <ScribblesContainer>
       <ScribblesHeadingWrapper>
         <div style={{ color: 'white' }}>{'Explorer'}</div>
-        <StyledPlusIcon size={16} onClick={() => setIsCreateMode(true)} />
+        <Tooltip title={'Create a new scribble'}>
+          <StyledPlusIcon size={16} onClick={() => setIsCreateMode(true)} />
+        </Tooltip>
       </ScribblesHeadingWrapper>
 
       {!isCollapsed && (
