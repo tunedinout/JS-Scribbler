@@ -7,7 +7,7 @@ const TooltipElement = styled.div`
   background-color: ${Theme.HighlightColor};
   color: ${Theme.fontColor};
   padding: ${(props) => (!props.isHover ? 0 : '4px 8px')};
-  border-radius: ${(props) => (!props.isHover ? 0 : ' 4px')};
+  border-radius: ${(props) => (!props.isHover ? 0 : '4px')};
   position: fixed;
   z-index: 1000000000;
   max-width: ${(props) => (!props.isHover ? 0 : '350px')};
@@ -17,6 +17,7 @@ const TooltipElement = styled.div`
   box-sizing: border-box;
   top: ${(props) => props?.location?.top || 0}px;
   left: ${(props) => props?.location?.left || 0}px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 `
 
 const TooltipChildrenContainer = styled.div`

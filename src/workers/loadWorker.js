@@ -15,13 +15,14 @@ onmessage = async function (event) {
       // bulk sync scribbles with server in a single api call
       const initLoadResponse = await load(userScribbles)
       const { scribbles: syncedScribbles } = initLoadResponse.data
-      syncedScribbles.forEach(async (syncedScribble) => {
+      for (const syncedScribble of syncedScribbles) {
         await saveScribble(syncedScribble)
-      })
+      }
+      const orderedScribbles = await loadScribbles()
       // consumer of this message must load all the scribbles from IDB
       channel.postMessage({
         type: Events.sync,
-        payload: { scribbles: syncedScribbles },
+        payload: { scribbles: orderedScribbles },
       })
     } else {
       channel.postMessage({

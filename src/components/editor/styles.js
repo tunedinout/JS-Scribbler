@@ -1,3 +1,4 @@
+import { Theme } from '@src/constants'
 import styled from 'styled-components'
 
 export const EditorContainer = styled.div`
@@ -40,5 +41,13 @@ export const EditorContainer = styled.div`
   }
   .ace-github-dark {
     background-color: #212020;
+  }
+  .ace_tooltip {
+    background-color: ${Theme.HighlightColor} !important;
+    font-family: ${Theme.fontFamily} !important;
+    border-radius: 4px;
+    border: none;
+    padding: 4px 8px !important;
+    color: ${Theme.fontColor};
   }
 `
