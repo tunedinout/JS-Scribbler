@@ -43,6 +43,7 @@ export const Theme = {
   primaryColor: '#1b1d25ff',
   secondaryColor: '#1c1f22ff',
   fontColor: '#d5ecf5',
+  danger: '#cd361fff',
   secondaryFontColor: '#b9b9beff',
   HighlightColor: '#454343ff',
   hoverColor: '#24292e',
@@ -50,6 +51,9 @@ export const Theme = {
   primaryButtonColor: '#273d66ff',
   fontFamily: '"Source Code Pro"',
   codeEditor: {
-    previewBgColor: '',
+    editorBgColor: '#211f1f',
+    previewBgColor: '1c1f22ff',
+    diffGreen: '#0c553fff',
+    diffRed: '#69251a',
   },
 }

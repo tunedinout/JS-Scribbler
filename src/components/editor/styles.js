@@ -5,7 +5,8 @@ export const EditorContainer = styled.div`
   width: 100%;
   height: 100%;
   padding-top: 2rem;
-  background-color: #211f1f;
+
+  background-color: ${Theme.codeEditor.editorBgColor};
   textarea {
     width: 100%;
     height: 100%;
@@ -15,7 +16,8 @@ export const EditorContainer = styled.div`
     resize: none;
     margin-bottom: 8px;
     outline: none;
-    color: white;
+    // color: white;
+    font-family: ${Theme.fontFamily};
   }
 
   button {
@@ -36,11 +38,14 @@ export const EditorContainer = styled.div`
   .highlighted-keyword {
     color: #bc70fd;
   }
+  .ace_content {
+    font-family: ${Theme.fontFamily};
+  }
   .ace_gutter {
     background: none;
   }
   .ace-github-dark {
-    background-color: #212020;
+    background-color: ${Theme.codeEditor.editorBgColor};
   }
   .ace_tooltip {
     background-color: ${Theme.HighlightColor} !important;

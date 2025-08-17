@@ -65,7 +65,7 @@ export default function ScribblesExplorer({
   return (
     <ScribblesContainer>
       <ScribblesHeadingWrapper>
-        <div style={{ color: 'white' }}>{'Explorer'}</div>
+        <div style={{ color: 'white', marginLeft: '1rem' }}>{'Explorer'}</div>
         <Tooltip title={'Create a new scribble'}>
           <StyledPlusIcon size={16} onClick={() => setIsCreateMode(true)} />
         </Tooltip>

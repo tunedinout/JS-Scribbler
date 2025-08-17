@@ -10,6 +10,8 @@ import 'ace-builds/src-noconflict/ext-language_tools.js'
 import 'ace-builds/src-noconflict/mode-html'
 import 'ace-builds/src-noconflict/mode-css'
 import 'ace-builds/src-noconflict/ext-error_marker'
+import 'ace-diff/dist/ace-diff-dark.min.css'
+
 // worker html works with htmlhint
 import 'ace-builds/src-min-noconflict/worker-html'
 // below does not work for css and js

@@ -8,6 +8,7 @@ import { getLogger } from '@src/util'
 import PropTypes from 'prop-types'
 import { CodingPadContainer } from './styles'
 import Preview from '../preview/Preview'
+import { ConflictResolver } from '@src/core-components/conflict-resolver-cm'
 
 const logger = getLogger(`CodingPad`)
 export default function CodingPad({ isRun, currentEditDetails }) {
@@ -15,6 +16,7 @@ export default function CodingPad({ isRun, currentEditDetails }) {
   const { type: selectedCode, name } = currentEditDetails
   log(currentEditDetails)
   const { currentScribble, onCodeChange } = useCodingPad(currentEditDetails)
+  const isConflicted = currentScribble?.conflict || false
 
   const [focusEditor, setFocusEditor] = useState(true)
   const [jsRuntimeError, setJSRuntimeError] = useState(null)
@@ -57,60 +59,64 @@ export default function CodingPad({ isRun, currentEditDetails }) {
   }, [iframeRef])
 
   return (
-    <CodingPadContainer>
-      {selectedCode === 'js' && currentScribble && (
-        <EditorJS
-          {...{
-            focus: focusEditor,
-            doUnfocus,
-            onChange: (js) => {
-              setJSRuntimeError(null)
-              onCodeChange({ ...currentScribble, js })
-            },
-            code: currentScribble.js,
-            runtimeError: jsRuntimeError,
-          }}
-        />
+    <CodingPadContainer isCodeConflicted={isConflicted}>
+      {!isConflicted && (
+        <>
+          {selectedCode === 'js' && currentScribble && (
+            <EditorJS
+              {...{
+                focus: focusEditor,
+                doUnfocus,
+                onChange: (js) => {
+                  setJSRuntimeError(null)
+                  onCodeChange({ ...currentScribble, js })
+                },
+                code: currentScribble.js,
+                runtimeError: jsRuntimeError,
+              }}
+            />
+          )}
+
+          {selectedCode === 'css' && currentScribble && (
+            <EditorCSS
+              {...{
+                focus: focusEditor,
+                doUnfocus,
+                onChange: (css) => onCodeChange({ ...currentScribble, css }),
+                code: currentScribble.css,
+                runtimeError: null,
+              }}
+            />
+          )}
+
+          {selectedCode === 'html' && currentScribble && (
+            <EditorHTML
+              {...{
+                focus: focusEditor,
+                doUnfocus,
+                onChange: (html) => onCodeChange({ ...currentScribble, html }),
+                runtimeError: null,
+                code: currentScribble.html,
+                onHtmlError,
+              }}
+            />
+          )}
+
+          {/*TODO:  Add a preview  */}
+
+          {currentScribble && (
+            <Preview
+              htmlContent={currentScribble.html}
+              css={currentScribble.css}
+              js={currentScribble.js}
+              isRun={isRun}
+              isHtmlError={isHtmlError}
+              iframeRef={iframeRef}
+            />
+          )}
+        </>
       )}
-
-      {selectedCode === 'css' && currentScribble && (
-        <EditorCSS
-          {...{
-            focus: focusEditor,
-            doUnfocus,
-            onChange: (css) => onCodeChange({ ...currentScribble, css }),
-            code: currentScribble.css,
-            runtimeError: null,
-          }}
-        />
-      )}
-
-      {selectedCode === 'html' && currentScribble && (
-        <EditorHTML
-          {...{
-            focus: focusEditor,
-            doUnfocus,
-            onChange: (html) => onCodeChange({ ...currentScribble, html }),
-            runtimeError: null,
-            code: currentScribble.html,
-            onHtmlError,
-          }}
-        />
-      )}
-
-      {/*TODO:  Add a preview  */}
-
-      {currentScribble && (
-        <Preview
-          htmlContent={currentScribble.html}
-          css={currentScribble.css}
-          js={currentScribble.js}
-          isRun={isRun}
-          isHtmlError={isHtmlError}
-          iframeRef={iframeRef}
-        />
-      )}
-
+      {isConflicted && <ConflictResolver scribble={currentScribble} />}
       {/* Show default screen */}
       {/* {!currentScribble && (
         <div className="scribbler-initial-screen-container">
